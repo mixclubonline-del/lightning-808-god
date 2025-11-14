@@ -1,22 +1,49 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
-export const Keyboard = () => {
+interface KeyboardProps {
+  onNoteOn?: (midiNote: number) => void;
+  onNoteOff?: (midiNote: number) => void;
+}
+
+export const Keyboard = ({ onNoteOn, onNoteOff }: KeyboardProps) => {
   const [activeKeys, setActiveKeys] = useState<Set<number>>(new Set());
 
   const whiteKeys = Array.from({ length: 14 });
   const blackKeys = [1, 2, 4, 5, 6, 8, 9, 11, 12, 13];
+  const baseNote = 36; // C2 - good for 808 bass
 
-  const handleKeyPress = (index: number) => {
+  const handleKeyPress = (index: number, isBlack: boolean = false) => {
+    const midiNote = baseNote + index + (isBlack ? 1 : 0);
     setActiveKeys((prev) => new Set(prev).add(index));
+    onNoteOn?.(midiNote);
+    
     setTimeout(() => {
       setActiveKeys((prev) => {
         const newSet = new Set(prev);
         newSet.delete(index);
         return newSet;
       });
+      onNoteOff?.(midiNote);
     }, 200);
   };
+
+  // Keyboard support
+  useEffect(() => {
+    const keyMap: Record<string, number> = {
+      'a': 0, 'w': 1, 's': 2, 'e': 3, 'd': 4, 'f': 5, 't': 6, 'g': 7, 'y': 8, 'h': 9, 'u': 10, 'j': 11, 'k': 12, 'o': 13, 'l': 14
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const index = keyMap[e.key.toLowerCase()];
+      if (index !== undefined && !activeKeys.has(index)) {
+        handleKeyPress(index);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeKeys]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -28,7 +55,7 @@ export const Keyboard = () => {
           {whiteKeys.map((_, index) => (
             <button
               key={`white-${index}`}
-              onClick={() => handleKeyPress(index)}
+              onClick={() => handleKeyPress(index, false)}
               className={cn(
                 "flex-1 bg-gradient-to-b rounded-b-lg transition-all duration-100",
                 activeKeys.has(index)
@@ -43,7 +70,7 @@ export const Keyboard = () => {
           {blackKeys.map((keyIndex) => (
             <button
               key={`black-${keyIndex}`}
-              onClick={() => handleKeyPress(keyIndex + 100)}
+              onClick={() => handleKeyPress(keyIndex, true)}
               className={cn(
                 "absolute w-[6%] h-[60%] bg-synth-deep rounded-b-lg border border-synth-border",
                 "transition-all duration-100 hover:bg-primary/30",
