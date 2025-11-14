@@ -9,13 +9,22 @@ interface AudioEngineConfig {
   decay: number;
   reverb: number;
   resonance: number;
+  distortionDrive: number;
+  distortionTone: number;
+  distortionMix: number;
 }
 
 export const useAudioEngine = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
   const reverbRef = useRef<ConvolverNode | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const distortionRef = useRef<WaveShaperNode | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+  const mediaStreamDestinationRef = useRef<MediaStreamAudioDestinationNode | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const activeNotesRef = useRef<Map<number, { osc: OscillatorNode; gain: GainNode; filter: BiquadFilterNode }>>(new Map());
 
   useEffect(() => {
@@ -33,6 +42,16 @@ export const useAudioEngine = () => {
     const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
     audioContextRef.current = new AudioContext();
 
+    // Create analyser for visualization
+    analyserRef.current = audioContextRef.current.createAnalyser();
+    analyserRef.current.fftSize = 2048;
+
+    // Create distortion
+    distortionRef.current = audioContextRef.current.createWaveShaper();
+    const initialCurve = makeDistortionCurve(0);
+    distortionRef.current.curve = initialCurve as any;
+    distortionRef.current.oversample = "4x";
+
     // Create master gain
     masterGainRef.current = audioContextRef.current.createGain();
     masterGainRef.current.gain.value = 0.5;
@@ -41,11 +60,30 @@ export const useAudioEngine = () => {
     reverbRef.current = audioContextRef.current.createConvolver();
     await createReverbImpulse(audioContextRef.current, reverbRef.current);
 
-    // Connect reverb to master gain
+    // Create media stream for recording
+    mediaStreamDestinationRef.current = audioContextRef.current.createMediaStreamDestination();
+
+    // Connect audio graph: distortion -> analyser -> master gain -> destination + recorder
+    distortionRef.current.connect(analyserRef.current);
+    analyserRef.current.connect(masterGainRef.current);
     reverbRef.current.connect(masterGainRef.current);
     masterGainRef.current.connect(audioContextRef.current.destination);
+    masterGainRef.current.connect(mediaStreamDestinationRef.current);
 
     setIsInitialized(true);
+  };
+
+  const makeDistortionCurve = (amount: number): Float32Array => {
+    const k = typeof amount === "number" ? amount : 50;
+    const n_samples = 44100;
+    const curve = new Float32Array(n_samples);
+    const deg = Math.PI / 180;
+
+    for (let i = 0; i < n_samples; i++) {
+      const x = (i * 2) / n_samples - 1;
+      curve[i] = ((3 + k) * x * 20 * deg) / (Math.PI + k * Math.abs(x));
+    }
+    return curve as Float32Array;
   };
 
   const createReverbImpulse = async (context: AudioContext, convolver: ConvolverNode) => {
@@ -120,12 +158,35 @@ export const useAudioEngine = () => {
     const reverbSend = context.createGain();
     reverbSend.gain.value = config.reverb / 100;
 
-    // Connect the audio graph
+    // Create dry/wet mix for distortion
+    const dryGain = context.createGain();
+    const wetGain = context.createGain();
+    dryGain.gain.value = 1 - config.distortionMix / 100;
+    wetGain.gain.value = config.distortionMix / 100;
+
+    // Update distortion curve
+    if (distortionRef.current) {
+      const curve = makeDistortionCurve(config.distortionDrive);
+      distortionRef.current.curve = curve as any;
+    }
+
+    // Connect the audio graph with distortion
     osc.connect(filter);
     filter.connect(oscGain);
-    oscGain.connect(masterGainRef.current);
+    
+    // Split signal for dry/wet
+    oscGain.connect(dryGain);
+    oscGain.connect(wetGain);
+    
+    // Wet signal through distortion
+    if (distortionRef.current) {
+      wetGain.connect(distortionRef.current);
+    }
+    
+    // Mix and send to outputs
+    dryGain.connect(masterGainRef.current!);
     oscGain.connect(reverbSend);
-    reverbSend.connect(reverbRef.current);
+    reverbSend.connect(reverbRef.current!);
 
     // Start and stop
     osc.start(now);
@@ -165,13 +226,63 @@ export const useAudioEngine = () => {
     });
   };
 
+  const updateDistortion = (drive: number, mix: number) => {
+    if (distortionRef.current) {
+      const curve = makeDistortionCurve(drive);
+      distortionRef.current.curve = curve as any;
+    }
+  };
+
+  const startRecording = () => {
+    if (!mediaStreamDestinationRef.current) return;
+
+    recordedChunksRef.current = [];
+    const mediaRecorder = new MediaRecorder(mediaStreamDestinationRef.current.stream);
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunksRef.current.push(event.data);
+      }
+    };
+
+    mediaRecorderRef.current = mediaRecorder;
+    mediaRecorder.start();
+    setIsRecording(true);
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const downloadRecording = () => {
+    if (recordedChunksRef.current.length === 0) return;
+
+    const blob = new Blob(recordedChunksRef.current, { type: "audio/webm" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `vst-god-${Date.now()}.webm`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return {
     initialize,
     play808,
     stopNote,
     updateMasterGain,
     updateFilter,
+    updateDistortion,
+    startRecording,
+    stopRecording,
+    downloadRecording,
     isInitialized,
+    isRecording,
+    analyserNode: analyserRef.current,
+    hasRecording: recordedChunksRef.current.length > 0,
   };
 };
 
