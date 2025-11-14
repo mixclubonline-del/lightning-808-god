@@ -12,6 +12,7 @@ import { OracleRealm } from "@/components/realms/OracleRealm";
 import { HermesRealm } from "@/components/realms/HermesRealm";
 import { useAudioEngine, midiToFrequency } from "@/hooks/useAudioEngine";
 import { generateChord, calculateStrumDelay } from "@/utils/chordGenerator";
+import { mythSounds } from "@/utils/mythologicalSounds";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -367,6 +368,9 @@ const Index = () => {
       setIsHubOpen(false);
       return;
     }
+
+    // Play transition sound
+    mythSounds.playRealmTransition();
 
     setIsHubOpen(false);
     setTransitionRealm(realm);
