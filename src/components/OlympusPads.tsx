@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-interface PadGridProps {
+interface OlympusPadsProps {
   onPadTrigger?: (index: number) => void;
 }
 
-export const PadGrid = ({ onPadTrigger }: PadGridProps) => {
+export const OlympusPads = ({ onPadTrigger }: OlympusPadsProps) => {
   const [activePads, setActivePads] = useState<Set<number>>(new Set());
 
   const handlePadClick = (index: number) => {
@@ -25,8 +25,11 @@ export const PadGrid = ({ onPadTrigger }: PadGridProps) => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="text-primary text-sm font-medium uppercase tracking-wider text-center">
-        Pads PT.1
+      <div className="text-slate-200 text-sm font-medium uppercase tracking-wider text-center"
+        style={{
+          textShadow: "0 0 10px rgba(226, 232, 240, 0.6)",
+        }}>
+        Olympus Pads
       </div>
       <div className="grid grid-cols-4 gap-3">
         {Array.from({ length: 8 }).map((_, index) => (
@@ -35,16 +38,16 @@ export const PadGrid = ({ onPadTrigger }: PadGridProps) => {
             onClick={() => handlePadClick(index)}
             className={cn(
               "aspect-square rounded-lg border-2 transition-all duration-200",
-              "hover:border-primary hover:shadow-[0_0_20px_rgba(239,68,68,0.5)]",
+              "hover:border-slate-200 hover:shadow-[0_0_20px_rgba(226,232,240,0.5)]",
               activePads.has(index)
-                ? "bg-primary/20 border-primary shadow-[0_0_20px_rgba(239,68,68,0.5)]"
+                ? "bg-slate-200/20 border-slate-200 shadow-[0_0_20px_rgba(226,232,240,0.5)]"
                 : "bg-synth-deep border-synth-border"
             )}
           />
         ))}
       </div>
-      <div className="text-primary text-xs font-medium uppercase tracking-[0.2em] text-center opacity-60">
-        PADS PT.1
+      <div className="text-slate-200 text-xs font-medium uppercase tracking-[0.2em] text-center opacity-60">
+        Mount of the Gods
       </div>
     </div>
   );

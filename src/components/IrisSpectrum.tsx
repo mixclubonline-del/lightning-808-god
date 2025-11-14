@@ -1,11 +1,11 @@
 import { useEffect, useRef } from "react";
 
-interface SpectrumAnalyzerProps {
+interface IrisSpectrumProps {
   analyserNode: AnalyserNode | null;
   isActive: boolean;
 }
 
-export const SpectrumAnalyzer = ({ analyserNode, isActive }: SpectrumAnalyzerProps) => {
+export const IrisSpectrum = ({ analyserNode, isActive }: IrisSpectrumProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
 
@@ -32,30 +32,38 @@ export const SpectrumAnalyzer = ({ analyserNode, isActive }: SpectrumAnalyzerPro
       for (let i = 0; i < bufferLength; i++) {
         const barHeight = (dataArray[i] / 255) * canvas.height;
         
-        // Create gradient based on frequency
+        // Create rainbow gradient like Iris (goddess of the rainbow)
         const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
         
         if (i < bufferLength * 0.2) {
-          // Bass frequencies - red to orange
+          // Bass frequencies - violet to indigo
+          gradient.addColorStop(0, "rgba(139, 92, 246, 0.9)");
+          gradient.addColorStop(1, "rgba(99, 102, 241, 0.9)");
+        } else if (i < bufferLength * 0.4) {
+          // Low-mid frequencies - blue to cyan
+          gradient.addColorStop(0, "rgba(59, 130, 246, 0.9)");
+          gradient.addColorStop(1, "rgba(6, 182, 212, 0.9)");
+        } else if (i < bufferLength * 0.6) {
+          // Mid frequencies - green to yellow
+          gradient.addColorStop(0, "rgba(34, 197, 94, 0.9)");
+          gradient.addColorStop(1, "rgba(234, 179, 8, 0.9)");
+        } else if (i < bufferLength * 0.8) {
+          // High-mid frequencies - yellow to orange
           gradient.addColorStop(0, "rgba(249, 115, 22, 0.9)");
-          gradient.addColorStop(1, "rgba(220, 38, 38, 0.9)");
-        } else if (i < bufferLength * 0.5) {
-          // Mid frequencies - orange to red
-          gradient.addColorStop(0, "rgba(239, 68, 68, 0.8)");
-          gradient.addColorStop(1, "rgba(239, 68, 68, 0.6)");
+          gradient.addColorStop(1, "rgba(239, 68, 68, 0.9)");
         } else {
-          // High frequencies - dimmer red
-          gradient.addColorStop(0, "rgba(220, 38, 38, 0.6)");
-          gradient.addColorStop(1, "rgba(220, 38, 38, 0.3)");
+          // High frequencies - red to pink
+          gradient.addColorStop(0, "rgba(239, 68, 68, 0.8)");
+          gradient.addColorStop(1, "rgba(236, 72, 153, 0.8)");
         }
 
         ctx.fillStyle = gradient;
         ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
 
-        // Add glow for bass frequencies
-        if (i < bufferLength * 0.3 && barHeight > canvas.height * 0.3) {
+        // Add rainbow glow for prominent frequencies
+        if (barHeight > canvas.height * 0.3) {
           ctx.shadowBlur = 15;
-          ctx.shadowColor = "rgba(239, 68, 68, 0.8)";
+          ctx.shadowColor = "rgba(168, 85, 247, 0.6)";
           ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
           ctx.shadowBlur = 0;
         }
@@ -75,15 +83,21 @@ export const SpectrumAnalyzer = ({ analyserNode, isActive }: SpectrumAnalyzerPro
 
   return (
     <div className="relative">
-      <div className="text-primary text-xs font-medium uppercase tracking-wider mb-2 text-center">
-        Spectrum Analyzer
+      <div className="text-purple-400 text-xs font-medium uppercase tracking-wider mb-2 text-center"
+        style={{
+          textShadow: "0 0 10px rgba(168, 85, 247, 0.6)",
+        }}>
+        Iris Spectrum
       </div>
       <canvas
         ref={canvasRef}
         width={400}
         height={120}
-        className="w-full h-32 rounded-lg bg-synth-deep/50 border border-synth-border"
+        className="w-full h-32 rounded-lg bg-synth-deep/50 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
       />
+      <div className="text-purple-400/60 text-[10px] uppercase tracking-widest text-center mt-1">
+        Rainbow Messenger
+      </div>
     </div>
   );
 };
