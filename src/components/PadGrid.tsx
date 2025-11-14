@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
-export const PadGrid = () => {
+interface PadGridProps {
+  onPadTrigger?: (index: number) => void;
+}
+
+export const PadGrid = ({ onPadTrigger }: PadGridProps) => {
   const [activePads, setActivePads] = useState<Set<number>>(new Set());
 
   const handlePadClick = (index: number) => {
@@ -14,6 +18,9 @@ export const PadGrid = () => {
       }
       return newSet;
     });
+    
+    // Trigger 808 sound
+    onPadTrigger?.(index);
   };
 
   return (

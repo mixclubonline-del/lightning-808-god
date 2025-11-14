@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Knob } from "@/components/Knob";
 import { Slider } from "@/components/Slider";
 import { PadGrid } from "@/components/PadGrid";
@@ -7,10 +7,13 @@ import { WaveformDisplay } from "@/components/WaveformDisplay";
 import { Multi808Panel } from "@/components/Multi808Panel";
 import zeusImage from "@/assets/zeus-figure.png";
 import { Zap } from "lucide-react";
+import { useAudioEngine, midiToFrequency } from "@/hooks/useAudioEngine";
+import { toast } from "sonner";
 
 const Index = () => {
   const [mode, setMode] = useState<"standard" | "multi808">("multi808");
   const [activeLayer, setActiveLayer] = useState<"core" | "layer1" | "layer2" | "layer3">("core");
+  const audioEngine = useAudioEngine();
   
   // Control values
   const [wave, setWave] = useState(50);
@@ -36,9 +39,69 @@ const Index = () => {
 
   const [lightningActive, setLightningActive] = useState(false);
 
+  // Initialize audio on first user interaction
+  useEffect(() => {
+    const initAudio = async () => {
+      if (!audioEngine.isInitialized) {
+        await audioEngine.initialize();
+        toast.success("Audio engine ready! 🎹");
+      }
+    };
+    
+    // Initialize on first click anywhere
+    const handleFirstClick = () => {
+      initAudio();
+      document.removeEventListener('click', handleFirstClick);
+    };
+    
+    document.addEventListener('click', handleFirstClick);
+    return () => document.removeEventListener('click', handleFirstClick);
+  }, [audioEngine]);
+
+  // Update audio parameters when controls change
+  useEffect(() => {
+    audioEngine.updateMasterGain(gain);
+  }, [gain, audioEngine]);
+
+  useEffect(() => {
+    audioEngine.updateFilter(filter, resonance);
+  }, [filter, resonance, audioEngine]);
+
   const triggerLightning = () => {
     setLightningActive(true);
     setTimeout(() => setLightningActive(false), 300);
+    
+    // Play a powerful C note when lightning strikes
+    const config = { wave, filter, vibrato, gain, attack, decay, reverb, resonance };
+    audioEngine.play808(midiToFrequency(36), config, 36, "core");
+    toast("⚡ Lightning strikes!");
+  };
+
+  const handleNoteOn = (midiNote: number) => {
+    if (!audioEngine.isInitialized) return;
+    const config = { wave, filter, vibrato, gain, attack, decay, reverb, resonance };
+    const frequency = midiToFrequency(midiNote);
+    audioEngine.play808(frequency, config, midiNote, activeLayer);
+  };
+
+  const handleNoteOff = (midiNote: number) => {
+    audioEngine.stopNote(midiNote);
+  };
+
+  const handlePadTrigger = (padIndex: number) => {
+    if (!audioEngine.isInitialized) {
+      toast.error("Click anywhere to initialize audio first");
+      return;
+    }
+    
+    // Map pads to different 808 notes
+    const padNotes = [36, 38, 40, 41, 43, 45, 47, 48]; // C2, D2, E2, F2, G2, A2, B2, C3
+    const midiNote = padNotes[padIndex];
+    const config = { wave, filter, vibrato, gain, attack, decay, reverb, resonance };
+    const frequency = midiToFrequency(midiNote);
+    
+    audioEngine.play808(frequency, config, midiNote, activeLayer);
+    triggerLightning();
   };
 
   return (
@@ -107,7 +170,7 @@ const Index = () => {
             )}
             
             <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-4">
-              <PadGrid />
+              <PadGrid onPadTrigger={handlePadTrigger} />
             </div>
           </div>
 
@@ -187,7 +250,7 @@ const Index = () => {
             </div>
 
             <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-4">
-              <Keyboard />
+              <Keyboard onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} />
             </div>
           </div>
         </div>
