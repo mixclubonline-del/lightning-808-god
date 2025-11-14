@@ -23,7 +23,7 @@ export const Knob = ({ label, value, onChange, min = 0, max = 100, className }: 
       if (!isDragging) return;
       
       const delta = startYRef.current - e.clientY;
-      const valueChange = (delta / 100) * (max - min);
+      const valueChange = (delta / 200) * (max - min); // Reduced sensitivity from 100 to 200
       const newValue = Math.max(min, Math.min(max, startValueRef.current + valueChange));
       onChange(newValue);
     };
