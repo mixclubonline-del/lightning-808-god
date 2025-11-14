@@ -18,8 +18,8 @@ export const VulcanForge = ({
   onMixChange,
 }: VulcanForgeProps) => {
   return (
-    <div className="bg-synth-panel rounded-lg border-2 border-orange-600/50 p-4 shadow-[0_0_15px_rgba(234,88,12,0.3)]">
-      <div className="text-orange-400 text-sm font-medium uppercase tracking-wider mb-4 text-center">
+    <div className="bg-synth-panel rounded-lg border-2 border-orange-600/50 p-4 shadow-[0_0_15px_rgba(234,88,12,0.3)] marble-texture divine-shimmer deity-aura">
+      <div className="text-orange-400 text-sm font-medium uppercase tracking-wider mb-4 text-center divine-glow">
         Vulcan Forge
       </div>
       <div className="flex justify-around">

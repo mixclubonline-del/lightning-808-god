@@ -111,11 +111,11 @@ export const PandoraLibrary = ({ onSampleSelect, onFindSimilar }: PandoraLibrary
   );
 
   return (
-    <div className="bg-synth-panel rounded-lg border-2 border-purple-500/50 p-4 h-full flex flex-col shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+    <div className="bg-synth-panel rounded-lg border-2 border-purple-500/50 p-4 h-full flex flex-col shadow-[0_0_20px_rgba(168,85,247,0.2)] marble-texture sacred-geometry olympian-backdrop">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Music2 size={16} className="text-purple-400" />
-          <span className="text-purple-400 text-sm font-medium uppercase tracking-wider"
+          <span className="text-purple-400 text-sm font-medium uppercase tracking-wider divine-glow"
             style={{
               textShadow: "0 0 10px rgba(168, 85, 247, 0.5)",
             }}>

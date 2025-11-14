@@ -136,4 +136,214 @@ All colors MUST be HSL.
     transform: scale(1.2);
     box-shadow: 0 0 15px hsl(var(--synth-glow));
   }
+
+  /* Greek Mythology-Inspired Patterns */
+  
+  /* Greek Meander/Key Pattern Border */
+  .greek-border {
+    position: relative;
+    border: 2px solid currentColor;
+  }
+  
+  .greek-border::before,
+  .greek-border::after {
+    content: '';
+    position: absolute;
+    background-image: 
+      repeating-linear-gradient(
+        90deg,
+        currentColor 0px,
+        currentColor 8px,
+        transparent 8px,
+        transparent 12px,
+        currentColor 12px,
+        currentColor 16px,
+        transparent 16px,
+        transparent 20px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        currentColor 0px,
+        currentColor 8px,
+        transparent 8px,
+        transparent 12px
+      );
+    opacity: 0.3;
+  }
+  
+  .greek-border::before {
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    height: 8px;
+  }
+  
+  .greek-border::after {
+    bottom: -2px;
+    left: -2px;
+    right: -2px;
+    height: 8px;
+  }
+
+  /* Marble Texture Gradient */
+  .marble-texture {
+    background: 
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        transparent 40%,
+        transparent 60%,
+        rgba(255, 255, 255, 0.03) 100%
+      ),
+      linear-gradient(
+        45deg,
+        rgba(0, 0, 0, 0.1) 25%,
+        transparent 25%,
+        transparent 75%,
+        rgba(0, 0, 0, 0.1) 75%,
+        rgba(0, 0, 0, 0.1)
+      );
+    background-size: 100% 100%, 4px 4px;
+  }
+
+  /* Divine Glow Effect */
+  .divine-glow {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .divine-glow::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    right: -50%;
+    bottom: -50%;
+    background: radial-gradient(
+      circle at center,
+      currentColor 0%,
+      transparent 70%
+    );
+    opacity: 0.15;
+    animation: pulse 3s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  /* Column/Pillar Pattern */
+  .pillar-pattern {
+    position: relative;
+    background: 
+      repeating-linear-gradient(
+        90deg,
+        transparent 0px,
+        transparent 18px,
+        rgba(255, 255, 255, 0.03) 18px,
+        rgba(255, 255, 255, 0.03) 20px,
+        transparent 20px,
+        transparent 38px,
+        rgba(255, 255, 255, 0.05) 38px,
+        rgba(255, 255, 255, 0.05) 42px
+      );
+  }
+
+  /* Laurel Wreath Corner Accents */
+  .laurel-corners::before,
+  .laurel-corners::after {
+    content: '⚘';
+    position: absolute;
+    font-size: 1.5rem;
+    opacity: 0.4;
+    color: currentColor;
+    text-shadow: 0 0 10px currentColor;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  
+  .laurel-corners::before {
+    top: -8px;
+    left: -8px;
+    transform: rotate(-45deg);
+  }
+  
+  .laurel-corners::after {
+    top: -8px;
+    right: -8px;
+    transform: rotate(45deg);
+  }
+
+  /* Divine Shimmer Effect */
+  .divine-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .divine-shimmer::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 70%
+    );
+    animation: shimmer 6s linear infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%); }
+    100% { transform: translateX(100%) translateY(100%); }
+  }
+
+  /* Olympian Backdrop */
+  .olympian-backdrop {
+    backdrop-filter: blur(8px) brightness(1.1);
+    background: 
+      radial-gradient(
+        ellipse at top,
+        rgba(255, 255, 255, 0.08) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse at bottom,
+        rgba(0, 0, 0, 0.3) 0%,
+        transparent 60%
+      );
+  }
+
+  /* Greek Fret Border */
+  .fret-border {
+    border-image: repeating-linear-gradient(
+      90deg,
+      currentColor 0px,
+      currentColor 10px,
+      transparent 10px,
+      transparent 15px,
+      currentColor 15px,
+      currentColor 20px,
+      transparent 20px,
+      transparent 25px
+    ) 2;
+  }
+
+  /* Deity Aura */
+  .deity-aura {
+    box-shadow: 
+      0 0 20px rgba(255, 255, 255, 0.1),
+      inset 0 0 40px rgba(255, 255, 255, 0.05),
+      0 0 60px currentColor;
+  }
+
+  /* Sacred Geometry Pattern */
+  .sacred-geometry {
+    background-image: 
+      radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      radial-gradient(circle at 25% 75%, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      radial-gradient(circle at 75% 25%, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px, 20px 0, 0 20px;
+  }
 }

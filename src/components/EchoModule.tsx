@@ -22,8 +22,8 @@ export const EchoModule = ({
   onEnabledChange,
 }: EchoModuleProps) => {
   return (
-    <div className={`bg-synth-panel rounded-lg border-2 p-4 transition-all ${
-      enabled ? 'border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'border-synth-border'
+    <div className={`bg-synth-panel rounded-lg border-2 p-4 transition-all marble-texture ${
+      enabled ? 'border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.4)] deity-aura divine-shimmer' : 'border-synth-border'
     }`}>
       <div className="flex items-center justify-between mb-4">
         <div className="text-cyan-400 text-sm font-medium uppercase tracking-wider">
