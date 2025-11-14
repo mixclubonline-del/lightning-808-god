@@ -22,8 +22,11 @@ import { HarmoniaChords } from "@/components/HarmoniaChords";
 import { PandoraLibrary } from "@/components/PandoraLibrary";
 import { OracleMatcher } from "@/components/OracleMatcher";
 import { StudioView } from "@/components/studio/StudioView";
+import { SignalFlowView } from "@/components/SignalFlowView";
+import { AppSidebar } from "@/components/AppSidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import zeusImage from "@/assets/zeus-figure.png";
-import { Zap, Library, Music } from "lucide-react";
+import { Menu, Zap } from "lucide-react";
 import { useAudioEngine, midiToFrequency } from "@/hooks/useAudioEngine";
 import { generateChord, calculateStrumDelay } from "@/utils/chordGenerator";
 import { AudioFeatures, extractAudioFeatures } from "@/utils/audioFeatureExtraction";
@@ -32,7 +35,7 @@ import { toast } from "sonner";
 const Index = () => {
   const [mode, setMode] = useState<"standard" | "multi808">("multi808");
   const [activeLayer, setActiveLayer] = useState<"core" | "layer1" | "layer2" | "layer3">("core");
-  const [activeView, setActiveView] = useState<"synth" | "library" | "studio">("synth");
+  const [activeView, setActiveView] = useState<"synth" | "library" | "studio" | "flow">("synth");
   const audioEngine = useAudioEngine();
   
   // Control values
@@ -93,12 +96,14 @@ const Index = () => {
   const [pastTimeReverse, setPastTimeReverse] = useState(50);
   const [pastTimeMix, setPastTimeMix] = useState(30);
   const [pastTimeEnabled, setPastTimeEnabled] = useState(false);
+  const chronosEnabled = pastTimeEnabled;
   
   // Half Time values
   const [halfTimeAmount, setHalfTimeAmount] = useState(50);
   const [halfTimeSmoothing, setHalfTimeSmoothing] = useState(50);
   const [halfTimeMix, setHalfTimeMix] = useState(40);
   const [halfTimeEnabled, setHalfTimeEnabled] = useState(false);
+  const morpheusEnabled = halfTimeEnabled;
   
   // Spandex Compressor values
   const [compressorThreshold, setCompressorThreshold] = useState(50);
@@ -329,75 +334,59 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-synth-deep p-6">
-      <div className="max-w-[1600px] mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-6xl font-bold text-primary tracking-wider mb-2"
-            style={{
-              textShadow: "0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.4)",
-            }}>
-            VST GOD
-          </h1>
-          <div className="flex justify-center gap-4 mt-4">
-            <button
-              onClick={() => setActiveView("synth")}
-              className={`px-6 py-2 rounded-lg border-2 transition-all ${
-                activeView === "synth"
-                  ? "border-primary bg-primary/20 text-primary shadow-[0_0_20px_rgba(239,68,68,0.5)]"
-                  : "border-synth-border bg-synth-panel text-muted-foreground hover:border-primary/50"
-              }`}
-            >
-              <Zap size={18} className="inline mr-2" />
-              Synth
-            </button>
-            <button
-              onClick={() => setActiveView("studio")}
-              className={`px-6 py-2 rounded-lg border-2 transition-all ${
-                activeView === "studio"
-                  ? "border-primary bg-primary/20 text-primary shadow-[0_0_20px_rgba(239,68,68,0.5)]"
-                  : "border-synth-border bg-synth-panel text-muted-foreground hover:border-primary/50"
-              }`}
-            >
-              <Music size={18} className="inline mr-2" />
-              Studio
-            </button>
-            <button
-              onClick={() => setActiveView("library")}
-              className={`px-6 py-2 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                activeView === "library"
-                  ? "border-accent bg-accent/20 text-accent shadow-[0_0_20px_rgba(249,115,22,0.5)]"
-                  : "border-synth-border bg-synth-panel text-muted-foreground hover:border-accent/50"
-              }`}
-            >
-              <Library size={18} />
-              Library
-            </button>
-          </div>
-          {activeView === "synth" && (
-            <div className="flex justify-center gap-4 mt-4">
-              <button
-                onClick={() => setMode("standard")}
-                className={`px-4 py-1 rounded border transition-all ${
-                  mode === "standard" ? "border-primary text-primary" : "border-synth-border text-muted-foreground"
-                }`}
-              >
-                Standard
-              </button>
-              <button
-                onClick={() => setMode("multi808")}
-                className={`px-4 py-1 rounded border transition-all ${
-                  mode === "multi808" ? "border-primary text-primary" : "border-synth-border text-muted-foreground"
-                }`}
-              >
-                Multi 808
-              </button>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-synth-deep">
+        <AppSidebar activeView={activeView} onViewChange={setActiveView} />
+        
+        <div className="flex-1 flex flex-col w-full">
+          {/* Header with sidebar trigger */}
+          <header className="h-16 flex items-center justify-between px-6 border-b-2 border-synth-border bg-synth-panel/50 backdrop-blur-sm">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="text-primary hover:text-primary/80" />
+              <h1 className="text-2xl font-bold text-primary tracking-wider hidden md:block"
+                style={{
+                  textShadow: "0 0 20px rgba(239, 68, 68, 0.8)",
+                }}>
+                VST GOD
+              </h1>
             </div>
-          )}
-        </div>
+            
+            {activeView === "synth" && (
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setMode("standard")}
+                  className={`px-4 py-1 rounded border transition-all ${
+                    mode === "standard" ? "border-primary text-primary" : "border-synth-border text-muted-foreground"
+                  }`}
+                >
+                  Standard
+                </button>
+                <button
+                  onClick={() => setMode("multi808")}
+                  className={`px-4 py-1 rounded border transition-all ${
+                    mode === "multi808" ? "border-primary text-primary" : "border-synth-border text-muted-foreground"
+                  }`}
+                >
+                  Multi 808
+                </button>
+              </div>
+            )}
+          </header>
 
-        <div className="space-y-6">
-          {activeView === "library" ? (
+          {/* Main Content */}
+          <main className="flex-1 overflow-auto p-6">
+            {activeView === "flow" ? (
+              <SignalFlowView
+                distortionEnabled={mode === "multi808"}
+                delayEnabled={delayEnabled}
+                chorusEnabled={chorusEnabled}
+                reverbEnabled={reverbEnabled}
+                marsEnabled={marsEnabled}
+                chronosEnabled={chronosEnabled}
+                morpheusEnabled={morpheusEnabled}
+                compressorEnabled={compressorEnabled}
+              />
+            ) : activeView === "library" ? (
             <div className="grid grid-cols-2 gap-6 h-[800px]">
               <PandoraLibrary
                 onFindSimilar={(sample) => {
@@ -669,13 +658,16 @@ const Index = () => {
           </div>
           )}
           
-          {/* Universal Keyboard - appears in all views */}
-          <div className="mt-6">
-            <OrpheusKeys onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} />
-          </div>
+          {/* Universal Keyboard - appears in synth view */}
+          {activeView === "synth" && (
+            <div className="mt-6">
+              <OrpheusKeys onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} />
+            </div>
+          )}
+          </main>
         </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
