@@ -22,7 +22,7 @@ export const MorpheusModule = ({
   onEnabledChange,
 }: MorpheusModuleProps) => {
   return (
-    <div className={`bg-synth-panel rounded-lg border-2 p-4 transition-all marble-texture ${
+    <div className={`bg-synth-panel rounded-3xl border-2 p-6 transition-all marble-texture overflow-hidden ${
       enabled ? 'border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.4)] deity-aura divine-shimmer morpheus-mist' : 'border-synth-border'
     }`}>
       <div className="flex items-center justify-between mb-4">

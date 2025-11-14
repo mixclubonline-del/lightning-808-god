@@ -93,7 +93,7 @@ export const IrisSpectrum = ({ analyserNode, isActive }: IrisSpectrumProps) => {
         ref={canvasRef}
         width={400}
         height={120}
-        className="w-full h-32 rounded-lg bg-synth-deep/50 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.2)] divine-shimmer relative z-10"
+        className="w-full h-32 rounded-2xl bg-synth-deep/50 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.2)] divine-shimmer relative z-10 overflow-hidden"
       />
       <div className="text-purple-400/60 text-[10px] uppercase tracking-widest text-center mt-1">
         Rainbow Messenger

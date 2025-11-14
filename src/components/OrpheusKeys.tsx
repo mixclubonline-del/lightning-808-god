@@ -47,9 +47,9 @@ export const OrpheusKeys = ({ onNoteOn, onNoteOff }: OrpheusKeysProps) => {
 
   return (
     <div className="w-full">
-      <div className="relative bg-gradient-to-b from-synth-panel to-synth-deep rounded-xl border-2 border-yellow-500/50 p-8 shadow-[0_0_40px_rgba(234,179,8,0.3)] marble-texture sacred-geometry orpheus-rays">
+      <div className="relative bg-gradient-to-b from-synth-panel to-synth-deep rounded-3xl border-2 border-yellow-500/50 p-8 shadow-[0_0_40px_rgba(234,179,8,0.3)] marble-texture sacred-geometry orpheus-rays overflow-hidden">
         {/* Decorative header */}
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-synth-deep border-2 border-yellow-500 rounded-lg laurel-corners divine-glow">
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-synth-deep border-2 border-yellow-500 rounded-2xl laurel-corners divine-glow">
           <div className="text-yellow-400 text-lg font-bold uppercase tracking-[0.4em] text-center"
             style={{
               textShadow: "0 0 10px rgba(234, 179, 8, 0.6)",
@@ -59,9 +59,9 @@ export const OrpheusKeys = ({ onNoteOn, onNoteOff }: OrpheusKeysProps) => {
         </div>
         
         {/* Keyboard container with golden glow effect */}
-        <div className="relative h-48 bg-gradient-to-b from-synth-deep/50 to-synth-deep rounded-xl border border-yellow-500/30 p-6 shadow-inner olympian-backdrop pillar-pattern">
+        <div className="relative h-48 bg-gradient-to-b from-synth-deep/50 to-synth-deep rounded-2xl border border-yellow-500/30 p-6 shadow-inner olympian-backdrop pillar-pattern overflow-hidden">
           {/* Ambient golden glow */}
-          <div className="absolute inset-0 bg-gradient-to-t from-yellow-500/5 to-transparent rounded-xl pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-yellow-500/5 to-transparent rounded-2xl pointer-events-none" />
           
           <div className="relative h-full flex gap-[3px]">
             {whiteKeys.map((_, index) => (
@@ -69,7 +69,7 @@ export const OrpheusKeys = ({ onNoteOn, onNoteOff }: OrpheusKeysProps) => {
                 key={`white-${index}`}
                 onClick={() => handleKeyPress(index, false)}
                 className={cn(
-                  "flex-1 bg-gradient-to-b rounded-b-xl transition-all duration-100 border-2 relative group",
+                  "flex-1 bg-gradient-to-b rounded-b-2xl transition-all duration-100 border-2 relative group overflow-hidden",
                   activeKeys.has(index)
                     ? "from-yellow-400 via-yellow-500 to-amber-600 shadow-[0_0_30px_rgba(234,179,8,0.9),0_0_60px_rgba(234,179,8,0.5)] border-yellow-400 scale-[1.02] z-10"
                     : "from-secondary/70 to-secondary/50 hover:from-secondary hover:to-secondary/80 border-synth-border/30 hover:border-yellow-500/50 hover:shadow-[0_0_15px_rgba(234,179,8,0.3)]"
@@ -80,7 +80,7 @@ export const OrpheusKeys = ({ onNoteOn, onNoteOff }: OrpheusKeysProps) => {
                 }}
               >
                 {/* Key reflection effect */}
-                <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/10 to-transparent rounded-t-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
             ))}
             {blackKeys.map((keyIndex) => (
@@ -88,7 +88,7 @@ export const OrpheusKeys = ({ onNoteOn, onNoteOff }: OrpheusKeysProps) => {
                 key={`black-${keyIndex}`}
                 onClick={() => handleKeyPress(keyIndex, true)}
                 className={cn(
-                  "absolute h-[60%] w-[5%] bg-gradient-to-b rounded-b-lg transition-all duration-100 border-2 z-20 group",
+                  "absolute h-[60%] w-[5%] bg-gradient-to-b rounded-b-2xl transition-all duration-100 border-2 z-20 group overflow-hidden",
                   activeKeys.has(keyIndex)
                     ? "from-yellow-500 to-amber-700 shadow-[0_0_25px_rgba(234,179,8,0.9)] border-yellow-400"
                     : "from-synth-deep to-background hover:from-synth-panel border-synth-border hover:border-yellow-500/50 hover:shadow-[0_0_12px_rgba(234,179,8,0.4)]"
@@ -99,7 +99,7 @@ export const OrpheusKeys = ({ onNoteOn, onNoteOff }: OrpheusKeysProps) => {
                   filter: activeKeys.has(keyIndex) ? "brightness(1.4)" : "brightness(1)",
                 }}
               >
-                <div className="absolute top-0 left-0 right-0 h-1/4 bg-gradient-to-b from-white/5 to-transparent rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute top-0 left-0 right-0 h-1/4 bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </button>
             ))}
           </div>

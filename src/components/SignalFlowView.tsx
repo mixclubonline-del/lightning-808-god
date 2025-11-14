@@ -183,7 +183,7 @@ export const SignalFlowView = ({
         </div>
 
         {/* Legend */}
-        <div className="mt-12 p-6 bg-synth-panel rounded-lg border-2 border-synth-border marble-texture">
+        <div className="mt-12 p-6 bg-synth-panel rounded-3xl border-2 border-synth-border marble-texture overflow-hidden">
           <h3 className="text-sm font-medium uppercase tracking-wider text-primary mb-4">
             Signal Flow Legend
           </h3>

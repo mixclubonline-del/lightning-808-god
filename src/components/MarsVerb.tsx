@@ -24,7 +24,7 @@ export const MarsVerb = ({
   onEnabledChange,
 }: MarsVerbProps) => {
   return (
-    <div className={`bg-synth-panel rounded-lg border-2 p-4 transition-all ${
+    <div className={`bg-synth-panel rounded-3xl border-2 p-6 transition-all overflow-hidden ${
       enabled ? 'border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)]' : 'border-synth-border'
     }`}>
       <div className="flex items-center justify-between mb-4">
@@ -74,7 +74,7 @@ export const MarsVerb = ({
 
       {/* Visual shimmer representation */}
       {enabled && (
-        <div className="mt-6 h-16 bg-background/50 rounded-lg overflow-hidden relative">
+        <div className="mt-6 h-16 bg-background/50 rounded-2xl overflow-hidden relative">
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-full h-full relative">
               {[...Array(12)].map((_, i) => (

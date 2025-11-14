@@ -22,7 +22,7 @@ export const ApolloEnvelope = ({
   onReleaseChange,
 }: ApolloEnvelopeProps) => {
   return (
-    <div className="bg-synth-panel rounded-lg border-2 border-yellow-600/50 p-4 shadow-[0_0_15px_rgba(202,138,4,0.3)] marble-texture sacred-geometry deity-aura apollo-rays">
+    <div className="bg-synth-panel rounded-3xl border-2 border-yellow-600/50 p-6 shadow-[0_0_15px_rgba(202,138,4,0.3)] marble-texture sacred-geometry deity-aura apollo-rays overflow-hidden">
       <div className="text-yellow-400 text-sm font-medium uppercase tracking-wider mb-4 text-center divine-glow">
         Apollo Envelope
       </div>

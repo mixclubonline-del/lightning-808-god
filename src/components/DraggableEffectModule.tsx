@@ -22,13 +22,13 @@ export const DraggableEffectModule = ({
       onDragStart={() => onDragStart(id)}
       onDragOver={onDragOver}
       onDrop={() => onDrop(id)}
-      className="relative group cursor-move"
+      className="relative group cursor-move rounded-3xl"
     >
       {/* Drag Handle */}
       <div className="absolute -left-2 top-1/2 -translate-y-1/2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
         <GripVertical 
           size={20} 
-          className="text-primary/60 hover:text-primary"
+          className="text-primary/60 hover:text-primary drop-shadow-lg"
         />
       </div>
       
