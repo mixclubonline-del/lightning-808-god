@@ -1,0 +1,67 @@
+import { Knob } from "./Knob";
+
+interface ADSRModuleProps {
+  attack: number;
+  onAttackChange: (value: number) => void;
+  decay: number;
+  onDecayChange: (value: number) => void;
+  sustain: number;
+  onSustainChange: (value: number) => void;
+  release: number;
+  onReleaseChange: (value: number) => void;
+}
+
+export const ADSRModule = ({
+  attack,
+  onAttackChange,
+  decay,
+  onDecayChange,
+  sustain,
+  onSustainChange,
+  release,
+  onReleaseChange,
+}: ADSRModuleProps) => {
+  return (
+    <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-4">
+      <div className="text-primary text-sm font-medium uppercase tracking-wider mb-4 text-center">
+        ADSR Envelope
+      </div>
+      <div className="flex justify-around">
+        <Knob label="Attack" value={attack} onChange={onAttackChange} />
+        <Knob label="Decay" value={decay} onChange={onDecayChange} />
+        <Knob label="Sustain" value={sustain} onChange={onSustainChange} />
+        <Knob label="Release" value={release} onChange={onReleaseChange} />
+      </div>
+      
+      {/* Visual envelope curve */}
+      <div className="mt-4 h-20 bg-background/30 rounded border border-synth-border p-2">
+        <svg viewBox="0 0 200 60" className="w-full h-full">
+          {/* Grid */}
+          <line x1="0" y1="60" x2="200" y2="60" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1" />
+          <line x1="0" y1="30" x2="200" y2="30" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1" strokeDasharray="2,2" />
+          
+          {/* ADSR curve */}
+          <path
+            d={`
+              M 0 60
+              L ${attack * 0.3} ${60 - 55}
+              L ${attack * 0.3 + decay * 0.4} ${60 - (sustain * 0.55)}
+              L ${attack * 0.3 + decay * 0.4 + 60} ${60 - (sustain * 0.55)}
+              L ${attack * 0.3 + decay * 0.4 + 60 + release * 0.3} 60
+            `}
+            fill="none"
+            stroke="hsl(var(--primary))"
+            strokeWidth="2"
+            className="drop-shadow-[0_0_8px_hsl(var(--primary))]"
+          />
+          
+          {/* Stage labels */}
+          <text x="15" y="10" fill="currentColor" fontSize="8" className="opacity-60">A</text>
+          <text x={attack * 0.3 + 20} y="10" fill="currentColor" fontSize="8" className="opacity-60">D</text>
+          <text x={attack * 0.3 + decay * 0.4 + 30} y="10" fill="currentColor" fontSize="8" className="opacity-60">S</text>
+          <text x={attack * 0.3 + decay * 0.4 + 80} y="10" fill="currentColor" fontSize="8" className="opacity-60">R</text>
+        </svg>
+      </div>
+    </div>
+  );
+};
