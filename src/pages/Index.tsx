@@ -11,6 +11,10 @@ import { DistortionModule } from "@/components/DistortionModule";
 import { DelayModule } from "@/components/DelayModule";
 import { ChorusModule } from "@/components/ChorusModule";
 import { ReverbModule } from "@/components/ReverbModule";
+import { MarsVerb } from "@/components/MarsVerb";
+import { PastTimeVerb } from "@/components/PastTimeVerb";
+import { HalfTimeModule } from "@/components/HalfTimeModule";
+import { SpandexCompressor } from "@/components/SpandexCompressor";
 import { ADSRModule } from "@/components/ADSRModule";
 import { RecordingControls } from "@/components/RecordingControls";
 import { LayerIndicator } from "@/components/LayerIndicator";
@@ -72,11 +76,36 @@ const Index = () => {
   const [chorusMix, setChorusMix] = useState(40);
   const [chorusEnabled, setChorusEnabled] = useState(false);
 
-  // Reverb values
+  // Reverb values (Pluto Verb)
   const [reverbSize, setReverbSize] = useState(50);
   const [reverbDamping, setReverbDamping] = useState(50);
   const [reverbMix, setReverbMix] = useState(30);
   const [reverbEnabled, setReverbEnabled] = useState(false);
+  
+  // Mars Verb values (shimmer)
+  const [marsSize, setMarsSize] = useState(50);
+  const [marsShimmer, setMarsShimmer] = useState(50);
+  const [marsMix, setMarsMix] = useState(30);
+  const [marsEnabled, setMarsEnabled] = useState(false);
+  
+  // Past Time Verb values (reverse)
+  const [pastTimeSize, setPastTimeSize] = useState(50);
+  const [pastTimeReverse, setPastTimeReverse] = useState(50);
+  const [pastTimeMix, setPastTimeMix] = useState(30);
+  const [pastTimeEnabled, setPastTimeEnabled] = useState(false);
+  
+  // Half Time values
+  const [halfTimeAmount, setHalfTimeAmount] = useState(50);
+  const [halfTimeSmoothing, setHalfTimeSmoothing] = useState(50);
+  const [halfTimeMix, setHalfTimeMix] = useState(40);
+  const [halfTimeEnabled, setHalfTimeEnabled] = useState(false);
+  
+  // Spandex Compressor values
+  const [compressorThreshold, setCompressorThreshold] = useState(50);
+  const [compressorRatio, setCompressorRatio] = useState(40);
+  const [compressorAttack, setCompressorAttack] = useState(30);
+  const [compressorRelease, setCompressorRelease] = useState(50);
+  const [compressorEnabled, setCompressorEnabled] = useState(false);
 
   const [lightningActive, setLightningActive] = useState(false);
   const [bassHit, setBassHit] = useState(false);
@@ -139,6 +168,26 @@ const Index = () => {
       audioEngine.updateReverb(reverbSize, reverbDamping, reverbMix, reverbEnabled);
     }
   }, [reverbSize, reverbDamping, reverbMix, reverbEnabled, audioEngine]);
+  
+  useEffect(() => {
+    if (audioEngine.isInitialized) {
+      audioEngine.updateMarsVerb(marsSize, marsShimmer, marsMix, marsEnabled);
+    }
+  }, [marsSize, marsShimmer, marsMix, marsEnabled, audioEngine]);
+  
+  useEffect(() => {
+    if (audioEngine.isInitialized) {
+      audioEngine.updatePastTimeVerb(pastTimeSize, pastTimeReverse, pastTimeMix, pastTimeEnabled);
+    }
+  }, [pastTimeSize, pastTimeReverse, pastTimeMix, pastTimeEnabled, audioEngine]);
+  
+  useEffect(() => {
+    audioEngine.updateHalfTime(halfTimeAmount, halfTimeSmoothing, halfTimeMix, halfTimeEnabled);
+  }, [halfTimeAmount, halfTimeSmoothing, halfTimeMix, halfTimeEnabled, audioEngine]);
+  
+  useEffect(() => {
+    audioEngine.updateCompressor(compressorThreshold, compressorRatio, compressorAttack, compressorRelease, compressorEnabled);
+  }, [compressorThreshold, compressorRatio, compressorAttack, compressorRelease, compressorEnabled, audioEngine]);
 
   const triggerLightning = () => {
     setLightningActive(true);
@@ -556,6 +605,52 @@ const Index = () => {
               onDampingChange={setReverbDamping}
               onMixChange={setReverbMix}
               onEnabledChange={setReverbEnabled}
+            />
+            
+            <MarsVerb
+              size={marsSize}
+              shimmer={marsShimmer}
+              mix={marsMix}
+              enabled={marsEnabled}
+              onSizeChange={setMarsSize}
+              onShimmerChange={setMarsShimmer}
+              onMixChange={setMarsMix}
+              onEnabledChange={setMarsEnabled}
+            />
+            
+            <PastTimeVerb
+              size={pastTimeSize}
+              reverse={pastTimeReverse}
+              mix={pastTimeMix}
+              enabled={pastTimeEnabled}
+              onSizeChange={setPastTimeSize}
+              onReverseChange={setPastTimeReverse}
+              onMixChange={setPastTimeMix}
+              onEnabledChange={setPastTimeEnabled}
+            />
+            
+            <HalfTimeModule
+              amount={halfTimeAmount}
+              smoothing={halfTimeSmoothing}
+              mix={halfTimeMix}
+              enabled={halfTimeEnabled}
+              onAmountChange={setHalfTimeAmount}
+              onSmoothingChange={setHalfTimeSmoothing}
+              onMixChange={setHalfTimeMix}
+              onEnabledChange={setHalfTimeEnabled}
+            />
+            
+            <SpandexCompressor
+              threshold={compressorThreshold}
+              ratio={compressorRatio}
+              attack={compressorAttack}
+              release={compressorRelease}
+              enabled={compressorEnabled}
+              onThresholdChange={setCompressorThreshold}
+              onRatioChange={setCompressorRatio}
+              onAttackChange={setCompressorAttack}
+              onReleaseChange={setCompressorRelease}
+              onEnabledChange={setCompressorEnabled}
             />
 
             <ChordGenerator

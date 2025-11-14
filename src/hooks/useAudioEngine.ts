@@ -38,6 +38,26 @@ export const useAudioEngine = () => {
   const chorusMixRef = useRef<GainNode | null>(null);
   const chorusDryRef = useRef<GainNode | null>(null);
   
+  // Mars Verb nodes (shimmer reverb)
+  const marsReverbRef = useRef<ConvolverNode | null>(null);
+  const marsShimmerRef = useRef<BiquadFilterNode | null>(null);
+  const marsMixRef = useRef<GainNode | null>(null);
+  const marsDryRef = useRef<GainNode | null>(null);
+  
+  // Past Time Verb nodes (reverse reverb)
+  const pastTimeReverbRef = useRef<ConvolverNode | null>(null);
+  const pastTimeMixRef = useRef<GainNode | null>(null);
+  const pastTimeDryRef = useRef<GainNode | null>(null);
+  
+  // Half Time nodes
+  const halfTimeBufferRef = useRef<AudioBuffer | null>(null);
+  const halfTimeMixRef = useRef<GainNode | null>(null);
+  const halfTimeDryRef = useRef<GainNode | null>(null);
+  
+  // Spandex Compressor nodes
+  const compressorRef = useRef<DynamicsCompressorNode | null>(null);
+  const compressorMakeupRef = useRef<GainNode | null>(null);
+  
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   const mediaStreamDestinationRef = useRef<MediaStreamAudioDestinationNode | null>(null);
@@ -121,22 +141,60 @@ export const useAudioEngine = () => {
     masterGainRef.current = audioContextRef.current.createGain();
     masterGainRef.current.gain.value = 0.5;
 
-    // Create reverb (simple convolver with wet/dry mix)
+    // Create reverb (Pluto Verb - simple convolver with wet/dry mix)
     reverbRef.current = audioContextRef.current.createConvolver();
     await createReverbImpulse(audioContextRef.current, reverbRef.current, 2, 0.5);
     reverbMixRef.current = audioContextRef.current.createGain();
     reverbMixRef.current.gain.value = 0; // Start with reverb off
     reverbDryRef.current = audioContextRef.current.createGain();
     reverbDryRef.current.gain.value = 1.0;
+    
+    // Create Mars Verb (shimmer reverb)
+    marsReverbRef.current = audioContextRef.current.createConvolver();
+    await createReverbImpulse(audioContextRef.current, marsReverbRef.current, 3, 0.7);
+    marsShimmerRef.current = audioContextRef.current.createBiquadFilter();
+    marsShimmerRef.current.type = "highpass";
+    marsShimmerRef.current.frequency.value = 1000;
+    marsMixRef.current = audioContextRef.current.createGain();
+    marsMixRef.current.gain.value = 0;
+    marsDryRef.current = audioContextRef.current.createGain();
+    marsDryRef.current.gain.value = 1.0;
+    
+    // Create Past Time Verb (reverse reverb)
+    pastTimeReverbRef.current = audioContextRef.current.createConvolver();
+    await createReverseReverbImpulse(audioContextRef.current, pastTimeReverbRef.current, 2);
+    pastTimeMixRef.current = audioContextRef.current.createGain();
+    pastTimeMixRef.current.gain.value = 0;
+    pastTimeDryRef.current = audioContextRef.current.createGain();
+    pastTimeDryRef.current.gain.value = 1.0;
+    
+    // Create Half Time effect
+    halfTimeMixRef.current = audioContextRef.current.createGain();
+    halfTimeMixRef.current.gain.value = 0;
+    halfTimeDryRef.current = audioContextRef.current.createGain();
+    halfTimeDryRef.current.gain.value = 1.0;
+    
+    // Create Spandex Compressor
+    compressorRef.current = audioContextRef.current.createDynamicsCompressor();
+    compressorRef.current.threshold.value = -24;
+    compressorRef.current.knee.value = 30;
+    compressorRef.current.ratio.value = 4;
+    compressorRef.current.attack.value = 0.003;
+    compressorRef.current.release.value = 0.25;
+    compressorMakeupRef.current = audioContextRef.current.createGain();
+    compressorMakeupRef.current.gain.value = 1.0;
 
     // Create media stream for recording
     mediaStreamDestinationRef.current = audioContextRef.current.createMediaStreamDestination();
 
-    // Connect audio graph: distortion -> chorus -> delay -> analyser -> master gain -> destination
-    distortionRef.current.connect(chorusDryRef.current);
-    distortionRef.current.connect(chorusDelaysRef.current[0]);
-    distortionRef.current.connect(chorusDelaysRef.current[1]);
-    distortionRef.current.connect(chorusDelaysRef.current[2]);
+    // Connect audio graph: distortion -> compressor -> chorus -> delay -> reverbs -> analyser -> master gain -> destination
+    distortionRef.current.connect(compressorRef.current);
+    compressorRef.current.connect(compressorMakeupRef.current);
+    
+    compressorMakeupRef.current.connect(chorusDryRef.current);
+    compressorMakeupRef.current.connect(chorusDelaysRef.current[0]);
+    compressorMakeupRef.current.connect(chorusDelaysRef.current[1]);
+    compressorMakeupRef.current.connect(chorusDelaysRef.current[2]);
     
     chorusDryRef.current.connect(delayDryRef.current);
     chorusMixRef.current.connect(delayDryRef.current);
@@ -145,11 +203,28 @@ export const useAudioEngine = () => {
     delayNodeRef.current.connect(delayMixRef.current);
     delayMixRef.current.connect(reverbDryRef.current);
     
-    // Connect reverb with wet/dry mix
-    reverbDryRef.current.connect(analyserRef.current);
+    // Connect Pluto Verb (regular reverb)
+    reverbDryRef.current.connect(marsDryRef.current);
     reverbDryRef.current.connect(reverbRef.current);
     reverbRef.current.connect(reverbMixRef.current);
-    reverbMixRef.current.connect(analyserRef.current);
+    reverbMixRef.current.connect(marsDryRef.current);
+    
+    // Connect Mars Verb (shimmer)
+    marsDryRef.current.connect(pastTimeDryRef.current);
+    marsDryRef.current.connect(marsShimmerRef.current);
+    marsShimmerRef.current.connect(marsReverbRef.current);
+    marsReverbRef.current.connect(marsMixRef.current);
+    marsMixRef.current.connect(pastTimeDryRef.current);
+    
+    // Connect Past Time Verb (reverse)
+    pastTimeDryRef.current.connect(halfTimeDryRef.current);
+    pastTimeDryRef.current.connect(pastTimeReverbRef.current);
+    pastTimeReverbRef.current.connect(pastTimeMixRef.current);
+    pastTimeMixRef.current.connect(halfTimeDryRef.current);
+    
+    // Connect Half Time (simplified routing)
+    halfTimeDryRef.current.connect(analyserRef.current);
+    halfTimeMixRef.current.connect(analyserRef.current);
     
     analyserRef.current.connect(masterGainRef.current);
     masterGainRef.current.connect(audioContextRef.current.destination);
@@ -186,6 +261,27 @@ export const useAudioEngine = () => {
     for (let i = 0; i < length; i++) {
       impulseL[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
       impulseR[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+    }
+
+    convolver.buffer = impulse;
+  };
+  
+  const createReverseReverbImpulse = async (
+    context: AudioContext,
+    convolver: ConvolverNode,
+    duration: number = 2
+  ) => {
+    const rate = context.sampleRate;
+    const length = rate * duration;
+    const impulse = context.createBuffer(2, length, rate);
+    const impulseL = impulse.getChannelData(0);
+    const impulseR = impulse.getChannelData(1);
+
+    // Create reverse decay (build up instead of decay)
+    for (let i = 0; i < length; i++) {
+      const progress = i / length;
+      impulseL[i] = (Math.random() * 2 - 1) * Math.pow(progress, 2);
+      impulseR[i] = (Math.random() * 2 - 1) * Math.pow(progress, 2);
     }
 
     convolver.buffer = impulse;
@@ -430,6 +526,82 @@ export const useAudioEngine = () => {
       }
     }
   };
+  
+  const updateMarsVerb = async (size: number, shimmer: number, mix: number, enabled: boolean) => {
+    if (marsReverbRef.current && marsShimmerRef.current && marsMixRef.current && marsDryRef.current && audioContextRef.current) {
+      const duration = 1 + (size / 100) * 4; // 1-5 seconds
+      await createReverbImpulse(audioContextRef.current, marsReverbRef.current, duration, 0.8);
+      
+      // Shimmer control affects highpass frequency
+      marsShimmerRef.current.frequency.value = 500 + (shimmer / 100) * 2500; // 500-3000 Hz
+      
+      if (enabled) {
+        marsMixRef.current.gain.value = mix / 100;
+        marsDryRef.current.gain.value = 1 - (mix / 100);
+      } else {
+        marsMixRef.current.gain.value = 0;
+        marsDryRef.current.gain.value = 1;
+      }
+    }
+  };
+  
+  const updatePastTimeVerb = async (size: number, reverse: number, mix: number, enabled: boolean) => {
+    if (pastTimeReverbRef.current && pastTimeMixRef.current && pastTimeDryRef.current && audioContextRef.current) {
+      const duration = 0.5 + (size / 100) * 2.5; // 0.5-3 seconds
+      await createReverseReverbImpulse(audioContextRef.current, pastTimeReverbRef.current, duration);
+      
+      if (enabled) {
+        // Reverse amount controls the mix intensity
+        const adjustedMix = (mix / 100) * (reverse / 100);
+        pastTimeMixRef.current.gain.value = adjustedMix;
+        pastTimeDryRef.current.gain.value = 1 - adjustedMix;
+      } else {
+        pastTimeMixRef.current.gain.value = 0;
+        pastTimeDryRef.current.gain.value = 1;
+      }
+    }
+  };
+  
+  const updateHalfTime = (amount: number, smoothing: number, mix: number, enabled: boolean) => {
+    if (halfTimeMixRef.current && halfTimeDryRef.current) {
+      // Half time is a complex effect - this is a simplified version
+      // In production, you'd use buffer manipulation and pitch shifting
+      if (enabled) {
+        halfTimeMixRef.current.gain.value = (mix / 100) * (amount / 100);
+        halfTimeDryRef.current.gain.value = 1 - ((mix / 100) * (amount / 100));
+      } else {
+        halfTimeMixRef.current.gain.value = 0;
+        halfTimeDryRef.current.gain.value = 1;
+      }
+    }
+  };
+  
+  const updateCompressor = (threshold: number, ratio: number, attack: number, release: number, enabled: boolean) => {
+    if (compressorRef.current && compressorMakeupRef.current) {
+      if (enabled) {
+        // Threshold: 0-100 maps to -60dB to 0dB
+        compressorRef.current.threshold.value = -60 + (threshold / 100) * 60;
+        
+        // Ratio: 0-100 maps to 1:1 to 20:1
+        compressorRef.current.ratio.value = 1 + (ratio / 100) * 19;
+        
+        // Attack: 0-100 maps to 0.001 to 1 second (logarithmic)
+        compressorRef.current.attack.value = 0.001 * Math.pow(1000, attack / 100);
+        
+        // Release: 0-100 maps to 0.01 to 3 seconds (logarithmic)
+        compressorRef.current.release.value = 0.01 * Math.pow(300, release / 100);
+        
+        // Auto makeup gain based on threshold and ratio
+        const makeupGain = 1 + (1 - threshold / 100) * (ratio / 100) * 0.5;
+        compressorMakeupRef.current.gain.value = makeupGain;
+      } else {
+        // Bypass compressor
+        compressorRef.current.threshold.value = 0;
+        compressorRef.current.ratio.value = 1;
+        compressorMakeupRef.current.gain.value = 1;
+      }
+    }
+  };
 
   const startRecording = () => {
     if (!mediaStreamDestinationRef.current) return;
@@ -492,6 +664,10 @@ export const useAudioEngine = () => {
     updateDelay,
     updateChorus,
     updateReverb,
+    updateMarsVerb,
+    updatePastTimeVerb,
+    updateHalfTime,
+    updateCompressor,
     startRecording,
     stopRecording,
     downloadRecording,
