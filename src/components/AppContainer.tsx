@@ -7,12 +7,12 @@ interface AppContainerProps {
 
 export const AppContainer = ({ children }: AppContainerProps) => {
   return (
-    <div className="fixed inset-0 flex flex-col bg-synth-deep overflow-hidden">
+    <div className="fixed inset-0 flex flex-col bg-synth-deep overflow-hidden rounded-3xl m-2 shadow-2xl">
       {/* Window Chrome / Title Bar */}
-      <div className="h-8 bg-gradient-to-b from-synth-panel to-background border-b border-synth-border flex items-center justify-between px-3 select-none">
+      <div className="h-8 bg-gradient-to-b from-synth-panel to-background border-b border-synth-border flex items-center justify-between px-3 select-none rounded-t-3xl">
         {/* App Title */}
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded bg-gradient-to-br from-primary to-synth-accent flex items-center justify-center text-[10px] font-bold">
+          <div className="w-5 h-5 rounded-xl bg-gradient-to-br from-primary to-synth-accent flex items-center justify-center text-[10px] font-bold shadow-lg">
             ⚡
           </div>
           <span className="text-xs font-semibold text-foreground/90">Lightning 808 God</span>
@@ -36,13 +36,13 @@ export const AppContainer = ({ children }: AppContainerProps) => {
 
         {/* Window Controls */}
         <div className="flex items-center gap-2">
-          <button className="w-5 h-5 rounded hover:bg-muted/50 flex items-center justify-center transition-colors">
+          <button className="w-5 h-5 rounded-full hover:bg-muted/50 flex items-center justify-center transition-colors">
             <Minimize2 className="w-3 h-3 text-muted-foreground" />
           </button>
-          <button className="w-5 h-5 rounded hover:bg-muted/50 flex items-center justify-center transition-colors">
+          <button className="w-5 h-5 rounded-full hover:bg-muted/50 flex items-center justify-center transition-colors">
             <Maximize2 className="w-3 h-3 text-muted-foreground" />
           </button>
-          <button className="w-5 h-5 rounded hover:bg-destructive/80 flex items-center justify-center transition-colors">
+          <button className="w-5 h-5 rounded-full hover:bg-destructive/80 flex items-center justify-center transition-colors">
             <X className="w-3 h-3 text-muted-foreground" />
           </button>
         </div>
@@ -54,7 +54,7 @@ export const AppContainer = ({ children }: AppContainerProps) => {
       </div>
 
       {/* Status Bar */}
-      <div className="h-6 bg-gradient-to-t from-synth-panel to-background border-t border-synth-border flex items-center justify-between px-3 text-[10px] text-muted-foreground">
+      <div className="h-6 bg-gradient-to-t from-synth-panel to-background border-t border-synth-border flex items-center justify-between px-3 text-[10px] text-muted-foreground rounded-b-3xl">
         <div className="flex items-center gap-4">
           <span>CPU: 12%</span>
           <span className="w-px h-3 bg-border" />

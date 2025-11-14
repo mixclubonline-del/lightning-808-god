@@ -37,7 +37,7 @@ export const OlympusPads = ({ onPadTrigger }: OlympusPadsProps) => {
             key={index}
             onClick={() => handlePadClick(index)}
             className={cn(
-              "aspect-square rounded-lg border-2 transition-all duration-200",
+              "aspect-square rounded-2xl border-2 transition-all duration-200",
               "hover:border-slate-200 hover:shadow-[0_0_20px_rgba(226,232,240,0.5)]",
               activePads.has(index)
                 ? "bg-slate-200/20 border-slate-200 shadow-[0_0_20px_rgba(226,232,240,0.5)]"

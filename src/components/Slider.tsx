@@ -18,7 +18,7 @@ export const Slider = ({ label, value, onChange, min = 0, max = 100, className }
         max={max}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-1 bg-synth-border rounded-lg appearance-none cursor-pointer slider-thumb"
+        className="w-full h-1 bg-synth-border rounded-full appearance-none cursor-pointer slider-thumb"
         style={{
           background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${value}%, hsl(var(--synth-border)) ${value}%, hsl(var(--synth-border)) 100%)`,
         }}

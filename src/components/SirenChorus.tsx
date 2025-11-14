@@ -25,7 +25,7 @@ export const SirenChorus = ({
   const [voices, setVoices] = useState(3);
 
   return (
-    <div className={`bg-synth-panel rounded-lg border-2 p-4 transition-all marble-texture pillar-pattern ${
+    <div className={`bg-synth-panel rounded-3xl border-2 p-6 transition-all marble-texture pillar-pattern overflow-hidden ${
       enabled ? 'border-teal-500 shadow-[0_0_20px_rgba(20,184,166,0.4)] deity-aura siren-ripples' : 'border-synth-border'
     }`}>
       <div className="flex items-center justify-between mb-4">

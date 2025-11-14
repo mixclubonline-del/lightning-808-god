@@ -49,7 +49,7 @@ export const HarmoniaChords = ({
   ];
 
   return (
-    <div className="bg-synth-panel rounded-lg border-2 border-emerald-500/50 p-4 shadow-[0_0_20px_rgba(16,185,129,0.2)] marble-texture pillar-pattern harmonia-resonance">
+    <div className="bg-synth-panel rounded-3xl border-2 border-emerald-500/50 p-6 shadow-[0_0_20px_rgba(16,185,129,0.2)] marble-texture pillar-pattern harmonia-resonance overflow-hidden">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Music size={16} className="text-emerald-400" />

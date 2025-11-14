@@ -41,7 +41,7 @@ export const ThorEngine = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-synth-panel rounded-lg border-2 border-blue-600/50 shadow-[0_0_15px_rgba(37,99,235,0.3)] marble-texture sacred-geometry thor-lightning">
+    <div className="flex flex-col gap-4 p-4 bg-synth-panel rounded-3xl border-2 border-blue-600/50 shadow-[0_0_15px_rgba(37,99,235,0.3)] marble-texture sacred-geometry thor-lightning overflow-hidden">
       <div className="text-blue-400 text-sm font-medium uppercase tracking-wider flex items-center gap-2 divine-glow">
         <span className="text-lg">⚡</span>
         Thor Engine
@@ -55,7 +55,7 @@ export const ThorEngine = ({
               key={slot.id}
               onClick={() => handleSlotClick(slot.id)}
               className={cn(
-                "px-4 py-3 rounded border transition-all duration-200 text-left",
+                "px-4 py-3 rounded-2xl border transition-all duration-200 text-left",
                 selectedSlot === slot.id
                   ? "bg-blue-500/20 border-blue-500 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.4)]"
                   : "bg-synth-deep border-synth-border text-muted-foreground hover:border-blue-500/50"
@@ -67,7 +67,7 @@ export const ThorEngine = ({
                   <div className="text-xs opacity-60">{slot.description}</div>
                 </div>
                 {status && (
-                  <div className="text-xs px-2 py-1 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                  <div className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
                     {status}
                   </div>
                 )}
@@ -83,7 +83,7 @@ export const ThorEngine = ({
           <button
             onClick={() => onTriggerModeChange("cycle")}
             className={cn(
-              "flex-1 px-3 py-2 rounded text-xs flex items-center justify-center gap-1 transition-all",
+              "flex-1 px-3 py-2 rounded-2xl text-xs flex items-center justify-center gap-1 transition-all",
               triggerMode === "cycle"
                 ? "bg-blue-500/20 border border-blue-500 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.4)]"
                 : "bg-synth-deep border border-synth-border text-muted-foreground hover:border-blue-500/50"
@@ -98,7 +98,7 @@ export const ThorEngine = ({
           <button
             onClick={() => onTriggerModeChange("random")}
             className={cn(
-              "flex-1 px-3 py-2 rounded text-xs flex items-center justify-center gap-1 transition-all",
+              "flex-1 px-3 py-2 rounded-2xl text-xs flex items-center justify-center gap-1 transition-all",
               triggerMode === "random"
                 ? "bg-blue-500/20 border border-blue-500 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.4)]"
                 : "bg-synth-deep border border-synth-border text-muted-foreground hover:border-blue-500/50"

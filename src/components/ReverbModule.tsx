@@ -24,7 +24,7 @@ export const ReverbModule = ({
   onEnabledChange,
 }: ReverbModuleProps) => {
   return (
-    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-6">
+    <div className="bg-card/50 backdrop-blur-sm border border-border rounded-3xl p-6 overflow-hidden">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-foreground">Pluto Verb</h3>
         <div className="flex items-center gap-2">
@@ -72,7 +72,7 @@ export const ReverbModule = ({
       </div>
 
       {/* Visual representation */}
-      <div className="mt-6 h-16 bg-background/50 rounded-lg overflow-hidden relative">
+      <div className="mt-6 h-16 bg-background/50 rounded-2xl overflow-hidden relative">
         <div className="absolute inset-0 flex items-center justify-center">
           {enabled && (
             <div className="w-full h-full relative">
