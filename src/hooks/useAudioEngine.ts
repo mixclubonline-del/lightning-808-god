@@ -20,6 +20,8 @@ export const useAudioEngine = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
   const reverbRef = useRef<ConvolverNode | null>(null);
+  const reverbMixRef = useRef<GainNode | null>(null);
+  const reverbDryRef = useRef<GainNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const distortionRef = useRef<WaveShaperNode | null>(null);
   
@@ -119,9 +121,13 @@ export const useAudioEngine = () => {
     masterGainRef.current = audioContextRef.current.createGain();
     masterGainRef.current.gain.value = 0.5;
 
-    // Create reverb (simple convolver)
+    // Create reverb (simple convolver with wet/dry mix)
     reverbRef.current = audioContextRef.current.createConvolver();
-    await createReverbImpulse(audioContextRef.current, reverbRef.current);
+    await createReverbImpulse(audioContextRef.current, reverbRef.current, 2, 0.5);
+    reverbMixRef.current = audioContextRef.current.createGain();
+    reverbMixRef.current.gain.value = 0; // Start with reverb off
+    reverbDryRef.current = audioContextRef.current.createGain();
+    reverbDryRef.current.gain.value = 1.0;
 
     // Create media stream for recording
     mediaStreamDestinationRef.current = audioContextRef.current.createMediaStreamDestination();
@@ -135,12 +141,17 @@ export const useAudioEngine = () => {
     chorusDryRef.current.connect(delayDryRef.current);
     chorusMixRef.current.connect(delayDryRef.current);
     
-    delayDryRef.current.connect(analyserRef.current);
+    delayDryRef.current.connect(reverbDryRef.current);
     delayNodeRef.current.connect(delayMixRef.current);
-    delayMixRef.current.connect(analyserRef.current);
+    delayMixRef.current.connect(reverbDryRef.current);
+    
+    // Connect reverb with wet/dry mix
+    reverbDryRef.current.connect(analyserRef.current);
+    reverbDryRef.current.connect(reverbRef.current);
+    reverbRef.current.connect(reverbMixRef.current);
+    reverbMixRef.current.connect(analyserRef.current);
     
     analyserRef.current.connect(masterGainRef.current);
-    reverbRef.current.connect(masterGainRef.current);
     masterGainRef.current.connect(audioContextRef.current.destination);
     masterGainRef.current.connect(mediaStreamDestinationRef.current);
 
@@ -160,17 +171,21 @@ export const useAudioEngine = () => {
     return curve as Float32Array;
   };
 
-  const createReverbImpulse = async (context: AudioContext, convolver: ConvolverNode) => {
+  const createReverbImpulse = async (
+    context: AudioContext, 
+    convolver: ConvolverNode,
+    duration: number = 2,
+    decay: number = 0.5
+  ) => {
     const rate = context.sampleRate;
-    const length = rate * 2; // 2 seconds
+    const length = rate * duration;
     const impulse = context.createBuffer(2, length, rate);
     const impulseL = impulse.getChannelData(0);
     const impulseR = impulse.getChannelData(1);
 
     for (let i = 0; i < length; i++) {
-      const n = length - i;
-      impulseL[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2);
-      impulseR[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, 2);
+      impulseL[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+      impulseR[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
     }
 
     convolver.buffer = impulse;
@@ -394,6 +409,28 @@ export const useAudioEngine = () => {
     }
   };
 
+  const updateReverb = async (size: number, damping: number, mix: number, enabled: boolean) => {
+    if (reverbRef.current && reverbMixRef.current && reverbDryRef.current && audioContextRef.current) {
+      // Size: 0-100 maps to 0.5-5 seconds
+      const duration = 0.5 + (size / 100) * 4.5;
+      
+      // Damping: 0-100 maps to decay curve (0.2-3.0)
+      const decay = 0.2 + (damping / 100) * 2.8;
+      
+      // Recreate impulse response with new parameters
+      await createReverbImpulse(audioContextRef.current, reverbRef.current, duration, decay);
+      
+      // Mix: wet/dry balance
+      if (enabled) {
+        reverbMixRef.current.gain.value = mix / 100;
+        reverbDryRef.current.gain.value = 1 - (mix / 100);
+      } else {
+        reverbMixRef.current.gain.value = 0;
+        reverbDryRef.current.gain.value = 1;
+      }
+    }
+  };
+
   const startRecording = () => {
     if (!mediaStreamDestinationRef.current) return;
 
@@ -454,6 +491,7 @@ export const useAudioEngine = () => {
     updateDistortion,
     updateDelay,
     updateChorus,
+    updateReverb,
     startRecording,
     stopRecording,
     downloadRecording,

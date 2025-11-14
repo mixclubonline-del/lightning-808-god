@@ -10,6 +10,7 @@ import { VUMeter } from "@/components/VUMeter";
 import { DistortionModule } from "@/components/DistortionModule";
 import { DelayModule } from "@/components/DelayModule";
 import { ChorusModule } from "@/components/ChorusModule";
+import { ReverbModule } from "@/components/ReverbModule";
 import { ADSRModule } from "@/components/ADSRModule";
 import { RecordingControls } from "@/components/RecordingControls";
 import { LayerIndicator } from "@/components/LayerIndicator";
@@ -71,6 +72,12 @@ const Index = () => {
   const [chorusMix, setChorusMix] = useState(40);
   const [chorusEnabled, setChorusEnabled] = useState(false);
 
+  // Reverb values
+  const [reverbSize, setReverbSize] = useState(50);
+  const [reverbDamping, setReverbDamping] = useState(50);
+  const [reverbMix, setReverbMix] = useState(30);
+  const [reverbEnabled, setReverbEnabled] = useState(false);
+
   const [lightningActive, setLightningActive] = useState(false);
   const [bassHit, setBassHit] = useState(false);
   const [lastTriggeredLayer, setLastTriggeredLayer] = useState<"layer1" | "layer2" | "layer3" | null>(null);
@@ -126,6 +133,12 @@ const Index = () => {
   useEffect(() => {
     audioEngine.updateChorus(chorusRate, chorusDepth, chorusMix, chorusEnabled);
   }, [chorusRate, chorusDepth, chorusMix, chorusEnabled, audioEngine]);
+
+  useEffect(() => {
+    if (audioEngine.isInitialized) {
+      audioEngine.updateReverb(reverbSize, reverbDamping, reverbMix, reverbEnabled);
+    }
+  }, [reverbSize, reverbDamping, reverbMix, reverbEnabled, audioEngine]);
 
   const triggerLightning = () => {
     setLightningActive(true);
@@ -532,6 +545,17 @@ const Index = () => {
               onMixChange={setChorusMix}
               enabled={chorusEnabled}
               onEnabledChange={setChorusEnabled}
+            />
+
+            <ReverbModule
+              size={reverbSize}
+              damping={reverbDamping}
+              mix={reverbMix}
+              enabled={reverbEnabled}
+              onSizeChange={setReverbSize}
+              onDampingChange={setReverbDamping}
+              onMixChange={setReverbMix}
+              onEnabledChange={setReverbEnabled}
             />
 
             <ChordGenerator
