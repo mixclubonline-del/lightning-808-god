@@ -1,0 +1,4 @@
+project_id = "axykpiouydopghiiqgbi"
+
+[functions.match-sounds]
+verify_jwt = false

@@ -11,10 +11,13 @@ import { DistortionModule } from "@/components/DistortionModule";
 import { RecordingControls } from "@/components/RecordingControls";
 import { LayerIndicator } from "@/components/LayerIndicator";
 import { ChordGenerator } from "@/components/ChordGenerator";
+import { SoundLibrary } from "@/components/SoundLibrary";
+import { SoundMatcher } from "@/components/SoundMatcher";
 import zeusImage from "@/assets/zeus-figure.png";
-import { Zap } from "lucide-react";
+import { Zap, Library } from "lucide-react";
 import { useAudioEngine, midiToFrequency } from "@/hooks/useAudioEngine";
 import { generateChord, calculateStrumDelay } from "@/utils/chordGenerator";
+import { AudioFeatures } from "@/utils/audioFeatureExtraction";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -59,6 +62,10 @@ const Index = () => {
   const [chordInversion, setChordInversion] = useState(0);
   const [chordSpread, setChordSpread] = useState(30);
   const [chordStrum, setChordStrum] = useState(0);
+
+  // Sound library state
+  const [showLibrary, setShowLibrary] = useState(false);
+  const [currentSoundFeatures, setCurrentSoundFeatures] = useState<AudioFeatures | null>(null);
 
   // Initialize audio on first user interaction
   useEffect(() => {
@@ -224,11 +231,39 @@ const Index = () => {
             >
               Multi 808
             </button>
+            <button
+              onClick={() => setShowLibrary(!showLibrary)}
+              className={`px-6 py-2 rounded-lg border-2 transition-all flex items-center gap-2 ${
+                showLibrary
+                  ? "border-accent bg-accent/20 text-accent shadow-[0_0_20px_rgba(249,115,22,0.5)]"
+                  : "border-synth-border bg-synth-panel text-muted-foreground hover:border-accent/50"
+              }`}
+            >
+              <Library size={18} />
+              Sound Library
+            </button>
           </div>
         </div>
 
-        {/* Main Interface */}
-        <div className="grid grid-cols-12 gap-6">
+        {showLibrary ? (
+          // Sound Library View
+          <div className="grid grid-cols-2 gap-6 h-[800px]">
+            <SoundLibrary
+              onFindSimilar={(sample) => {
+                // Extract features from selected sample
+                toast("Analyzing sample...");
+              }}
+            />
+            <SoundMatcher
+              currentFeatures={currentSoundFeatures}
+              onMatchSelect={(match) => {
+                toast.success(`Selected: ${match.sample.name}`);
+              }}
+            />
+          </div>
+        ) : (
+          // Main Synth View
+          <div className="grid grid-cols-12 gap-6">
           {/* Left Panel */}
           <div className="col-span-3 space-y-6">
             {mode === "multi808" ? (
@@ -388,7 +423,8 @@ const Index = () => {
               <Keyboard onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} />
             </div>
           </div>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
