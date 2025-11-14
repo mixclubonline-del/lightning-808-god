@@ -5,9 +5,11 @@ import { AutoSlicerControls } from "./AutoSlicerControls";
 import { SliceAnalysisManager } from "./SliceAnalysisManager";
 import { SliceMatchPanel } from "./SliceMatchPanel";
 import { LayeringWorkspace } from "./LayeringWorkspace";
+import { DropZone } from "./DropZone";
 import { Button } from "@/components/ui/button";
 import { extractAllSlices } from "@/utils/audioSlicer";
 import { Wand2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface StudioViewProps {
   isRecording: boolean;
@@ -37,6 +39,29 @@ export const StudioView = ({
     setSliceMarkers([]);
     setSlices([]);
     setSliceIds([]);
+  };
+
+  const handleFileUpload = async (file: File) => {
+    try {
+      toast.info("Loading audio file...");
+      
+      const arrayBuffer = await file.arrayBuffer();
+      const audioContext = new AudioContext();
+      const buffer = await audioContext.decodeAudioData(arrayBuffer);
+      
+      const uploadId = `upload_${Date.now()}`;
+      setRecordingId(uploadId);
+      setAudioBuffer(buffer);
+      setSliceMarkers([]);
+      setSlices([]);
+      setSliceIds([]);
+      
+      toast.success("Audio loaded! Ready to slice.");
+      await audioContext.close();
+    } catch (error) {
+      console.error("Error loading audio file:", error);
+      toast.error("Failed to load audio file");
+    }
   };
 
   const handleCreateSlices = async () => {
@@ -81,14 +106,31 @@ export const StudioView = ({
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      {/* Step 1: Recording */}
-      <RecordingManager
-        isRecording={isRecording}
-        onStartRecording={onStartRecording}
-        onStopRecording={onStopRecording}
-        onRecordingReady={handleRecordingReady}
-        getRecordedAudioBuffer={getRecordedAudioBuffer}
-      />
+      {/* Step 1: Upload or Record */}
+      {!audioBuffer && (
+        <div className="space-y-6">
+          <DropZone onFileUpload={handleFileUpload} />
+          
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t-2 border-synth-border"></div>
+            </div>
+            <div className="relative flex justify-center text-sm uppercase">
+              <span className="bg-synth-deep px-6 py-1 text-muted-foreground tracking-[0.3em] font-medium border-2 border-synth-border rounded-full">
+                Or Record Live
+              </span>
+            </div>
+          </div>
+
+          <RecordingManager
+            isRecording={isRecording}
+            onStartRecording={onStartRecording}
+            onStopRecording={onStopRecording}
+            onRecordingReady={handleRecordingReady}
+            getRecordedAudioBuffer={getRecordedAudioBuffer}
+          />
+        </div>
+      )}
 
       {/* Step 2: Waveform & Slicing */}
       {audioBuffer && (
