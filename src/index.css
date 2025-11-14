@@ -100,7 +100,11 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-synth-deep text-foreground overflow-hidden;
+  }
+  
+  #root {
+    @apply h-screen w-screen overflow-hidden;
   }
 }
 

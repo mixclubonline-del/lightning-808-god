@@ -25,6 +25,7 @@ import { StudioView } from "@/components/studio/StudioView";
 import { SignalFlowView } from "@/components/SignalFlowView";
 import { AppSidebar } from "@/components/AppSidebar";
 import { DraggableEffectModule } from "@/components/DraggableEffectModule";
+import { AppContainer } from "@/components/AppContainer";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import zeusImage from "@/assets/zeus-figure.png";
 import { Menu, Zap } from "lucide-react";
@@ -373,47 +374,48 @@ const Index = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-synth-deep">
-        <AppSidebar activeView={activeView} onViewChange={setActiveView} />
-        
-        <div className="flex-1 flex flex-col w-full">
-          {/* Header with sidebar trigger */}
-          <header className="h-16 flex items-center justify-between px-6 border-b-2 border-synth-border bg-synth-panel/50 backdrop-blur-sm">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger className="text-primary hover:text-primary/80" />
-              <h1 className="text-2xl font-bold text-primary tracking-wider hidden md:block"
-                style={{
-                  textShadow: "0 0 20px rgba(239, 68, 68, 0.8)",
-                }}>
-                VST GOD
-              </h1>
-            </div>
-            
-            {activeView === "synth" && (
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setMode("standard")}
-                  className={`px-4 py-1 rounded border transition-all ${
-                    mode === "standard" ? "border-primary text-primary" : "border-synth-border text-muted-foreground"
-                  }`}
-                >
-                  Standard
-                </button>
-                <button
-                  onClick={() => setMode("multi808")}
-                  className={`px-4 py-1 rounded border transition-all ${
-                    mode === "multi808" ? "border-primary text-primary" : "border-synth-border text-muted-foreground"
-                  }`}
-                >
-                  Multi 808
-                </button>
+    <AppContainer>
+      <SidebarProvider>
+        <div className="h-full flex w-full">
+          <AppSidebar activeView={activeView} onViewChange={setActiveView} />
+          
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Compact Header */}
+            <header className="h-12 flex items-center justify-between px-4 border-b border-synth-border bg-synth-panel/50">
+              <div className="flex items-center gap-3">
+                <SidebarTrigger className="text-primary hover:text-primary/80" />
+                <h1 className="text-sm font-semibold text-primary/90">
+                  {activeView === "synth" && "⚡ Synth Engine"}
+                  {activeView === "library" && "📚 Library"}
+                  {activeView === "studio" && "🎙️ Studio"}
+                  {activeView === "flow" && "🔗 Signal Flow"}
+                </h1>
               </div>
-            )}
+            
+              {activeView === "synth" && (
+                <div className="flex gap-2 text-xs">
+                  <button
+                    onClick={() => setMode("standard")}
+                    className={`px-3 py-1 rounded border transition-all ${
+                      mode === "standard" ? "border-primary text-primary bg-primary/10" : "border-synth-border text-muted-foreground"
+                    }`}
+                  >
+                    Standard
+                  </button>
+                  <button
+                    onClick={() => setMode("multi808")}
+                    className={`px-3 py-1 rounded border transition-all ${
+                      mode === "multi808" ? "border-primary text-primary bg-primary/10" : "border-synth-border text-muted-foreground"
+                    }`}
+                  >
+                    Multi 808
+                  </button>
+                </div>
+              )}
           </header>
 
-          {/* Main Content */}
-          <main className="flex-1 overflow-auto p-6">
+            {/* Main Content */}
+            <main className="flex-1 overflow-auto p-4">
             {activeView === "flow" ? (
               <SignalFlowView
                 distortionEnabled={mode === "multi808"}
@@ -448,12 +450,12 @@ const Index = () => {
               getRecordedAudioBuffer={audioEngine.getRecordedAudioBuffer}
             />
           ) : (
-          // Main Synth View
-          <div className="space-y-6">
-            {/* Top Row - Main Controls */}
-            <div className="grid grid-cols-12 gap-6">
-          {/* Left Panel */}
-          <div className="col-span-3 space-y-6">
+              // Main Synth View
+              <div className="space-y-4">
+                {/* Top Row - Main Controls */}
+                <div className="grid grid-cols-12 gap-4">
+              {/* Left Panel */}
+              <div className="col-span-3 space-y-4">
             {mode === "multi808" ? (
               <ThorEngine 
                 onLayerChange={setActiveLayer}
@@ -732,14 +734,15 @@ const Index = () => {
           
           {/* Universal Keyboard - appears in synth view */}
           {activeView === "synth" && (
-            <div className="mt-6">
+            <div className="mt-4">
               <OrpheusKeys onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} />
             </div>
           )}
-          </main>
-        </div>
+        </main>
       </div>
-    </SidebarProvider>
+    </div>
+  </SidebarProvider>
+</AppContainer>
   );
 };
 
