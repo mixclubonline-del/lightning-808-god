@@ -125,9 +125,9 @@ const Index = () => {
   ]);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
-  // Drag handlers
   const handleDragStart = (id: string) => {
     setDraggedItem(id);
+    mythSounds.playUIClick();
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -135,7 +135,10 @@ const Index = () => {
   };
 
   const handleDrop = (targetId: string) => {
-    if (!draggedItem || draggedItem === targetId) return;
+    if (!draggedItem || draggedItem === targetId) {
+      setDraggedItem(null);
+      return;
+    }
 
     const currentIndex = effectsOrder.indexOf(draggedItem);
     const targetIndex = effectsOrder.indexOf(targetId);
@@ -146,7 +149,22 @@ const Index = () => {
 
     setEffectsOrder(newOrder);
     setDraggedItem(null);
-    toast.success("Effects reordered");
+    
+    // Play success sound and show toast
+    mythSounds.playVulcanForge();
+    toast.success("Effects chain reordered", {
+      description: `${draggedItem.charAt(0).toUpperCase() + draggedItem.slice(1)} moved`,
+    });
+  };
+
+  const [dragOverItem, setDragOverItem] = useState<string | null>(null);
+
+  const handleDragEnter = (id: string) => {
+    setDragOverItem(id);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverItem(null);
   };
 
   // Initialize audio on first user interaction
@@ -533,6 +551,14 @@ const Index = () => {
             setAtlasMix={() => {}}
             atlasEnabled={compressorEnabled}
             setAtlasEnabled={setCompressorEnabled}
+            effectsOrder={effectsOrder}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            draggedItem={draggedItem}
+            dragOverItem={dragOverItem}
           />
         );
       case "pandora":
