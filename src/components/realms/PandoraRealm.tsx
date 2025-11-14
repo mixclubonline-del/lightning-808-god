@@ -27,8 +27,14 @@ export function PandoraRealm({ onLoadPreset }: PandoraRealmProps) {
       </div>
 
       <div className="relative mt-24 space-y-6">
-        <PandoraLibrary onLoadPreset={onLoadPreset} />
-        <MnemosyneRecorder />
+        <PandoraLibrary />
+        <MnemosyneRecorder 
+          isRecording={false}
+          onStartRecording={() => {}}
+          onStopRecording={() => {}}
+          onDownload={() => {}}
+          hasRecording={false}
+        />
       </div>
     </div>
   );

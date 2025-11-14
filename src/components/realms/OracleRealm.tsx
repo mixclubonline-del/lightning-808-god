@@ -24,9 +24,9 @@ export function OracleRealm() {
       </div>
 
       <div className="relative mt-24 space-y-6">
-        <OracleMatcher />
-        <IrisSpectrum />
-        <AthenaEye />
+        <OracleMatcher currentFeatures={null} />
+        <IrisSpectrum analyserNode={null} isActive={false} />
+        <AthenaEye activeLayer={null} />
       </div>
     </div>
   );

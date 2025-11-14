@@ -115,15 +115,15 @@ export function ZeusRealm(props: ZeusRealmProps) {
 
         {/* Thor Engine */}
         <ThorEngine
-          mode={props.mode}
-          activeLayer={props.activeLayer}
-          onModeChange={props.onModeChange}
           onLayerChange={props.onLayerChange}
+          onTriggerModeChange={(mode) => {}}
+          triggerMode="cycle"
+          currentLayerIndex={0}
         />
 
         {/* Output Meters */}
         <div className="flex justify-center">
-          <HermesMeter level={props.audioLevel} />
+          <HermesMeter analyserNode={null} label="OUT" isActive={false} />
         </div>
 
         {/* Keyboard */}

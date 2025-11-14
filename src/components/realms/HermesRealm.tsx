@@ -40,17 +40,17 @@ export function HermesRealm(props: HermesRealmProps) {
       <div className="relative mt-24 space-y-8">
         {/* Output Meters */}
         <div className="flex justify-center gap-8">
-          <HermesMeter level={props.audioLevel} />
-          <HermesMeter level={props.audioLevel * 0.9} />
-          <HermesMeter level={props.audioLevel * 0.85} />
+          <HermesMeter analyserNode={null} label="L" isActive={false} />
+          <HermesMeter analyserNode={null} label="C" isActive={false} />
+          <HermesMeter analyserNode={null} label="R" isActive={false} />
         </div>
 
         {/* Thor Layer Mixer */}
         <ThorEngine
-          mode={props.mode}
-          activeLayer={props.activeLayer}
-          onModeChange={props.onModeChange}
           onLayerChange={props.onLayerChange}
+          onTriggerModeChange={(mode) => {}}
+          triggerMode="cycle"
+          currentLayerIndex={0}
         />
 
         {/* Master Output Controls */}

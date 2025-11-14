@@ -1,6 +1,12 @@
-import { DraggableEffectModule } from "@/components/DraggableEffectModule";
 import { VulcanForge } from "@/components/VulcanForge";
 import { SignalFlowView } from "@/components/SignalFlowView";
+import { EchoModule } from "@/components/EchoModule";
+import { SirenChorus } from "@/components/SirenChorus";
+import { ReverbModule } from "@/components/ReverbModule";
+import { MarsVerb } from "@/components/MarsVerb";
+import { ChronosVerb } from "@/components/ChronosVerb";
+import { MorpheusModule } from "@/components/MorpheusModule";
+import { AtlasCompressor } from "@/components/AtlasCompressor";
 import { Flame } from "lucide-react";
 
 interface VulcanRealmProps {
@@ -99,90 +105,85 @@ export function VulcanRealm(props: VulcanRealmProps) {
           onMixChange={props.setDistortionMix}
         />
 
-        {/* Draggable Effects Grid */}
+        {/* Effects Grid */}
         <div className="grid grid-cols-2 gap-6">
-          <DraggableEffectModule
-            type="delay"
-            enabled={props.delayEnabled}
-            onToggle={props.setDelayEnabled}
+          <EchoModule
             time={props.delayTime}
-            feedback={props.delayFeedback}
-            mix={props.delayMix}
             onTimeChange={props.setDelayTime}
+            feedback={props.delayFeedback}
             onFeedbackChange={props.setDelayFeedback}
+            mix={props.delayMix}
             onMixChange={props.setDelayMix}
+            enabled={props.delayEnabled}
+            onEnabledChange={props.setDelayEnabled}
           />
           
-          <DraggableEffectModule
-            type="chorus"
-            enabled={props.chorusEnabled}
-            onToggle={props.setChorusEnabled}
+          <SirenChorus
             rate={props.chorusRate}
-            depth={props.chorusDepth}
-            mix={props.chorusMix}
             onRateChange={props.setChorusRate}
+            depth={props.chorusDepth}
             onDepthChange={props.setChorusDepth}
+            mix={props.chorusMix}
             onMixChange={props.setChorusMix}
+            enabled={props.chorusEnabled}
+            onEnabledChange={props.setChorusEnabled}
           />
 
-          <DraggableEffectModule
-            type="reverb"
-            enabled={props.reverbEnabled}
-            onToggle={props.setReverbEnabled}
+          <ReverbModule
             size={props.reverbSize}
             damping={props.reverbDamping}
             mix={props.reverbMix}
             onSizeChange={props.setReverbSize}
             onDampingChange={props.setReverbDamping}
             onMixChange={props.setReverbMix}
+            enabled={props.reverbEnabled}
+            onEnabledChange={props.setReverbEnabled}
           />
 
-          <DraggableEffectModule
-            type="marsverb"
-            enabled={props.marsEnabled}
-            onToggle={props.setMarsEnabled}
+          <MarsVerb
             size={props.marsSize}
-            damping={props.marsDamping}
+            shimmer={props.marsDamping}
             mix={props.marsMix}
             onSizeChange={props.setMarsSize}
-            onDampingChange={props.setMarsDamping}
+            onShimmerChange={props.setMarsDamping}
             onMixChange={props.setMarsMix}
+            enabled={props.marsEnabled}
+            onEnabledChange={props.setMarsEnabled}
           />
 
-          <DraggableEffectModule
-            type="chronosverb"
-            enabled={props.chronosEnabled}
-            onToggle={props.setChronosEnabled}
+          <ChronosVerb
             size={props.chronosSize}
-            damping={props.chronosDamping}
+            reverse={props.chronosDamping}
             mix={props.chronosMix}
             onSizeChange={props.setChronosSize}
-            onDampingChange={props.setChronosDamping}
+            onReverseChange={props.setChronosDamping}
             onMixChange={props.setChronosMix}
+            enabled={props.chronosEnabled}
+            onEnabledChange={props.setChronosEnabled}
           />
 
-          <DraggableEffectModule
-            type="morpheus"
-            enabled={props.morpheusEnabled}
-            onToggle={props.setMorpheusEnabled}
-            depth={props.morpheusDepth}
-            rate={props.morpheusRate}
+          <MorpheusModule
+            amount={props.morpheusDepth}
+            onAmountChange={props.setMorpheusDepth}
+            smoothing={props.morpheusRate}
+            onSmoothingChange={props.setMorpheusRate}
             mix={props.morpheusMix}
-            onDepthChange={props.setMorpheusDepth}
-            onRateChange={props.setMorpheusRate}
             onMixChange={props.setMorpheusMix}
+            enabled={props.morpheusEnabled}
+            onEnabledChange={props.setMorpheusEnabled}
           />
 
-          <DraggableEffectModule
-            type="atlas"
-            enabled={props.atlasEnabled}
-            onToggle={props.setAtlasEnabled}
+          <AtlasCompressor
             threshold={props.atlasThreshold}
-            ratio={props.atlasRatio}
-            mix={props.atlasMix}
             onThresholdChange={props.setAtlasThreshold}
+            ratio={props.atlasRatio}
             onRatioChange={props.setAtlasRatio}
-            onMixChange={props.setAtlasMix}
+            attack={50}
+            onAttackChange={() => {}}
+            release={50}
+            onReleaseChange={() => {}}
+            enabled={props.atlasEnabled}
+            onEnabledChange={props.setAtlasEnabled}
           />
         </div>
 
