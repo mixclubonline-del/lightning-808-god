@@ -309,29 +309,30 @@ const Index = () => {
           )}
         </div>
 
-        {activeView === "library" ? (
-          <div className="grid grid-cols-2 gap-6 h-[800px]">
-            <SoundLibrary
-              onFindSimilar={(sample) => {
-                toast("Analyzing sample...");
-              }}
+        <div className="space-y-6">
+          {activeView === "library" ? (
+            <div className="grid grid-cols-2 gap-6 h-[800px]">
+              <SoundLibrary
+                onFindSimilar={(sample) => {
+                  toast("Analyzing sample...");
+                }}
+              />
+              <SoundMatcher
+                currentFeatures={currentSoundFeatures}
+                onClearFeatures={() => setCurrentSoundFeatures(null)}
+                onMatchSelect={(match) => {
+                  toast.success(`Selected: ${match.sample.name}`);
+                }}
+              />
+            </div>
+          ) : activeView === "studio" ? (
+            <StudioView
+              isRecording={audioEngine.isRecording}
+              onStartRecording={audioEngine.startRecording}
+              onStopRecording={audioEngine.stopRecording}
+              getRecordedAudioBuffer={audioEngine.getRecordedAudioBuffer}
             />
-            <SoundMatcher
-              currentFeatures={currentSoundFeatures}
-              onClearFeatures={() => setCurrentSoundFeatures(null)}
-              onMatchSelect={(match) => {
-                toast.success(`Selected: ${match.sample.name}`);
-              }}
-            />
-          </div>
-        ) : activeView === "studio" ? (
-          <StudioView
-            isRecording={audioEngine.isRecording}
-            onStartRecording={audioEngine.startRecording}
-            onStopRecording={audioEngine.stopRecording}
-            getRecordedAudioBuffer={audioEngine.getRecordedAudioBuffer}
-          />
-        ) : (
+          ) : (
           // Main Synth View
           <div className="grid grid-cols-12 gap-6">
           {/* Left Panel */}
@@ -488,13 +489,15 @@ const Index = () => {
               strum={chordStrum}
               onStrumChange={setChordStrum}
             />
-
-            <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-4">
-              <Keyboard onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} />
-            </div>
           </div>
           </div>
-        )}
+          )}
+          
+          {/* Universal Keyboard - appears in all views */}
+          <div className="mt-6">
+            <Keyboard onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} />
+          </div>
+        </div>
       </div>
     </div>
   );
