@@ -1,5 +1,6 @@
 import { PandoraLibrary } from "@/components/PandoraLibrary";
 import { MnemosyneRecorder } from "@/components/MnemosyneRecorder";
+import { ConstellationLines } from "@/components/ConstellationLines";
 import { Package } from "lucide-react";
 
 interface PandoraRealmProps {
@@ -7,8 +8,12 @@ interface PandoraRealmProps {
 }
 
 export function PandoraRealm({ onLoadPreset }: PandoraRealmProps) {
+  const connections = [
+    { from: "pandora-library", to: "pandora-recorder" },
+  ];
+
   return (
-    <div className="relative min-h-full p-8 bg-gradient-to-b from-purple-950/20 to-transparent">
+    <div className="relative min-h-full p-8 bg-gradient-to-b from-purple-950/20 to-transparent constellation-container">
       {/* Realm Title */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
         <div className="flex items-center gap-3 text-purple-500">
@@ -26,15 +31,21 @@ export function PandoraRealm({ onLoadPreset }: PandoraRealmProps) {
         <Package className="w-[600px] h-[600px]" />
       </div>
 
+      <ConstellationLines connections={connections} color="hsl(271, 91%, 65%)" active={true} />
+
       <div className="relative mt-24 space-y-6">
-        <PandoraLibrary />
-        <MnemosyneRecorder 
+        <div data-module="pandora-library">
+          <PandoraLibrary />
+        </div>
+        <div data-module="pandora-recorder">
+          <MnemosyneRecorder
           isRecording={false}
           onStartRecording={() => {}}
           onStopRecording={() => {}}
           onDownload={() => {}}
           hasRecording={false}
         />
+        </div>
       </div>
     </div>
   );

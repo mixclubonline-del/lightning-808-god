@@ -1,6 +1,7 @@
 import { HermesMeter } from "@/components/HermesMeter";
 import { ThorEngine } from "@/components/ThorEngine";
 import { Knob } from "@/components/Knob";
+import { ConstellationLines } from "@/components/ConstellationLines";
 import { TrendingUp } from "lucide-react";
 
 interface HermesRealmProps {
@@ -18,8 +19,13 @@ interface HermesRealmProps {
 }
 
 export function HermesRealm(props: HermesRealmProps) {
+  const connections = [
+    { from: "hermes-meters", to: "hermes-mixer" },
+    { from: "hermes-mixer", to: "hermes-output" },
+  ];
+
   return (
-    <div className="relative min-h-full p-8 bg-gradient-to-b from-green-950/20 to-transparent">
+    <div className="relative min-h-full p-8 bg-gradient-to-b from-green-950/20 to-transparent constellation-container">
       {/* Realm Title */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
         <div className="flex items-center gap-3 text-green-500">
@@ -37,24 +43,28 @@ export function HermesRealm(props: HermesRealmProps) {
         <TrendingUp className="w-[600px] h-[600px]" />
       </div>
 
+      <ConstellationLines connections={connections} color="hsl(142, 76%, 36%)" active={true} />
+
       <div className="relative mt-24 space-y-8">
         {/* Output Meters */}
-        <div className="flex justify-center gap-8">
+        <div className="flex justify-center gap-8" data-module="hermes-meters">
           <HermesMeter analyserNode={null} label="L" isActive={false} />
           <HermesMeter analyserNode={null} label="C" isActive={false} />
           <HermesMeter analyserNode={null} label="R" isActive={false} />
         </div>
 
         {/* Thor Layer Mixer */}
-        <ThorEngine
+        <div data-module="hermes-mixer">
+          <ThorEngine
           onLayerChange={props.onLayerChange}
           onTriggerModeChange={(mode) => {}}
           triggerMode="cycle"
           currentLayerIndex={0}
         />
+        </div>
 
         {/* Master Output Controls */}
-        <div className="flex justify-center gap-8 p-8 bg-synth-panel/50 rounded-3xl border border-synth-border">
+        <div className="flex justify-center gap-8 p-8 bg-synth-panel/50 rounded-3xl border border-synth-border" data-module="hermes-output">
           <div className="text-center">
             <Knob label="OUTPUT 1" value={props.output1} onChange={props.setOutput1} />
           </div>

@@ -5,6 +5,7 @@ import { PoseidonWave } from "@/components/PoseidonWave";
 import { ThorEngine } from "@/components/ThorEngine";
 import { HermesMeter } from "@/components/HermesMeter";
 import { ApolloEnvelope } from "@/components/ApolloEnvelope";
+import { ConstellationLines } from "@/components/ConstellationLines";
 import zeusImage from "@/assets/zeus-figure.png";
 import { Zap } from "lucide-react";
 
@@ -47,8 +48,16 @@ interface ZeusRealmProps {
 }
 
 export function ZeusRealm(props: ZeusRealmProps) {
+  const connections = [
+    { from: "zeus-controls", to: "zeus-waveform" },
+    { from: "zeus-waveform", to: "zeus-envelope" },
+    { from: "zeus-envelope", to: "zeus-sliders" },
+    { from: "zeus-sliders", to: "zeus-engine" },
+    { from: "zeus-engine", to: "zeus-keyboard" },
+  ];
+
   return (
-    <div className="relative min-h-full p-8 bg-gradient-to-b from-red-950/20 to-transparent">
+    <div className="relative min-h-full p-8 bg-gradient-to-b from-red-950/20 to-transparent constellation-container">
       {/* Realm Title */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
         <div className="flex items-center gap-3 text-red-500">
@@ -66,9 +75,11 @@ export function ZeusRealm(props: ZeusRealmProps) {
         <Zap className="w-[600px] h-[600px]" />
       </div>
 
+      <ConstellationLines connections={connections} color="hsl(0, 84%, 60%)" active={true} />
+
       <div className="relative mt-24 space-y-6">
         {/* Zeus Center Controls */}
-        <div className="flex items-center justify-center gap-8 mb-8">
+        <div className="flex items-center justify-center gap-8 mb-8" data-module="zeus-controls">
           <div className="relative w-32 h-32">
             <img 
               src={zeusImage} 
@@ -87,8 +98,11 @@ export function ZeusRealm(props: ZeusRealmProps) {
 
         {/* Waveform & Envelope */}
         <div className="grid grid-cols-2 gap-6">
-          <PoseidonWave />
-          <ApolloEnvelope
+          <div data-module="zeus-waveform">
+            <PoseidonWave />
+          </div>
+          <div data-module="zeus-envelope">
+            <ApolloEnvelope
             attack={props.attack}
             decay={props.decay}
             sustain={props.sustain}
@@ -98,10 +112,11 @@ export function ZeusRealm(props: ZeusRealmProps) {
             onSustainChange={props.setSustain}
             onReleaseChange={props.setRelease}
           />
+          </div>
         </div>
 
         {/* Sliders */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-6" data-module="zeus-sliders">
           <Slider label="WAVE" value={props.waveSlider} onChange={props.setWaveSlider} />
           <Slider label="FILTER" value={props.filterSlider} onChange={props.setFilterSlider} />
           <Slider label="DELAY" value={props.delaySlider} onChange={props.setDelaySlider} />
@@ -113,21 +128,25 @@ export function ZeusRealm(props: ZeusRealmProps) {
           <Slider label="GRENULATE" value={props.grenulate} onChange={props.setGrenulate} />
         </div>
 
-        {/* Thor Engine */}
-        <ThorEngine
-          onLayerChange={props.onLayerChange}
-          onTriggerModeChange={(mode) => {}}
-          triggerMode="cycle"
-          currentLayerIndex={0}
-        />
+        {/* Thor Engine & Hermes Meter */}
+        <div data-module="zeus-engine">
+          <ThorEngine
+            onLayerChange={props.onLayerChange}
+            onTriggerModeChange={(mode) => {}}
+            triggerMode="cycle"
+            currentLayerIndex={0}
+          />
 
-        {/* Output Meters */}
-        <div className="flex justify-center">
-          <HermesMeter analyserNode={null} label="OUT" isActive={false} />
+          {/* Output Meters */}
+          <div className="flex justify-center mt-6">
+            <HermesMeter analyserNode={null} label="OUT" isActive={false} />
+          </div>
         </div>
 
         {/* Keyboard */}
-        <OrpheusKeys onNoteOn={props.onNoteOn} onNoteOff={props.onNoteOff} />
+        <div data-module="zeus-keyboard">
+          <OrpheusKeys onNoteOn={props.onNoteOn} onNoteOff={props.onNoteOff} />
+        </div>
       </div>
     </div>
   );

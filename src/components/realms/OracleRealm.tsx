@@ -1,11 +1,17 @@
 import { OracleMatcher } from "@/components/OracleMatcher";
 import { IrisSpectrum } from "@/components/IrisSpectrum";
 import { AthenaEye } from "@/components/AthenaEye";
+import { ConstellationLines } from "@/components/ConstellationLines";
 import { Eye } from "lucide-react";
 
 export function OracleRealm() {
+  const connections = [
+    { from: "oracle-matcher", to: "oracle-spectrum" },
+    { from: "oracle-spectrum", to: "oracle-eye" },
+  ];
+
   return (
-    <div className="relative min-h-full p-8 bg-gradient-to-b from-cyan-950/20 to-transparent">
+    <div className="relative min-h-full p-8 bg-gradient-to-b from-cyan-950/20 to-transparent constellation-container">
       {/* Realm Title */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
         <div className="flex items-center gap-3 text-cyan-500">
@@ -23,10 +29,18 @@ export function OracleRealm() {
         <Eye className="w-[600px] h-[600px]" />
       </div>
 
+      <ConstellationLines connections={connections} color="hsl(189, 94%, 43%)" active={true} />
+
       <div className="relative mt-24 space-y-6">
-        <OracleMatcher currentFeatures={null} />
-        <IrisSpectrum analyserNode={null} isActive={false} />
-        <AthenaEye activeLayer={null} />
+        <div data-module="oracle-matcher">
+          <OracleMatcher currentFeatures={null} />
+        </div>
+        <div data-module="oracle-spectrum">
+          <IrisSpectrum analyserNode={null} isActive={false} />
+        </div>
+        <div data-module="oracle-eye">
+          <AthenaEye activeLayer={null} />
+        </div>
       </div>
     </div>
   );
