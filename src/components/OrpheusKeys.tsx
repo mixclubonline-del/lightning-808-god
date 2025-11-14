@@ -47,7 +47,7 @@ export const OrpheusKeys = ({ onNoteOn, onNoteOff }: OrpheusKeysProps) => {
 
   return (
     <div className="w-full">
-      <div className="relative bg-gradient-to-b from-synth-panel to-synth-deep rounded-xl border-2 border-yellow-500/50 p-8 shadow-[0_0_40px_rgba(234,179,8,0.3)] marble-texture sacred-geometry">
+      <div className="relative bg-gradient-to-b from-synth-panel to-synth-deep rounded-xl border-2 border-yellow-500/50 p-8 shadow-[0_0_40px_rgba(234,179,8,0.3)] marble-texture sacred-geometry orpheus-rays">
         {/* Decorative header */}
         <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-synth-deep border-2 border-yellow-500 rounded-lg laurel-corners divine-glow">
           <div className="text-yellow-400 text-lg font-bold uppercase tracking-[0.4em] text-center"

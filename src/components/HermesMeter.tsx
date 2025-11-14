@@ -60,7 +60,7 @@ export const HermesMeter = ({ analyserNode, label, isActive }: HermesMeterProps)
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="relative h-24 w-3 bg-synth-deep border border-slate-400/50 rounded-full overflow-hidden shadow-[0_0_10px_rgba(148,163,184,0.2)]">
+      <div className="relative h-24 w-3 bg-synth-deep border border-slate-400/50 rounded-full overflow-hidden shadow-[0_0_10px_rgba(148,163,184,0.2)] hermes-swift">
         {/* Level bar with silver glow */}
         <div
           className={cn(
