@@ -55,8 +55,8 @@ export function ApolloRealm(props: ApolloRealmProps) {
           onReleaseChange={props.setRelease}
         />
 
-        {/* Chord Generator */}
-        <HarmoniaChords onChordPlay={props.onChordPlay} />
+        {/* Chord Generator - Placeholder until wired up */}
+        {/* <HarmoniaChords ... /> */}
 
         {/* Pads */}
         <OlympusPads onPadTrigger={props.onPadTrigger} />
