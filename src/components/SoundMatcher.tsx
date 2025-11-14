@@ -21,9 +21,10 @@ interface MatchResult {
 interface SoundMatcherProps {
   currentFeatures: AudioFeatures | null;
   onMatchSelect?: (match: MatchResult) => void;
+  onClearFeatures?: () => void;
 }
 
-export const SoundMatcher = ({ currentFeatures, onMatchSelect }: SoundMatcherProps) => {
+export const SoundMatcher = ({ currentFeatures, onMatchSelect, onClearFeatures }: SoundMatcherProps) => {
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [isMatching, setIsMatching] = useState(false);
 
@@ -71,36 +72,54 @@ export const SoundMatcher = ({ currentFeatures, onMatchSelect }: SoundMatcherPro
             Sound Match AI
           </span>
         </div>
-        <button
-          onClick={findSimilarSounds}
-          disabled={!currentFeatures || isMatching}
-          className={cn(
-            "px-3 py-1 rounded text-xs font-medium uppercase tracking-wider transition-all flex items-center gap-1",
-            !currentFeatures || isMatching
-              ? "bg-synth-deep border-2 border-synth-border text-muted-foreground cursor-not-allowed"
-              : "bg-accent/20 border-2 border-accent text-accent hover:bg-accent/30 shadow-[0_0_10px_rgba(249,115,22,0.3)]"
+        <div className="flex gap-2">
+          {currentFeatures && onClearFeatures && (
+            <button
+              onClick={onClearFeatures}
+              className="px-2 py-1 rounded text-xs font-medium uppercase tracking-wider transition-all bg-synth-deep border-2 border-synth-border text-muted-foreground hover:border-primary/50"
+              title="Clear and re-analyze"
+            >
+              Clear
+            </button>
           )}
-        >
-          {isMatching ? (
-            <>
-              <Loader2 size={12} className="animate-spin" />
-              Matching...
-            </>
-          ) : (
-            <>
-              <Sparkles size={12} />
-              Find Similar
-            </>
-          )}
-        </button>
+          <button
+            onClick={findSimilarSounds}
+            disabled={!currentFeatures || isMatching}
+            className={cn(
+              "px-3 py-1 rounded text-xs font-medium uppercase tracking-wider transition-all flex items-center gap-1",
+              !currentFeatures || isMatching
+                ? "bg-synth-deep border-2 border-synth-border text-muted-foreground cursor-not-allowed"
+                : "bg-accent/20 border-2 border-accent text-accent hover:bg-accent/30 shadow-[0_0_10px_rgba(249,115,22,0.3)]"
+            )}
+          >
+            {isMatching ? (
+              <>
+                <Loader2 size={12} className="animate-spin" />
+                Matching...
+              </>
+            ) : (
+              <>
+                <Sparkles size={12} />
+                Find Similar
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-2">
         {matches.length === 0 ? (
           <div className="text-center text-muted-foreground text-xs py-8">
-            {isMatching
-              ? "Analyzing sounds with AI..."
-              : "Play a sound and click 'Find Similar' to discover matches in your library"}
+            {isMatching ? (
+              "Analyzing sounds with AI..."
+            ) : currentFeatures ? (
+              <>
+                <div className="text-accent mb-2">✓ Audio analyzed</div>
+                Click 'Find Similar' to discover matches in your library
+              </>
+            ) : (
+              "Play any note to analyze and find similar sounds"
+            )}
           </div>
         ) : (
           matches.map((match, index) => (
