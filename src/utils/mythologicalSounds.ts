@@ -4,6 +4,19 @@
 class MythologicalSoundEngine {
   private audioContext: AudioContext | null = null;
   private masterGain: GainNode | null = null;
+  
+  // Individual volume levels for each sound type
+  public volumes = {
+    master: 0.3,
+    zeus: 1.0,
+    apollo: 1.0,
+    vulcan: 1.0,
+    oracle: 1.0,
+    hermes: 1.0,
+    pandora: 1.0,
+    ui: 1.0,
+    transition: 1.0,
+  };
 
   constructor() {
     this.initialize();
@@ -13,7 +26,7 @@ class MythologicalSoundEngine {
     if (typeof window !== 'undefined') {
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       this.masterGain = this.audioContext.createGain();
-      this.masterGain.gain.value = 0.3; // Master volume for UI sounds
+      this.masterGain.gain.value = this.volumes.master;
       this.masterGain.connect(this.audioContext.destination);
     }
   }
@@ -41,6 +54,10 @@ class MythologicalSoundEngine {
     filter.frequency.value = 2000;
     filter.Q.value = 5;
     
+    // Individual volume control
+    const volumeControl = this.audioContext.createGain();
+    volumeControl.gain.value = this.volumes.zeus;
+    
     // Envelope
     const envelope = this.audioContext.createGain();
     envelope.gain.value = 0;
@@ -50,7 +67,8 @@ class MythologicalSoundEngine {
     
     noise.connect(filter);
     filter.connect(envelope);
-    envelope.connect(this.masterGain);
+    envelope.connect(volumeControl);
+    volumeControl.connect(this.masterGain);
     
     noise.start(now);
     noise.stop(now + 0.05);
@@ -62,6 +80,11 @@ class MythologicalSoundEngine {
 
     const now = this.audioContext.currentTime;
     const fundamental = 440; // A4
+    
+    // Individual volume control
+    const volumeControl = this.audioContext.createGain();
+    volumeControl.gain.value = this.volumes.apollo;
+    volumeControl.connect(this.masterGain);
     
     // Create harmonic series (1st, 2nd, 3rd harmonics)
     [1, 2, 3].forEach((harmonic, index) => {
@@ -77,7 +100,7 @@ class MythologicalSoundEngine {
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
       
       osc.connect(gain);
-      gain.connect(this.masterGain!);
+      gain.connect(volumeControl);
       
       osc.start(now);
       osc.stop(now + 0.6);
@@ -89,6 +112,11 @@ class MythologicalSoundEngine {
     if (!this.audioContext || !this.masterGain) return;
 
     const now = this.audioContext.currentTime;
+    
+    // Individual volume control
+    const volumeControl = this.audioContext.createGain();
+    volumeControl.gain.value = this.volumes.vulcan;
+    volumeControl.connect(this.masterGain);
     
     // Low frequency oscillator for impact
     const impactOsc = this.audioContext.createOscillator();
@@ -118,8 +146,8 @@ class MythologicalSoundEngine {
     
     impactOsc.connect(impactGain);
     resonanceOsc.connect(resonanceGain);
-    impactGain.connect(this.masterGain);
-    resonanceGain.connect(this.masterGain);
+    impactGain.connect(volumeControl);
+    resonanceGain.connect(volumeControl);
     
     impactOsc.start(now);
     resonanceOsc.start(now);
@@ -132,6 +160,11 @@ class MythologicalSoundEngine {
     if (!this.audioContext || !this.masterGain) return;
 
     const now = this.audioContext.currentTime;
+    
+    // Individual volume control
+    const volumeControl = this.audioContext.createGain();
+    volumeControl.gain.value = this.volumes.oracle;
+    volumeControl.connect(this.masterGain);
     
     // Carrier oscillator
     const carrier = this.audioContext.createOscillator();
@@ -159,7 +192,7 @@ class MythologicalSoundEngine {
     modulator.connect(modulatorGain);
     modulatorGain.connect(carrier.frequency);
     carrier.connect(envelope);
-    envelope.connect(this.masterGain);
+    envelope.connect(volumeControl);
     
     modulator.start(now);
     carrier.start(now);
@@ -172,6 +205,11 @@ class MythologicalSoundEngine {
     if (!this.audioContext || !this.masterGain) return;
 
     const now = this.audioContext.currentTime;
+    
+    // Individual volume control
+    const volumeControl = this.audioContext.createGain();
+    volumeControl.gain.value = this.volumes.hermes;
+    volumeControl.connect(this.masterGain);
     
     const osc = this.audioContext.createOscillator();
     osc.type = 'sine';
@@ -186,7 +224,7 @@ class MythologicalSoundEngine {
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
     
     osc.connect(gain);
-    gain.connect(this.masterGain);
+    gain.connect(volumeControl);
     
     osc.start(now);
     osc.stop(now + 0.08);
@@ -197,6 +235,11 @@ class MythologicalSoundEngine {
     if (!this.audioContext || !this.masterGain) return;
 
     const now = this.audioContext.currentTime;
+    
+    // Individual volume control
+    const volumeControl = this.audioContext.createGain();
+    volumeControl.gain.value = this.volumes.pandora;
+    volumeControl.connect(this.masterGain);
     
     // Minor chord (A minor: A, C, E)
     const frequencies = [440, 523.25, 659.25];
@@ -214,7 +257,7 @@ class MythologicalSoundEngine {
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
       
       osc.connect(gain);
-      gain.connect(this.masterGain!);
+      gain.connect(volumeControl);
       
       osc.start(now);
       osc.stop(now + 0.8);
@@ -226,6 +269,11 @@ class MythologicalSoundEngine {
     if (!this.audioContext || !this.masterGain) return;
 
     const now = this.audioContext.currentTime;
+    
+    // Individual volume control
+    const volumeControl = this.audioContext.createGain();
+    volumeControl.gain.value = this.volumes.ui;
+    volumeControl.connect(this.masterGain);
     
     const osc = this.audioContext.createOscillator();
     osc.type = 'sine';
@@ -240,7 +288,7 @@ class MythologicalSoundEngine {
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
     
     osc.connect(gain);
-    gain.connect(this.masterGain);
+    gain.connect(volumeControl);
     
     osc.start(now);
     osc.stop(now + 0.03);
@@ -251,6 +299,11 @@ class MythologicalSoundEngine {
     if (!this.audioContext || !this.masterGain) return;
 
     const now = this.audioContext.currentTime;
+    
+    // Individual volume control
+    const volumeControl = this.audioContext.createGain();
+    volumeControl.gain.value = this.volumes.transition;
+    volumeControl.connect(this.masterGain);
     
     // Multiple oscillators for shimmer
     [1.0, 1.5, 2.0, 2.5].forEach((ratio, index) => {
@@ -271,16 +324,24 @@ class MythologicalSoundEngine {
       
       osc.connect(filter);
       filter.connect(gain);
-      gain.connect(this.masterGain!);
+      gain.connect(volumeControl);
       
       osc.start(now);
       osc.stop(now + 0.8);
     });
   }
 
-  setVolume(volume: number) {
+  // Volume control methods
+  setMasterVolume(volume: number) {
+    this.volumes.master = Math.max(0, Math.min(1, volume));
     if (this.masterGain) {
-      this.masterGain.gain.value = Math.max(0, Math.min(1, volume));
+      this.masterGain.gain.value = this.volumes.master;
+    }
+  }
+
+  setVolume(type: keyof typeof this.volumes, volume: number) {
+    if (type in this.volumes) {
+      this.volumes[type] = Math.max(0, Math.min(1, volume));
     }
   }
 }
