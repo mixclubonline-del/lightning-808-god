@@ -12,17 +12,21 @@ serve(async (req) => {
   }
 
   try {
-    const { targetFeatures } = await req.json();
+    const { targetFeatures, mode = 'similar', maxResults = 5, excludeSlices = false } = await req.json();
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch all samples from database
-    const { data: samples, error: fetchError } = await supabase
-      .from("sound_samples")
-      .select("*");
+    // Fetch samples from database (optionally exclude slices)
+    let query = supabase.from("sound_samples").select("*");
+    
+    if (excludeSlices) {
+      query = query.or("is_slice.is.null,is_slice.eq.false");
+    }
+    
+    const { data: samples, error: fetchError } = await query;
 
     if (fetchError) {
       console.error("Error fetching samples:", fetchError);
@@ -43,7 +47,8 @@ serve(async (req) => {
     }
 
     // Prepare data for AI analysis
-    const featurePrompt = `You are an audio similarity analyzer. Given a target sound's audio features and a library of sounds, rank them by similarity.
+    const matchMode = mode === 'complementary' ? 'complementary (opposite characteristics)' : 'similar';
+    const featurePrompt = `You are an audio similarity analyzer. Given a target sound's audio features and a library of sounds, rank them by ${matchMode}.
 
 Target Sound Features:
 - Spectral Centroid (brightness): ${targetFeatures.spectralCentroid}
@@ -68,10 +73,15 @@ Sample ${i + 1} (ID: ${s.id}, Name: ${s.name}):
 - High Freq Energy: ${s.high_freq_energy}
 `).join("\n")}
 
-Return ONLY the top 5 most similar sounds as a JSON array with format:
-[{"id": "sample-id", "similarity": 0.95, "reason": "Very similar sub bass characteristics"}]
+${mode === 'complementary' 
+  ? `Return ONLY the top ${maxResults} most COMPLEMENTARY sounds (opposite characteristics) as a JSON array.
+For example: if target is bass-heavy, find treble-heavy sounds. If target is bright, find warm/dark sounds.`
+  : `Return ONLY the top ${maxResults} most SIMILAR sounds as a JSON array.`
+}
 
-Similarity should be 0-1 where 1 is identical. Consider all features but weight sub bass and brightness heavily for 808s.`;
+Format: [{"id": "sample-id", "similarity": 0.95, "reason": "Brief explanation"}]
+
+Similarity should be 0-1 where 1 is perfect match/complement. Consider all features.`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
