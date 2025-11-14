@@ -26,7 +26,7 @@ export const ReverbModule = ({
   return (
     <div className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-foreground">Reverb</h3>
+        <h3 className="text-lg font-semibold text-foreground">Pluto Verb</h3>
         <div className="flex items-center gap-2">
           <Label htmlFor="reverb-enabled" className="text-sm text-muted-foreground">
             {enabled ? "ON" : "OFF"}
