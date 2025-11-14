@@ -3,6 +3,7 @@ import { AppContainer } from "@/components/AppContainer";
 import { OlympusHub, RealmType } from "@/components/OlympusHub";
 import { RealmIndicator } from "@/components/RealmIndicator";
 import { RealmTransition } from "@/components/RealmTransition";
+import { OpeningAnimation } from "@/components/OpeningAnimation";
 import { ZeusRealm } from "@/components/realms/ZeusRealm";
 import { ApolloRealm } from "@/components/realms/ApolloRealm";
 import { VulcanRealm } from "@/components/realms/VulcanRealm";
@@ -352,6 +353,9 @@ const Index = () => {
     triggerLightning();
   };
 
+  // Opening animation state
+  const [showOpening, setShowOpening] = useState(true);
+  
   // Realm navigation state
   const [currentRealm, setCurrentRealm] = useState<RealmType>("zeus");
   const [isHubOpen, setIsHubOpen] = useState(false);
@@ -553,32 +557,40 @@ const Index = () => {
   };
 
   return (
-    <AppContainer>
-      <div className="relative w-full h-full">
-        <RealmIndicator
-          currentRealm={currentRealm}
-          onClick={() => setIsHubOpen(true)}
-        />
+    <>
+      {/* Opening Animation */}
+      {showOpening && (
+        <OpeningAnimation onComplete={() => setShowOpening(false)} />
+      )}
 
-        <div className="w-full h-full overflow-auto animate-fade-in">
-          {renderRealm()}
-        </div>
-
-        <OlympusHub
-          isOpen={isHubOpen}
-          onClose={() => setIsHubOpen(false)}
-          onRealmSelect={handleRealmSelect}
-          currentRealm={currentRealm}
-        />
-
-        {isTransitioning && (
-          <RealmTransition
-            currentRealm={transitionRealm}
-            onTransitionComplete={() => setIsTransitioning(false)}
+      {/* Main App */}
+      <AppContainer>
+        <div className="relative w-full h-full">
+          <RealmIndicator
+            currentRealm={currentRealm}
+            onClick={() => setIsHubOpen(true)}
           />
-        )}
-      </div>
-    </AppContainer>
+
+          <div className="w-full h-full overflow-auto animate-fade-in">
+            {renderRealm()}
+          </div>
+
+          <OlympusHub
+            isOpen={isHubOpen}
+            onClose={() => setIsHubOpen(false)}
+            onRealmSelect={handleRealmSelect}
+            currentRealm={currentRealm}
+          />
+
+          {isTransitioning && (
+            <RealmTransition
+              currentRealm={transitionRealm}
+              onTransitionComplete={() => setIsTransitioning(false)}
+            />
+          )}
+        </div>
+      </AppContainer>
+    </>
   );
 };
 
