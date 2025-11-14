@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Zap, Music, Flame, Package, Eye, TrendingUp } from "lucide-react";
+import { mythSounds } from "@/utils/mythologicalSounds";
 
 export type RealmType = "zeus" | "apollo" | "vulcan" | "pandora" | "oracle" | "hermes";
 
@@ -120,6 +121,14 @@ export function OlympusHub({ isOpen, onClose, onRealmSelect, currentRealm }: Oly
             >
               <button
                 onClick={() => {
+                  // Play realm-specific sound
+                  if (realm.id === "zeus") mythSounds.playZeusClick();
+                  else if (realm.id === "apollo") mythSounds.playApolloPluck();
+                  else if (realm.id === "vulcan") mythSounds.playVulcanForge();
+                  else if (realm.id === "oracle") mythSounds.playOracleWisper();
+                  else if (realm.id === "hermes") mythSounds.playHermesBleep();
+                  else if (realm.id === "pandora") mythSounds.playPandoraOpen();
+                  
                   onRealmSelect(realm.id);
                   onClose();
                 }}

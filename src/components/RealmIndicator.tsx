@@ -1,5 +1,6 @@
 import { Zap, Music, Flame, Package, Eye, TrendingUp } from "lucide-react";
 import { RealmType } from "./OlympusHub";
+import { mythSounds } from "@/utils/mythologicalSounds";
 
 interface RealmIndicatorProps {
   currentRealm: RealmType;
@@ -51,7 +52,10 @@ export function RealmIndicator({ currentRealm, onClick }: RealmIndicatorProps) {
 
   return (
     <button
-      onClick={onClick}
+      onClick={() => {
+        mythSounds.playUIClick();
+        onClick();
+      }}
       className={`
         fixed top-6 right-6 z-40
         w-14 h-14 rounded-full
