@@ -41,8 +41,8 @@ export const ThorEngine = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-synth-panel rounded-lg border-2 border-blue-600/50 shadow-[0_0_15px_rgba(37,99,235,0.3)]">
-      <div className="text-blue-400 text-sm font-medium uppercase tracking-wider flex items-center gap-2">
+    <div className="flex flex-col gap-4 p-4 bg-synth-panel rounded-lg border-2 border-blue-600/50 shadow-[0_0_15px_rgba(37,99,235,0.3)] marble-texture sacred-geometry">
+      <div className="text-blue-400 text-sm font-medium uppercase tracking-wider flex items-center gap-2 divine-glow">
         <span className="text-lg">⚡</span>
         Thor Engine
       </div>

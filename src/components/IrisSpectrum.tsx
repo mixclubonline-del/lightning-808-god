@@ -83,7 +83,7 @@ export const IrisSpectrum = ({ analyserNode, isActive }: IrisSpectrumProps) => {
 
   return (
     <div className="relative">
-      <div className="text-purple-400 text-xs font-medium uppercase tracking-wider mb-2 text-center"
+      <div className="text-purple-400 text-xs font-medium uppercase tracking-wider mb-2 text-center divine-glow"
         style={{
           textShadow: "0 0 10px rgba(168, 85, 247, 0.6)",
         }}>
@@ -93,7 +93,7 @@ export const IrisSpectrum = ({ analyserNode, isActive }: IrisSpectrumProps) => {
         ref={canvasRef}
         width={400}
         height={120}
-        className="w-full h-32 rounded-lg bg-synth-deep/50 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.2)]"
+        className="w-full h-32 rounded-lg bg-synth-deep/50 border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.2)] divine-shimmer"
       />
       <div className="text-purple-400/60 text-[10px] uppercase tracking-widest text-center mt-1">
         Rainbow Messenger
