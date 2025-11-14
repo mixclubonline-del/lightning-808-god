@@ -22,6 +22,13 @@ export const useAudioEngine = () => {
   const reverbRef = useRef<ConvolverNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const distortionRef = useRef<WaveShaperNode | null>(null);
+  
+  // Delay nodes
+  const delayNodeRef = useRef<DelayNode | null>(null);
+  const delayFeedbackRef = useRef<GainNode | null>(null);
+  const delayMixRef = useRef<GainNode | null>(null);
+  const delayDryRef = useRef<GainNode | null>(null);
+  
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   const mediaStreamDestinationRef = useRef<MediaStreamAudioDestinationNode | null>(null);
@@ -56,6 +63,20 @@ export const useAudioEngine = () => {
     distortionRef.current.curve = initialCurve as any;
     distortionRef.current.oversample = "4x";
 
+    // Create delay effect
+    delayNodeRef.current = audioContextRef.current.createDelay(2.0); // Max 2 seconds
+    delayNodeRef.current.delayTime.value = 0.5; // 500ms default
+    delayFeedbackRef.current = audioContextRef.current.createGain();
+    delayFeedbackRef.current.gain.value = 0.3; // 30% feedback
+    delayMixRef.current = audioContextRef.current.createGain();
+    delayMixRef.current.gain.value = 0; // Start with delay off
+    delayDryRef.current = audioContextRef.current.createGain();
+    delayDryRef.current.gain.value = 1.0;
+    
+    // Connect delay feedback loop
+    delayNodeRef.current.connect(delayFeedbackRef.current);
+    delayFeedbackRef.current.connect(delayNodeRef.current);
+
     // Create master gain
     masterGainRef.current = audioContextRef.current.createGain();
     masterGainRef.current.gain.value = 0.5;
@@ -67,8 +88,13 @@ export const useAudioEngine = () => {
     // Create media stream for recording
     mediaStreamDestinationRef.current = audioContextRef.current.createMediaStreamDestination();
 
-    // Connect audio graph: distortion -> analyser -> master gain -> destination + recorder
-    distortionRef.current.connect(analyserRef.current);
+    // Connect audio graph: distortion -> delay (wet/dry mix) -> analyser -> master gain -> destination
+    distortionRef.current.connect(delayDryRef.current);
+    distortionRef.current.connect(delayNodeRef.current);
+    delayNodeRef.current.connect(delayMixRef.current);
+    delayDryRef.current.connect(analyserRef.current);
+    delayMixRef.current.connect(analyserRef.current);
+    
     analyserRef.current.connect(masterGainRef.current);
     reverbRef.current.connect(masterGainRef.current);
     masterGainRef.current.connect(audioContextRef.current.destination);
@@ -277,6 +303,26 @@ export const useAudioEngine = () => {
     }
   };
 
+  const updateDelay = (time: number, feedback: number, mix: number, enabled: boolean) => {
+    if (delayNodeRef.current && delayFeedbackRef.current && delayMixRef.current && delayDryRef.current) {
+      // Time: 0-100 maps to 0-2000ms
+      const delayTime = (time / 100) * 2.0;
+      delayNodeRef.current.delayTime.setValueAtTime(delayTime, audioContextRef.current!.currentTime);
+      
+      // Feedback: 0-100 maps to 0-95% (prevent runaway feedback)
+      delayFeedbackRef.current.gain.value = (feedback / 100) * 0.95;
+      
+      // Mix: wet/dry balance
+      if (enabled) {
+        delayMixRef.current.gain.value = mix / 100;
+        delayDryRef.current.gain.value = 1 - (mix / 100);
+      } else {
+        delayMixRef.current.gain.value = 0;
+        delayDryRef.current.gain.value = 1;
+      }
+    }
+  };
+
   const startRecording = () => {
     if (!mediaStreamDestinationRef.current) return;
 
@@ -335,6 +381,7 @@ export const useAudioEngine = () => {
     updateMasterGain,
     updateFilter,
     updateDistortion,
+    updateDelay,
     startRecording,
     stopRecording,
     downloadRecording,

@@ -8,6 +8,7 @@ import { Multi808Panel } from "@/components/Multi808Panel";
 import { SpectrumAnalyzer } from "@/components/SpectrumAnalyzer";
 import { VUMeter } from "@/components/VUMeter";
 import { DistortionModule } from "@/components/DistortionModule";
+import { DelayModule } from "@/components/DelayModule";
 import { ADSRModule } from "@/components/ADSRModule";
 import { RecordingControls } from "@/components/RecordingControls";
 import { LayerIndicator } from "@/components/LayerIndicator";
@@ -57,6 +58,12 @@ const Index = () => {
   const [distortionTone, setDistortionTone] = useState(50);
   const [distortionMix, setDistortionMix] = useState(25);
 
+  // Delay values
+  const [delayTime, setDelayTime] = useState(50);
+  const [delayFeedback, setDelayFeedback] = useState(30);
+  const [delayMix, setDelayMix] = useState(30);
+  const [delayEnabled, setDelayEnabled] = useState(false);
+
   const [lightningActive, setLightningActive] = useState(false);
   const [bassHit, setBassHit] = useState(false);
   const [lastTriggeredLayer, setLastTriggeredLayer] = useState<"layer1" | "layer2" | "layer3" | null>(null);
@@ -104,6 +111,10 @@ const Index = () => {
   useEffect(() => {
     audioEngine.updateDistortion(distortionDrive, distortionMix);
   }, [distortionDrive, distortionMix, audioEngine]);
+
+  useEffect(() => {
+    audioEngine.updateDelay(delayTime, delayFeedback, delayMix, delayEnabled);
+  }, [delayTime, delayFeedback, delayMix, delayEnabled, audioEngine]);
 
   const triggerLightning = () => {
     setLightningActive(true);
@@ -488,6 +499,17 @@ const Index = () => {
               onToneChange={setDistortionTone}
               mix={distortionMix}
               onMixChange={setDistortionMix}
+            />
+
+            <DelayModule
+              time={delayTime}
+              onTimeChange={setDelayTime}
+              feedback={delayFeedback}
+              onFeedbackChange={setDelayFeedback}
+              mix={delayMix}
+              onMixChange={setDelayMix}
+              enabled={delayEnabled}
+              onEnabledChange={setDelayEnabled}
             />
 
             <ChordGenerator
