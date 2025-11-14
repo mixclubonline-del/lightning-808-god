@@ -25,6 +25,8 @@ export const useAudioEngine = () => {
   const mediaStreamDestinationRef = useRef<MediaStreamAudioDestinationNode | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [currentLayerIndex, setCurrentLayerIndex] = useState(0);
+  const [triggerMode, setTriggerMode] = useState<"cycle" | "random">("cycle");
   const activeNotesRef = useRef<Map<number, { osc: OscillatorNode; gain: GainNode; filter: BiquadFilterNode }>>(new Map());
 
   useEffect(() => {
@@ -102,11 +104,24 @@ export const useAudioEngine = () => {
     convolver.buffer = impulse;
   };
 
+  const getNextLayer = (): "layer1" | "layer2" | "layer3" => {
+    if (triggerMode === "random") {
+      const layers: ("layer1" | "layer2" | "layer3")[] = ["layer1", "layer2", "layer3"];
+      return layers[Math.floor(Math.random() * 3)];
+    } else {
+      // Round robin cycle
+      const layers: ("layer1" | "layer2" | "layer3")[] = ["layer1", "layer2", "layer3"];
+      const layer = layers[currentLayerIndex];
+      setCurrentLayerIndex((currentLayerIndex + 1) % 3);
+      return layer;
+    }
+  };
+
   const play808 = (
     frequency: number,
     config: AudioEngineConfig,
     midiNote: number,
-    layerType: "core" | "layer1" | "layer2" | "layer3" = "core"
+    isCore: boolean = true
   ) => {
     if (!audioContextRef.current || !masterGainRef.current || !reverbRef.current) return;
 
@@ -123,7 +138,7 @@ export const useAudioEngine = () => {
     osc.frequency.value = frequency;
 
     // Add pitch envelope for 808 punch
-    const pitchEnvelope = frequency * (layerType === "core" ? 4 : 2);
+    const pitchEnvelope = frequency * (isCore ? 4 : 2);
     osc.frequency.setValueAtTime(pitchEnvelope, now);
     osc.frequency.exponentialRampToValueAtTime(frequency, now + 0.05);
 
@@ -132,13 +147,14 @@ export const useAudioEngine = () => {
     filter.frequency.value = 200 + (config.filter * 50); // 200Hz to 5200Hz
     filter.Q.value = config.resonance / 10;
 
-    // Configure envelope
+    // Configure envelope - layers have slightly different envelopes for variation
     const attackTime = (config.attack / 100) * 0.1; // 0 to 100ms
     const decayTime = (config.decay / 100) * 2; // 0 to 2 seconds
-    const sustainLevel = 0.3;
+    const sustainLevel = isCore ? 0.3 : 0.2;
+    const gainMultiplier = isCore ? 1 : 0.6; // Layers are quieter
 
     oscGain.gain.setValueAtTime(0, now);
-    oscGain.gain.linearRampToValueAtTime(config.gain / 100, now + attackTime);
+    oscGain.gain.linearRampToValueAtTime((config.gain / 100) * gainMultiplier, now + attackTime);
     oscGain.gain.exponentialRampToValueAtTime(sustainLevel, now + attackTime + decayTime);
     oscGain.gain.exponentialRampToValueAtTime(0.001, now + attackTime + decayTime + 0.5);
 
@@ -195,10 +211,28 @@ export const useAudioEngine = () => {
     // Store active note
     activeNotesRef.current.set(midiNote, { osc, gain: oscGain, filter });
 
-    // Clean up after note ends
+    // Clean up after note ends - use unique key for layers
+    const noteKey = isCore ? midiNote : midiNote + 10000;
     setTimeout(() => {
-      activeNotesRef.current.delete(midiNote);
+      activeNotesRef.current.delete(noteKey);
     }, (attackTime + decayTime + 0.5) * 1000);
+
+    return !isCore; // Return true if this was a layer (for visual feedback)
+  };
+
+  const playMulti808 = (
+    frequency: number,
+    config: AudioEngineConfig,
+    midiNote: number
+  ): "layer1" | "layer2" | "layer3" => {
+    // ALWAYS play the core 808
+    play808(frequency, config, midiNote, true);
+
+    // Play ONE of the texture layers (round robin or random)
+    const activeLayer = getNextLayer();
+    play808(frequency, config, midiNote + 1000, false); // Offset to avoid key collision
+
+    return activeLayer;
   };
 
   const stopNote = (midiNote: number) => {
@@ -272,6 +306,7 @@ export const useAudioEngine = () => {
   return {
     initialize,
     play808,
+    playMulti808,
     stopNote,
     updateMasterGain,
     updateFilter,
@@ -279,8 +314,11 @@ export const useAudioEngine = () => {
     startRecording,
     stopRecording,
     downloadRecording,
+    setTriggerMode,
     isInitialized,
     isRecording,
+    currentLayerIndex,
+    triggerMode,
     analyserNode: analyserRef.current,
     hasRecording: recordedChunksRef.current.length > 0,
   };

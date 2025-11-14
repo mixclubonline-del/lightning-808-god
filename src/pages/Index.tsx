@@ -9,6 +9,7 @@ import { SpectrumAnalyzer } from "@/components/SpectrumAnalyzer";
 import { VUMeter } from "@/components/VUMeter";
 import { DistortionModule } from "@/components/DistortionModule";
 import { RecordingControls } from "@/components/RecordingControls";
+import { LayerIndicator } from "@/components/LayerIndicator";
 import zeusImage from "@/assets/zeus-figure.png";
 import { Zap } from "lucide-react";
 import { useAudioEngine, midiToFrequency } from "@/hooks/useAudioEngine";
@@ -48,6 +49,7 @@ const Index = () => {
 
   const [lightningActive, setLightningActive] = useState(false);
   const [bassHit, setBassHit] = useState(false);
+  const [lastTriggeredLayer, setLastTriggeredLayer] = useState<"layer1" | "layer2" | "layer3" | null>(null);
 
   // Initialize audio on first user interaction
   useEffect(() => {
@@ -92,7 +94,7 @@ const Index = () => {
       wave, filter, vibrato, gain, attack, decay, reverb, resonance,
       distortionDrive, distortionTone, distortionMix 
     };
-    audioEngine.play808(midiToFrequency(36), config, 36, "core");
+    audioEngine.play808(midiToFrequency(36), config, 36, true);
     toast("⚡ Lightning strikes!");
   };
 
@@ -103,7 +105,15 @@ const Index = () => {
       distortionDrive, distortionTone, distortionMix 
     };
     const frequency = midiToFrequency(midiNote);
-    audioEngine.play808(frequency, config, midiNote, activeLayer);
+    
+    // Use Multi 808 engine when in multi808 mode
+    if (mode === "multi808") {
+      const triggeredLayer = audioEngine.playMulti808(frequency, config, midiNote);
+      setLastTriggeredLayer(triggeredLayer);
+      setTimeout(() => setLastTriggeredLayer(null), 200);
+    } else {
+      audioEngine.play808(frequency, config, midiNote, true);
+    }
     
     // Trigger visual feedback for bass notes
     if (midiNote < 48) {
@@ -131,7 +141,15 @@ const Index = () => {
     };
     const frequency = midiToFrequency(midiNote);
     
-    audioEngine.play808(frequency, config, midiNote, activeLayer);
+    // Use Multi 808 engine when in multi808 mode
+    if (mode === "multi808") {
+      const triggeredLayer = audioEngine.playMulti808(frequency, config, midiNote);
+      setLastTriggeredLayer(triggeredLayer);
+      setTimeout(() => setLastTriggeredLayer(null), 200);
+    } else {
+      audioEngine.play808(frequency, config, midiNote, true);
+    }
+    
     triggerLightning();
   };
 
@@ -175,7 +193,12 @@ const Index = () => {
           {/* Left Panel */}
           <div className="col-span-3 space-y-6">
             {mode === "multi808" ? (
-              <Multi808Panel onLayerChange={setActiveLayer} />
+              <Multi808Panel 
+                onLayerChange={setActiveLayer}
+                onTriggerModeChange={audioEngine.setTriggerMode}
+                triggerMode={audioEngine.triggerMode}
+                currentLayerIndex={audioEngine.currentLayerIndex}
+              />
             ) : (
               <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-6 space-y-6">
                 <div className="flex justify-around">
@@ -208,6 +231,8 @@ const Index = () => {
           {/* Center Panel - Zeus Figure */}
           <div className="col-span-6 space-y-4">
             <div className="relative bg-synth-panel rounded-lg border-2 border-synth-border h-[500px] flex items-center justify-center overflow-hidden">
+              {/* Layer indicator */}
+              <LayerIndicator activeLayer={lastTriggeredLayer} />
               <div 
                 className="absolute inset-0 bg-gradient-to-b from-primary/20 via-transparent to-transparent transition-all duration-150"
                 style={{
