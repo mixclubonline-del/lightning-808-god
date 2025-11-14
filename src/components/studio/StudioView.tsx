@@ -6,6 +6,7 @@ import { SliceAnalysisManager } from "./SliceAnalysisManager";
 import { SliceMatchPanel } from "./SliceMatchPanel";
 import { LayeringWorkspace } from "./LayeringWorkspace";
 import { DropZone } from "./DropZone";
+import { AudioConverter } from "./AudioConverter";
 import { Button } from "@/components/ui/button";
 import { extractAllSlices } from "@/utils/audioSlicer";
 import { Wand2 } from "lucide-react";
@@ -26,6 +27,7 @@ export const StudioView = ({
 }: StudioViewProps) => {
   const [recordingId, setRecordingId] = useState<string | null>(null);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
+  const [originalFileName, setOriginalFileName] = useState<string>("audio");
   const [sliceMarkers, setSliceMarkers] = useState<number[]>([]);
   const [slices, setSlices] = useState<any[]>([]);
   const [sliceIds, setSliceIds] = useState<string[]>([]);
@@ -36,6 +38,7 @@ export const StudioView = ({
   const handleRecordingReady = (id: string, buffer: AudioBuffer) => {
     setRecordingId(id);
     setAudioBuffer(buffer);
+    setOriginalFileName(`recording_${Date.now()}`);
     setSliceMarkers([]);
     setSlices([]);
     setSliceIds([]);
@@ -52,6 +55,7 @@ export const StudioView = ({
       const uploadId = `upload_${Date.now()}`;
       setRecordingId(uploadId);
       setAudioBuffer(buffer);
+      setOriginalFileName(file.name);
       setSliceMarkers([]);
       setSlices([]);
       setSliceIds([]);
@@ -134,30 +138,41 @@ export const StudioView = ({
 
       {/* Step 2: Waveform & Slicing */}
       {audioBuffer && (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-foreground">Waveform Editor</h3>
-            {sliceMarkers.length > 0 && slices.length === 0 && (
-              <Button onClick={handleCreateSlices} className="gap-2">
-                <Wand2 className="w-4 h-4" />
-                Create {sliceMarkers.length + 1} Slices
-              </Button>
-            )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main waveform area - takes 2 columns */}
+          <div className="lg:col-span-2 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-foreground">Waveform Editor</h3>
+              {sliceMarkers.length > 0 && slices.length === 0 && (
+                <Button onClick={handleCreateSlices} className="gap-2">
+                  <Wand2 className="w-4 h-4" />
+                  Create {sliceMarkers.length + 1} Slices
+                </Button>
+              )}
+            </div>
+
+            <AudioWaveformEditor
+              audioBuffer={audioBuffer}
+              sliceMarkers={sliceMarkers}
+              onMarkersChange={setSliceMarkers}
+              selectedSlice={selectedSlice}
+              onSliceSelect={setSelectedSlice}
+            />
+
+            <AutoSlicerControls
+              audioBuffer={audioBuffer}
+              onMarkersGenerated={setSliceMarkers}
+              onClearMarkers={() => setSliceMarkers([])}
+            />
           </div>
 
-          <AudioWaveformEditor
-            audioBuffer={audioBuffer}
-            sliceMarkers={sliceMarkers}
-            onMarkersChange={setSliceMarkers}
-            selectedSlice={selectedSlice}
-            onSliceSelect={setSelectedSlice}
-          />
-
-          <AutoSlicerControls
-            audioBuffer={audioBuffer}
-            onMarkersGenerated={setSliceMarkers}
-            onClearMarkers={() => setSliceMarkers([])}
-          />
+          {/* Format Converter sidebar - takes 1 column */}
+          <div className="lg:col-span-1">
+            <AudioConverter 
+              audioBuffer={audioBuffer} 
+              originalFileName={originalFileName}
+            />
+          </div>
         </div>
       )}
 
