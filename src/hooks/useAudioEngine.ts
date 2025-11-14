@@ -29,6 +29,13 @@ export const useAudioEngine = () => {
   const delayMixRef = useRef<GainNode | null>(null);
   const delayDryRef = useRef<GainNode | null>(null);
   
+  // Chorus nodes
+  const chorusDelaysRef = useRef<DelayNode[]>([]);
+  const chorusLFOsRef = useRef<OscillatorNode[]>([]);
+  const chorusGainsRef = useRef<GainNode[]>([]);
+  const chorusMixRef = useRef<GainNode | null>(null);
+  const chorusDryRef = useRef<GainNode | null>(null);
+  
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   const mediaStreamDestinationRef = useRef<MediaStreamAudioDestinationNode | null>(null);
@@ -77,6 +84,37 @@ export const useAudioEngine = () => {
     delayNodeRef.current.connect(delayFeedbackRef.current);
     delayFeedbackRef.current.connect(delayNodeRef.current);
 
+    // Create chorus effect (3 voices with LFO modulation)
+    chorusMixRef.current = audioContextRef.current.createGain();
+    chorusMixRef.current.gain.value = 0; // Start with chorus off
+    chorusDryRef.current = audioContextRef.current.createGain();
+    chorusDryRef.current.gain.value = 1.0;
+    
+    for (let i = 0; i < 3; i++) {
+      const delay = audioContextRef.current.createDelay(0.05);
+      delay.delayTime.value = 0.01 + (i * 0.005); // 10-20ms delays
+      
+      const lfo = audioContextRef.current.createOscillator();
+      lfo.frequency.value = 0.5 + (i * 0.2); // Slightly different LFO rates
+      
+      const lfoGain = audioContextRef.current.createGain();
+      lfoGain.gain.value = 0.002; // Small modulation depth
+      
+      const voiceGain = audioContextRef.current.createGain();
+      voiceGain.gain.value = 0.33; // Equal mix of 3 voices
+      
+      lfo.connect(lfoGain);
+      lfoGain.connect(delay.delayTime);
+      delay.connect(voiceGain);
+      voiceGain.connect(chorusMixRef.current);
+      
+      lfo.start();
+      
+      chorusDelaysRef.current.push(delay);
+      chorusLFOsRef.current.push(lfo);
+      chorusGainsRef.current.push(lfoGain);
+    }
+
     // Create master gain
     masterGainRef.current = audioContextRef.current.createGain();
     masterGainRef.current.gain.value = 0.5;
@@ -88,11 +126,17 @@ export const useAudioEngine = () => {
     // Create media stream for recording
     mediaStreamDestinationRef.current = audioContextRef.current.createMediaStreamDestination();
 
-    // Connect audio graph: distortion -> delay (wet/dry mix) -> analyser -> master gain -> destination
-    distortionRef.current.connect(delayDryRef.current);
-    distortionRef.current.connect(delayNodeRef.current);
-    delayNodeRef.current.connect(delayMixRef.current);
+    // Connect audio graph: distortion -> chorus -> delay -> analyser -> master gain -> destination
+    distortionRef.current.connect(chorusDryRef.current);
+    distortionRef.current.connect(chorusDelaysRef.current[0]);
+    distortionRef.current.connect(chorusDelaysRef.current[1]);
+    distortionRef.current.connect(chorusDelaysRef.current[2]);
+    
+    chorusDryRef.current.connect(delayDryRef.current);
+    chorusMixRef.current.connect(delayDryRef.current);
+    
     delayDryRef.current.connect(analyserRef.current);
+    delayNodeRef.current.connect(delayMixRef.current);
     delayMixRef.current.connect(analyserRef.current);
     
     analyserRef.current.connect(masterGainRef.current);
@@ -323,6 +367,33 @@ export const useAudioEngine = () => {
     }
   };
 
+  const updateChorus = (rate: number, depth: number, mix: number, enabled: boolean) => {
+    if (chorusMixRef.current && chorusDryRef.current && audioContextRef.current) {
+      const now = audioContextRef.current.currentTime;
+      
+      // Update LFO rates and depths
+      chorusLFOsRef.current.forEach((lfo, i) => {
+        // Rate: 0-100 maps to 0.1-10 Hz
+        const freq = 0.1 + (rate / 100) * 9.9;
+        lfo.frequency.setValueAtTime(freq + (i * 0.2), now);
+      });
+      
+      chorusGainsRef.current.forEach((gain) => {
+        // Depth: 0-100 maps to 0-0.005s modulation
+        gain.gain.value = (depth / 100) * 0.005;
+      });
+      
+      // Mix: wet/dry balance
+      if (enabled) {
+        chorusMixRef.current.gain.value = mix / 100;
+        chorusDryRef.current.gain.value = 1 - (mix / 100);
+      } else {
+        chorusMixRef.current.gain.value = 0;
+        chorusDryRef.current.gain.value = 1;
+      }
+    }
+  };
+
   const startRecording = () => {
     if (!mediaStreamDestinationRef.current) return;
 
@@ -382,6 +453,7 @@ export const useAudioEngine = () => {
     updateFilter,
     updateDistortion,
     updateDelay,
+    updateChorus,
     startRecording,
     stopRecording,
     downloadRecording,
