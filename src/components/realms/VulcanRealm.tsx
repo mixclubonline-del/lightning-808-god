@@ -7,6 +7,7 @@ import { MarsVerb } from "@/components/MarsVerb";
 import { ChronosVerb } from "@/components/ChronosVerb";
 import { MorpheusModule } from "@/components/MorpheusModule";
 import { AtlasCompressor } from "@/components/AtlasCompressor";
+import { ConstellationLines } from "@/components/ConstellationLines";
 import { Flame } from "lucide-react";
 
 interface VulcanRealmProps {
@@ -75,8 +76,18 @@ interface VulcanRealmProps {
 }
 
 export function VulcanRealm(props: VulcanRealmProps) {
+  const connections = [
+    { from: "vulcan-forge", to: "vulcan-echo" },
+    { from: "vulcan-echo", to: "vulcan-chorus" },
+    { from: "vulcan-chorus", to: "vulcan-reverb" },
+    { from: "vulcan-reverb", to: "vulcan-mars" },
+    { from: "vulcan-mars", to: "vulcan-chronos" },
+    { from: "vulcan-chronos", to: "vulcan-morpheus" },
+    { from: "vulcan-morpheus", to: "vulcan-atlas" },
+  ];
+
   return (
-    <div className="relative min-h-full p-8 bg-gradient-to-b from-orange-950/20 to-transparent">
+    <div className="relative min-h-full p-8 bg-gradient-to-b from-orange-950/20 to-transparent constellation-container">
       {/* Realm Title */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
         <div className="flex items-center gap-3 text-orange-500">
@@ -94,9 +105,12 @@ export function VulcanRealm(props: VulcanRealmProps) {
         <Flame className="w-[600px] h-[600px]" />
       </div>
 
+      <ConstellationLines connections={connections} color="hsl(24, 95%, 53%)" active={true} />
+
       <div className="relative mt-24 space-y-6">
         {/* Vulcan Master Distortion */}
-        <VulcanForge
+        <div data-module="vulcan-forge">
+          <VulcanForge
           drive={props.distortionDrive}
           tone={props.distortionTone}
           mix={props.distortionMix}
@@ -104,10 +118,12 @@ export function VulcanRealm(props: VulcanRealmProps) {
           onToneChange={props.setDistortionTone}
           onMixChange={props.setDistortionMix}
         />
+        </div>
 
         {/* Effects Grid */}
         <div className="grid grid-cols-2 gap-6">
-          <EchoModule
+          <div data-module="vulcan-echo">
+            <EchoModule
             time={props.delayTime}
             onTimeChange={props.setDelayTime}
             feedback={props.delayFeedback}
@@ -117,8 +133,10 @@ export function VulcanRealm(props: VulcanRealmProps) {
             enabled={props.delayEnabled}
             onEnabledChange={props.setDelayEnabled}
           />
-          
-          <SirenChorus
+          </div>
+
+          <div data-module="vulcan-chorus">
+            <SirenChorus
             rate={props.chorusRate}
             onRateChange={props.setChorusRate}
             depth={props.chorusDepth}
@@ -128,8 +146,10 @@ export function VulcanRealm(props: VulcanRealmProps) {
             enabled={props.chorusEnabled}
             onEnabledChange={props.setChorusEnabled}
           />
+          </div>
 
-          <ReverbModule
+          <div data-module="vulcan-reverb">
+            <ReverbModule
             size={props.reverbSize}
             damping={props.reverbDamping}
             mix={props.reverbMix}
@@ -139,8 +159,10 @@ export function VulcanRealm(props: VulcanRealmProps) {
             enabled={props.reverbEnabled}
             onEnabledChange={props.setReverbEnabled}
           />
+          </div>
 
-          <MarsVerb
+          <div data-module="vulcan-mars">
+            <MarsVerb
             size={props.marsSize}
             shimmer={props.marsDamping}
             mix={props.marsMix}
@@ -150,8 +172,10 @@ export function VulcanRealm(props: VulcanRealmProps) {
             enabled={props.marsEnabled}
             onEnabledChange={props.setMarsEnabled}
           />
+          </div>
 
-          <ChronosVerb
+          <div data-module="vulcan-chronos">
+            <ChronosVerb
             size={props.chronosSize}
             reverse={props.chronosDamping}
             mix={props.chronosMix}
@@ -161,8 +185,10 @@ export function VulcanRealm(props: VulcanRealmProps) {
             enabled={props.chronosEnabled}
             onEnabledChange={props.setChronosEnabled}
           />
+          </div>
 
-          <MorpheusModule
+          <div data-module="vulcan-morpheus">
+            <MorpheusModule
             amount={props.morpheusDepth}
             onAmountChange={props.setMorpheusDepth}
             smoothing={props.morpheusRate}
@@ -172,8 +198,10 @@ export function VulcanRealm(props: VulcanRealmProps) {
             enabled={props.morpheusEnabled}
             onEnabledChange={props.setMorpheusEnabled}
           />
+          </div>
 
-          <AtlasCompressor
+          <div data-module="vulcan-atlas">
+            <AtlasCompressor
             threshold={props.atlasThreshold}
             onThresholdChange={props.setAtlasThreshold}
             ratio={props.atlasRatio}
@@ -185,6 +213,7 @@ export function VulcanRealm(props: VulcanRealmProps) {
             enabled={props.atlasEnabled}
             onEnabledChange={props.setAtlasEnabled}
           />
+          </div>
         </div>
 
         {/* Signal Flow */}

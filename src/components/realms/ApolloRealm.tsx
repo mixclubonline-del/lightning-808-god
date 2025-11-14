@@ -2,6 +2,7 @@ import { OrpheusKeys } from "@/components/OrpheusKeys";
 import { ApolloEnvelope } from "@/components/ApolloEnvelope";
 import { HarmoniaChords } from "@/components/HarmoniaChords";
 import { OlympusPads } from "@/components/OlympusPads";
+import { ConstellationLines } from "@/components/ConstellationLines";
 import { Music } from "lucide-react";
 
 interface ApolloRealmProps {
@@ -20,8 +21,13 @@ interface ApolloRealmProps {
 }
 
 export function ApolloRealm(props: ApolloRealmProps) {
+  const connections = [
+    { from: "apollo-keyboard", to: "apollo-envelope" },
+    { from: "apollo-envelope", to: "apollo-pads" },
+  ];
+
   return (
-    <div className="relative min-h-full p-8 bg-gradient-to-b from-blue-950/20 to-transparent">
+    <div className="relative min-h-full p-8 bg-gradient-to-b from-blue-950/20 to-transparent constellation-container">
       {/* Realm Title */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
         <div className="flex items-center gap-3 text-blue-500">
@@ -39,12 +45,17 @@ export function ApolloRealm(props: ApolloRealmProps) {
         <Music className="w-[600px] h-[600px]" />
       </div>
 
+      <ConstellationLines connections={connections} color="hsl(217, 91%, 60%)" active={true} />
+
       <div className="relative mt-24 space-y-6">
         {/* Full Keyboard */}
-        <OrpheusKeys onNoteOn={props.onNoteOn} onNoteOff={props.onNoteOff} />
+        <div data-module="apollo-keyboard">
+          <OrpheusKeys onNoteOn={props.onNoteOn} onNoteOff={props.onNoteOff} />
+        </div>
 
         {/* Envelope */}
-        <ApolloEnvelope
+        <div data-module="apollo-envelope">
+          <ApolloEnvelope
           attack={props.attack}
           decay={props.decay}
           sustain={props.sustain}
@@ -54,12 +65,15 @@ export function ApolloRealm(props: ApolloRealmProps) {
           onSustainChange={props.setSustain}
           onReleaseChange={props.setRelease}
         />
+        </div>
 
         {/* Chord Generator - Placeholder until wired up */}
         {/* <HarmoniaChords ... /> */}
 
         {/* Pads */}
-        <OlympusPads onPadTrigger={props.onPadTrigger} />
+        <div data-module="apollo-pads">
+          <OlympusPads onPadTrigger={props.onPadTrigger} />
+        </div>
       </div>
     </div>
   );
