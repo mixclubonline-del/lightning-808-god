@@ -10,9 +10,11 @@ import { VUMeter } from "@/components/VUMeter";
 import { DistortionModule } from "@/components/DistortionModule";
 import { RecordingControls } from "@/components/RecordingControls";
 import { LayerIndicator } from "@/components/LayerIndicator";
+import { ChordGenerator } from "@/components/ChordGenerator";
 import zeusImage from "@/assets/zeus-figure.png";
 import { Zap } from "lucide-react";
 import { useAudioEngine, midiToFrequency } from "@/hooks/useAudioEngine";
+import { generateChord, calculateStrumDelay } from "@/utils/chordGenerator";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -50,6 +52,13 @@ const Index = () => {
   const [lightningActive, setLightningActive] = useState(false);
   const [bassHit, setBassHit] = useState(false);
   const [lastTriggeredLayer, setLastTriggeredLayer] = useState<"layer1" | "layer2" | "layer3" | null>(null);
+
+  // Chord Generator settings
+  const [chordEnabled, setChordEnabled] = useState(false);
+  const [chordType, setChordType] = useState("major");
+  const [chordInversion, setChordInversion] = useState(0);
+  const [chordSpread, setChordSpread] = useState(30);
+  const [chordStrum, setChordStrum] = useState(0);
 
   // Initialize audio on first user interaction
   useEffect(() => {
@@ -104,21 +113,51 @@ const Index = () => {
       wave, filter, vibrato, gain, attack, decay, reverb, resonance,
       distortionDrive, distortionTone, distortionMix 
     };
-    const frequency = midiToFrequency(midiNote);
-    
-    // Use Multi 808 engine when in multi808 mode
-    if (mode === "multi808") {
-      const triggeredLayer = audioEngine.playMulti808(frequency, config, midiNote);
-      setLastTriggeredLayer(triggeredLayer);
-      setTimeout(() => setLastTriggeredLayer(null), 200);
+
+    // Check if chord generator is enabled
+    if (chordEnabled) {
+      const chordNotes = generateChord(midiNote, chordType, chordInversion, chordSpread);
+      
+      chordNotes.forEach((note, index) => {
+        const delay = calculateStrumDelay(index, chordNotes.length, chordStrum);
+        
+        setTimeout(() => {
+          const frequency = midiToFrequency(note);
+          
+          if (mode === "multi808") {
+            const triggeredLayer = audioEngine.playMulti808(frequency, config, note);
+            if (index === 0) {
+              setLastTriggeredLayer(triggeredLayer);
+              setTimeout(() => setLastTriggeredLayer(null), 200);
+            }
+          } else {
+            audioEngine.play808(frequency, config, note, true);
+          }
+        }, delay);
+      });
+
+      // Trigger visual feedback for bass chords
+      if (midiNote < 48) {
+        setBassHit(true);
+        setTimeout(() => setBassHit(false), 100);
+      }
     } else {
-      audioEngine.play808(frequency, config, midiNote, true);
-    }
-    
-    // Trigger visual feedback for bass notes
-    if (midiNote < 48) {
-      setBassHit(true);
-      setTimeout(() => setBassHit(false), 100);
+      // Single note mode
+      const frequency = midiToFrequency(midiNote);
+      
+      if (mode === "multi808") {
+        const triggeredLayer = audioEngine.playMulti808(frequency, config, midiNote);
+        setLastTriggeredLayer(triggeredLayer);
+        setTimeout(() => setLastTriggeredLayer(null), 200);
+      } else {
+        audioEngine.play808(frequency, config, midiNote, true);
+      }
+      
+      // Trigger visual feedback for bass notes
+      if (midiNote < 48) {
+        setBassHit(true);
+        setTimeout(() => setBassHit(false), 100);
+      }
     }
   };
 
@@ -330,6 +369,19 @@ const Index = () => {
               onToneChange={setDistortionTone}
               mix={distortionMix}
               onMixChange={setDistortionMix}
+            />
+
+            <ChordGenerator
+              enabled={chordEnabled}
+              onEnabledChange={setChordEnabled}
+              chordType={chordType}
+              onChordTypeChange={setChordType}
+              inversion={chordInversion}
+              onInversionChange={setChordInversion}
+              spread={chordSpread}
+              onSpreadChange={setChordSpread}
+              strum={chordStrum}
+              onStrumChange={setChordStrum}
             />
 
             <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-4">
