@@ -1,11 +1,13 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Minimize2, Maximize2, X, Settings, FileText, HelpCircle } from "lucide-react";
+import { SoundSettingsPanel } from "./SoundSettingsPanel";
 
 interface AppContainerProps {
   children: ReactNode;
 }
 
 export const AppContainer = ({ children }: AppContainerProps) => {
+  const [showSettings, setShowSettings] = useState(false);
   return (
     <div className="fixed inset-0 flex flex-col bg-synth-deep overflow-hidden rounded-3xl m-2 shadow-2xl">
       {/* Window Chrome / Title Bar */}
@@ -24,7 +26,10 @@ export const AppContainer = ({ children }: AppContainerProps) => {
             <FileText className="w-3 h-3" />
             File
           </button>
-          <button className="hover:text-foreground transition-colors flex items-center gap-1">
+          <button 
+            onClick={() => setShowSettings(true)}
+            className="hover:text-foreground transition-colors flex items-center gap-1"
+          >
             <Settings className="w-3 h-3" />
             Settings
           </button>
@@ -67,6 +72,8 @@ export const AppContainer = ({ children }: AppContainerProps) => {
           <span>Ready</span>
         </div>
       </div>
+
+      <SoundSettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   );
 };
