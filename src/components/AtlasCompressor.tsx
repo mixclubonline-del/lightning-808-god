@@ -1,6 +1,6 @@
 import { Knob } from "./Knob";
 
-interface SpandexCompressorProps {
+interface AtlasCompressorProps {
   threshold: number;
   onThresholdChange: (value: number) => void;
   ratio: number;
@@ -13,7 +13,7 @@ interface SpandexCompressorProps {
   onEnabledChange: (enabled: boolean) => void;
 }
 
-export const SpandexCompressor = ({
+export const AtlasCompressor = ({
   threshold,
   onThresholdChange,
   ratio,
@@ -24,20 +24,20 @@ export const SpandexCompressor = ({
   onReleaseChange,
   enabled,
   onEnabledChange,
-}: SpandexCompressorProps) => {
+}: AtlasCompressorProps) => {
   return (
     <div className={`bg-synth-panel rounded-lg border-2 p-4 transition-all ${
-      enabled ? 'border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]' : 'border-synth-border'
+      enabled ? 'border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)]' : 'border-synth-border'
     }`}>
       <div className="flex items-center justify-between mb-4">
-        <div className="text-emerald-400 text-sm font-medium uppercase tracking-wider">
-          Spandex Compressor
+        <div className="text-amber-400 text-sm font-medium uppercase tracking-wider">
+          Atlas Compressor
         </div>
         <button
           onClick={() => onEnabledChange(!enabled)}
           className={`px-3 py-1 rounded text-xs font-medium transition-all ${
             enabled 
-              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500' 
+              ? 'bg-amber-500/20 text-amber-400 border border-amber-500' 
               : 'bg-background/30 text-muted-foreground border border-synth-border'
           }`}
         >
@@ -54,7 +54,7 @@ export const SpandexCompressor = ({
 
       {/* Visual compression indicator */}
       {enabled && (
-        <div className="mt-4 h-20 bg-background/30 rounded border border-emerald-500/30 p-2">
+        <div className="mt-4 h-20 bg-background/30 rounded border border-amber-500/30 p-2">
           <svg viewBox="0 0 200 60" className="w-full h-full">
             {/* Grid */}
             <line x1="0" y1="30" x2="200" y2="30" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1" strokeDasharray="2,2" />
@@ -82,9 +82,9 @@ export const SpandexCompressor = ({
                 return `${xPos},${yPos}`;
               }).join(' L ')}`}
               fill="none"
-              stroke="hsl(var(--emerald-500))"
+              stroke="rgb(245, 158, 11)"
               strokeWidth="2"
-              className="drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]"
+              className="drop-shadow-[0_0_8px_rgba(245,158,11,0.6)]"
             />
             
             {/* Threshold line */}
@@ -93,7 +93,7 @@ export const SpandexCompressor = ({
               y1={30 - threshold / 10} 
               x2="200" 
               y2={30 - threshold / 10} 
-              stroke="hsl(var(--emerald-500))" 
+              stroke="rgb(245, 158, 11)" 
               strokeWidth="1" 
               strokeOpacity="0.6"
               strokeDasharray="4,4"

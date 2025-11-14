@@ -1,6 +1,6 @@
 import { Knob } from "./Knob";
 
-interface DelayModuleProps {
+interface EchoModuleProps {
   time: number;
   onTimeChange: (value: number) => void;
   feedback: number;
@@ -11,7 +11,7 @@ interface DelayModuleProps {
   onEnabledChange: (enabled: boolean) => void;
 }
 
-export const DelayModule = ({
+export const EchoModule = ({
   time,
   onTimeChange,
   feedback,
@@ -20,20 +20,20 @@ export const DelayModule = ({
   onMixChange,
   enabled,
   onEnabledChange,
-}: DelayModuleProps) => {
+}: EchoModuleProps) => {
   return (
     <div className={`bg-synth-panel rounded-lg border-2 p-4 transition-all ${
-      enabled ? 'border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]' : 'border-synth-border'
+      enabled ? 'border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.4)]' : 'border-synth-border'
     }`}>
       <div className="flex items-center justify-between mb-4">
-        <div className="text-purple-400 text-sm font-medium uppercase tracking-wider">
-          Delay
+        <div className="text-cyan-400 text-sm font-medium uppercase tracking-wider">
+          Echo
         </div>
         <button
           onClick={() => onEnabledChange(!enabled)}
           className={`px-3 py-1 rounded text-xs font-medium transition-all ${
             enabled 
-              ? 'bg-purple-500/20 text-purple-400 border border-purple-500' 
+              ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500' 
               : 'bg-background/30 text-muted-foreground border border-synth-border'
           }`}
         >
@@ -48,12 +48,12 @@ export const DelayModule = ({
       
       {/* Visual delay indicator */}
       {enabled && (
-        <div className="mt-4 h-8 bg-background/30 rounded border border-purple-500/30 p-1 overflow-hidden">
+        <div className="mt-4 h-8 bg-background/30 rounded border border-cyan-500/30 p-1 overflow-hidden">
           <div className="flex items-center h-full gap-1">
             {[...Array(8)].map((_, i) => (
               <div
                 key={i}
-                className="flex-1 bg-purple-500 rounded-sm transition-all"
+                className="flex-1 bg-cyan-500 rounded-sm transition-all"
                 style={{
                   opacity: Math.max(0.1, 1 - (i * feedback / 800)),
                   height: `${100 - (i * 10)}%`,

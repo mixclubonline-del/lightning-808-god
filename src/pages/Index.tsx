@@ -7,15 +7,15 @@ import { WaveformDisplay } from "@/components/WaveformDisplay";
 import { Multi808Panel } from "@/components/Multi808Panel";
 import { SpectrumAnalyzer } from "@/components/SpectrumAnalyzer";
 import { VUMeter } from "@/components/VUMeter";
-import { DistortionModule } from "@/components/DistortionModule";
-import { DelayModule } from "@/components/DelayModule";
-import { ChorusModule } from "@/components/ChorusModule";
+import { VulcanForge } from "@/components/VulcanForge";
+import { EchoModule } from "@/components/EchoModule";
+import { SirenChorus } from "@/components/SirenChorus";
 import { ReverbModule } from "@/components/ReverbModule";
 import { MarsVerb } from "@/components/MarsVerb";
-import { PastTimeVerb } from "@/components/PastTimeVerb";
-import { HalfTimeModule } from "@/components/HalfTimeModule";
-import { SpandexCompressor } from "@/components/SpandexCompressor";
-import { ADSRModule } from "@/components/ADSRModule";
+import { ChronosVerb } from "@/components/ChronosVerb";
+import { MorpheusModule } from "@/components/MorpheusModule";
+import { AtlasCompressor } from "@/components/AtlasCompressor";
+import { ApolloEnvelope } from "@/components/ApolloEnvelope";
 import { RecordingControls } from "@/components/RecordingControls";
 import { LayerIndicator } from "@/components/LayerIndicator";
 import { ChordGenerator } from "@/components/ChordGenerator";
@@ -526,7 +526,7 @@ const Index = () => {
           {/* Right Panel */}
           <div className="col-span-3 space-y-6">
             {/* ADSR Envelope Module */}
-            <ADSRModule
+            <ApolloEnvelope
               attack={attack}
               onAttackChange={setAttack}
               decay={decay}
@@ -565,7 +565,7 @@ const Index = () => {
               </div>
             </div>
 
-            <DistortionModule
+            <VulcanForge
               drive={distortionDrive}
               onDriveChange={setDistortionDrive}
               tone={distortionTone}
@@ -574,7 +574,7 @@ const Index = () => {
               onMixChange={setDistortionMix}
             />
 
-            <DelayModule
+            <EchoModule
               time={delayTime}
               onTimeChange={setDelayTime}
               feedback={delayFeedback}
@@ -585,7 +585,7 @@ const Index = () => {
               onEnabledChange={setDelayEnabled}
             />
 
-            <ChorusModule
+            <SirenChorus
               rate={chorusRate}
               onRateChange={setChorusRate}
               depth={chorusDepth}
@@ -618,7 +618,7 @@ const Index = () => {
               onEnabledChange={setMarsEnabled}
             />
             
-            <PastTimeVerb
+            <ChronosVerb
               size={pastTimeSize}
               reverse={pastTimeReverse}
               mix={pastTimeMix}
@@ -629,7 +629,7 @@ const Index = () => {
               onEnabledChange={setPastTimeEnabled}
             />
             
-            <HalfTimeModule
+            <MorpheusModule
               amount={halfTimeAmount}
               smoothing={halfTimeSmoothing}
               mix={halfTimeMix}
@@ -640,7 +640,7 @@ const Index = () => {
               onEnabledChange={setHalfTimeEnabled}
             />
             
-            <SpandexCompressor
+            <AtlasCompressor
               threshold={compressorThreshold}
               ratio={compressorRatio}
               attack={compressorAttack}

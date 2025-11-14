@@ -1,7 +1,7 @@
 import { Knob } from "./Knob";
 import { useState } from "react";
 
-interface ChorusModuleProps {
+interface SirenChorusProps {
   rate: number;
   onRateChange: (value: number) => void;
   depth: number;
@@ -12,7 +12,7 @@ interface ChorusModuleProps {
   onEnabledChange: (enabled: boolean) => void;
 }
 
-export const ChorusModule = ({
+export const SirenChorus = ({
   rate,
   onRateChange,
   depth,
@@ -21,22 +21,22 @@ export const ChorusModule = ({
   onMixChange,
   enabled,
   onEnabledChange,
-}: ChorusModuleProps) => {
+}: SirenChorusProps) => {
   const [voices, setVoices] = useState(3);
 
   return (
     <div className={`bg-synth-panel rounded-lg border-2 p-4 transition-all ${
-      enabled ? 'border-pink-500 shadow-[0_0_20px_rgba(236,72,153,0.4)]' : 'border-synth-border'
+      enabled ? 'border-teal-500 shadow-[0_0_20px_rgba(20,184,166,0.4)]' : 'border-synth-border'
     }`}>
       <div className="flex items-center justify-between mb-4">
-        <div className="text-pink-400 text-sm font-medium uppercase tracking-wider">
-          Chorus
+        <div className="text-teal-400 text-sm font-medium uppercase tracking-wider">
+          Siren Chorus
         </div>
         <button
           onClick={() => onEnabledChange(!enabled)}
           className={`px-3 py-1 rounded text-xs font-medium transition-all ${
             enabled 
-              ? 'bg-pink-500/20 text-pink-400 border border-pink-500' 
+              ? 'bg-teal-500/20 text-teal-400 border border-teal-500' 
               : 'bg-background/30 text-muted-foreground border border-synth-border'
           }`}
         >
@@ -59,7 +59,7 @@ export const ChorusModule = ({
             onClick={() => setVoices(v)}
             className={`px-2 py-1 rounded text-xs transition-all ${
               voices === v
-                ? 'bg-pink-500/20 text-pink-400 border border-pink-500'
+                ? 'bg-teal-500/20 text-teal-400 border border-teal-500'
                 : 'bg-background/30 text-muted-foreground border border-synth-border'
             }`}
           >
@@ -70,7 +70,7 @@ export const ChorusModule = ({
       
       {/* Visual LFO waveform */}
       {enabled && (
-        <div className="h-16 bg-background/30 rounded border border-pink-500/30 p-2">
+        <div className="h-16 bg-background/30 rounded border border-teal-500/30 p-2">
           <svg viewBox="0 0 200 40" className="w-full h-full">
             {/* Grid */}
             <line x1="0" y1="20" x2="200" y2="20" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1" />
@@ -87,9 +87,9 @@ export const ChorusModule = ({
                   return `${xPos},${yPos}`;
                 }).join(' L ')}`}
                 fill="none"
-                stroke="hsl(var(--pink-500))"
+                stroke="rgb(20, 184, 166)"
                 strokeWidth="1.5"
-                className="drop-shadow-[0_0_4px_rgba(236,72,153,0.6)]"
+                className="drop-shadow-[0_0_4px_rgba(20,184,166,0.6)]"
                 style={{
                   opacity: 0.4 + (i * 0.2),
                   animation: `pulse ${2 / (rate / 50 + 0.1)}s ease-in-out infinite`,

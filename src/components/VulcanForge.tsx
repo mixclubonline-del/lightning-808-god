@@ -1,6 +1,6 @@
 import { Knob } from "./Knob";
 
-interface DistortionModuleProps {
+interface VulcanForgeProps {
   drive: number;
   onDriveChange: (value: number) => void;
   tone: number;
@@ -9,18 +9,18 @@ interface DistortionModuleProps {
   onMixChange: (value: number) => void;
 }
 
-export const DistortionModule = ({
+export const VulcanForge = ({
   drive,
   onDriveChange,
   tone,
   onToneChange,
   mix,
   onMixChange,
-}: DistortionModuleProps) => {
+}: VulcanForgeProps) => {
   return (
-    <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-4">
-      <div className="text-primary text-sm font-medium uppercase tracking-wider mb-4 text-center">
-        Distortion
+    <div className="bg-synth-panel rounded-lg border-2 border-orange-600/50 p-4 shadow-[0_0_15px_rgba(234,88,12,0.3)]">
+      <div className="text-orange-400 text-sm font-medium uppercase tracking-wider mb-4 text-center">
+        Vulcan Forge
       </div>
       <div className="flex justify-around">
         <Knob label="Drive" value={drive} onChange={onDriveChange} />
