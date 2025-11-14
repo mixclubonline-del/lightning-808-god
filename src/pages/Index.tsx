@@ -410,7 +410,9 @@ const Index = () => {
             />
           ) : (
           // Main Synth View
-          <div className="grid grid-cols-12 gap-6">
+          <div className="space-y-6">
+            {/* Top Row - Main Controls */}
+            <div className="grid grid-cols-12 gap-6">
           {/* Left Panel */}
           <div className="col-span-3 space-y-6">
             {mode === "multi808" ? (
@@ -554,107 +556,112 @@ const Index = () => {
               </div>
             </div>
 
-            <VulcanForge
-              drive={distortionDrive}
-              onDriveChange={setDistortionDrive}
-              tone={distortionTone}
-              onToneChange={setDistortionTone}
-              mix={distortionMix}
-              onMixChange={setDistortionMix}
-            />
+            </div>
+            </div>
 
-            <EchoModule
-              time={delayTime}
-              onTimeChange={setDelayTime}
-              feedback={delayFeedback}
-              onFeedbackChange={setDelayFeedback}
-              mix={delayMix}
-              onMixChange={setDelayMix}
-              enabled={delayEnabled}
-              onEnabledChange={setDelayEnabled}
-            />
+            {/* Bottom Row - Effects Modules Grid */}
+            <div className="grid grid-cols-4 gap-6">
+              <VulcanForge
+                drive={distortionDrive}
+                onDriveChange={setDistortionDrive}
+                tone={distortionTone}
+                onToneChange={setDistortionTone}
+                mix={distortionMix}
+                onMixChange={setDistortionMix}
+              />
 
-            <SirenChorus
-              rate={chorusRate}
-              onRateChange={setChorusRate}
-              depth={chorusDepth}
-              onDepthChange={setChorusDepth}
-              mix={chorusMix}
-              onMixChange={setChorusMix}
-              enabled={chorusEnabled}
-              onEnabledChange={setChorusEnabled}
-            />
+              <AtlasCompressor
+                threshold={compressorThreshold}
+                ratio={compressorRatio}
+                attack={compressorAttack}
+                release={compressorRelease}
+                enabled={compressorEnabled}
+                onThresholdChange={setCompressorThreshold}
+                onRatioChange={setCompressorRatio}
+                onAttackChange={setCompressorAttack}
+                onReleaseChange={setCompressorRelease}
+                onEnabledChange={setCompressorEnabled}
+              />
 
-            <ReverbModule
-              size={reverbSize}
-              damping={reverbDamping}
-              mix={reverbMix}
-              enabled={reverbEnabled}
-              onSizeChange={setReverbSize}
-              onDampingChange={setReverbDamping}
-              onMixChange={setReverbMix}
-              onEnabledChange={setReverbEnabled}
-            />
-            
-            <MarsVerb
-              size={marsSize}
-              shimmer={marsShimmer}
-              mix={marsMix}
-              enabled={marsEnabled}
-              onSizeChange={setMarsSize}
-              onShimmerChange={setMarsShimmer}
-              onMixChange={setMarsMix}
-              onEnabledChange={setMarsEnabled}
-            />
-            
-            <ChronosVerb
-              size={pastTimeSize}
-              reverse={pastTimeReverse}
-              mix={pastTimeMix}
-              enabled={pastTimeEnabled}
-              onSizeChange={setPastTimeSize}
-              onReverseChange={setPastTimeReverse}
-              onMixChange={setPastTimeMix}
-              onEnabledChange={setPastTimeEnabled}
-            />
-            
-            <MorpheusModule
-              amount={halfTimeAmount}
-              smoothing={halfTimeSmoothing}
-              mix={halfTimeMix}
-              enabled={halfTimeEnabled}
-              onAmountChange={setHalfTimeAmount}
-              onSmoothingChange={setHalfTimeSmoothing}
-              onMixChange={setHalfTimeMix}
-              onEnabledChange={setHalfTimeEnabled}
-            />
-            
-            <AtlasCompressor
-              threshold={compressorThreshold}
-              ratio={compressorRatio}
-              attack={compressorAttack}
-              release={compressorRelease}
-              enabled={compressorEnabled}
-              onThresholdChange={setCompressorThreshold}
-              onRatioChange={setCompressorRatio}
-              onAttackChange={setCompressorAttack}
-              onReleaseChange={setCompressorRelease}
-              onEnabledChange={setCompressorEnabled}
-            />
+              <EchoModule
+                time={delayTime}
+                onTimeChange={setDelayTime}
+                feedback={delayFeedback}
+                onFeedbackChange={setDelayFeedback}
+                mix={delayMix}
+                onMixChange={setDelayMix}
+                enabled={delayEnabled}
+                onEnabledChange={setDelayEnabled}
+              />
 
-            <HarmoniaChords
-              enabled={chordEnabled}
-              onEnabledChange={setChordEnabled}
-              chordType={chordType}
-              onChordTypeChange={setChordType}
-              inversion={chordInversion}
-              onInversionChange={setChordInversion}
-              spread={chordSpread}
-              onSpreadChange={setChordSpread}
-              strum={chordStrum}
-              onStrumChange={setChordStrum}
-            />
-          </div>
+              <SirenChorus
+                rate={chorusRate}
+                onRateChange={setChorusRate}
+                depth={chorusDepth}
+                onDepthChange={setChorusDepth}
+                mix={chorusMix}
+                onMixChange={setChorusMix}
+                enabled={chorusEnabled}
+                onEnabledChange={setChorusEnabled}
+              />
+
+              <ReverbModule
+                size={reverbSize}
+                damping={reverbDamping}
+                mix={reverbMix}
+                enabled={reverbEnabled}
+                onSizeChange={setReverbSize}
+                onDampingChange={setReverbDamping}
+                onMixChange={setReverbMix}
+                onEnabledChange={setReverbEnabled}
+              />
+              
+              <MarsVerb
+                size={marsSize}
+                shimmer={marsShimmer}
+                mix={marsMix}
+                enabled={marsEnabled}
+                onSizeChange={setMarsSize}
+                onShimmerChange={setMarsShimmer}
+                onMixChange={setMarsMix}
+                onEnabledChange={setMarsEnabled}
+              />
+              
+              <ChronosVerb
+                size={pastTimeSize}
+                reverse={pastTimeReverse}
+                mix={pastTimeMix}
+                enabled={pastTimeEnabled}
+                onSizeChange={setPastTimeSize}
+                onReverseChange={setPastTimeReverse}
+                onMixChange={setPastTimeMix}
+                onEnabledChange={setPastTimeEnabled}
+              />
+              
+              <MorpheusModule
+                amount={halfTimeAmount}
+                smoothing={halfTimeSmoothing}
+                mix={halfTimeMix}
+                enabled={halfTimeEnabled}
+                onAmountChange={setHalfTimeAmount}
+                onSmoothingChange={setHalfTimeSmoothing}
+                onMixChange={setHalfTimeMix}
+                onEnabledChange={setHalfTimeEnabled}
+              />
+
+              <HarmoniaChords
+                enabled={chordEnabled}
+                onEnabledChange={setChordEnabled}
+                chordType={chordType}
+                onChordTypeChange={setChordType}
+                inversion={chordInversion}
+                onInversionChange={setChordInversion}
+                spread={chordSpread}
+                onSpreadChange={setChordSpread}
+                strum={chordStrum}
+                onStrumChange={setChordStrum}
+              />
+            </div>
           </div>
           )}
           
