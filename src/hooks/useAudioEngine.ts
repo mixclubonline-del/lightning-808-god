@@ -7,6 +7,8 @@ interface AudioEngineConfig {
   gain: number;
   attack: number;
   decay: number;
+  sustain: number;
+  release: number;
   reverb: number;
   resonance: number;
   distortionDrive: number;
@@ -147,16 +149,18 @@ export const useAudioEngine = () => {
     filter.frequency.value = 200 + (config.filter * 50); // 200Hz to 5200Hz
     filter.Q.value = config.resonance / 10;
 
-    // Configure envelope - layers have slightly different envelopes for variation
-    const attackTime = (config.attack / 100) * 0.1; // 0 to 100ms
+    // Configure ADSR envelope - full control
+    const attackTime = (config.attack / 100) * 0.5; // 0 to 500ms
     const decayTime = (config.decay / 100) * 2; // 0 to 2 seconds
-    const sustainLevel = isCore ? 0.3 : 0.2;
+    const sustainLevel = (config.sustain / 100); // Sustain as percentage of peak
+    const releaseTime = (config.release / 100) * 2; // 0 to 2 seconds
     const gainMultiplier = isCore ? 1 : 0.6; // Layers are quieter
+    const peakGain = (config.gain / 100) * gainMultiplier;
 
+    // ADSR: Attack -> Decay -> Sustain (hold until note off)
     oscGain.gain.setValueAtTime(0, now);
-    oscGain.gain.linearRampToValueAtTime((config.gain / 100) * gainMultiplier, now + attackTime);
-    oscGain.gain.exponentialRampToValueAtTime(sustainLevel, now + attackTime + decayTime);
-    oscGain.gain.exponentialRampToValueAtTime(0.001, now + attackTime + decayTime + 0.5);
+    oscGain.gain.linearRampToValueAtTime(peakGain, now + attackTime);
+    oscGain.gain.exponentialRampToValueAtTime(Math.max(0.001, peakGain * sustainLevel), now + attackTime + decayTime);
 
     // Add vibrato
     if (config.vibrato > 0) {
@@ -204,9 +208,12 @@ export const useAudioEngine = () => {
     oscGain.connect(reverbSend);
     reverbSend.connect(reverbRef.current!);
 
-    // Start and stop
+    // Start oscillator
     osc.start(now);
-    osc.stop(now + attackTime + decayTime + 0.5);
+    
+    // Store active note with release time for proper stop handling
+    const totalTime = attackTime + decayTime + releaseTime + 2; // Extra buffer
+    osc.stop(now + totalTime);
 
     // Store active note
     activeNotesRef.current.set(midiNote, { osc, gain: oscGain, filter });
@@ -239,10 +246,13 @@ export const useAudioEngine = () => {
     const note = activeNotesRef.current.get(midiNote);
     if (note && audioContextRef.current) {
       const now = audioContextRef.current.currentTime;
+      const releaseTime = 0.5; // Default release time
+      
+      // Apply release envelope
       note.gain.gain.cancelScheduledValues(now);
       note.gain.gain.setValueAtTime(note.gain.gain.value, now);
-      note.gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-      note.osc.stop(now + 0.1);
+      note.gain.gain.exponentialRampToValueAtTime(0.001, now + releaseTime);
+      note.osc.stop(now + releaseTime + 0.1);
       activeNotesRef.current.delete(midiNote);
     }
   };

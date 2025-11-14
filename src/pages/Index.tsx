@@ -8,6 +8,7 @@ import { Multi808Panel } from "@/components/Multi808Panel";
 import { SpectrumAnalyzer } from "@/components/SpectrumAnalyzer";
 import { VUMeter } from "@/components/VUMeter";
 import { DistortionModule } from "@/components/DistortionModule";
+import { ADSRModule } from "@/components/ADSRModule";
 import { RecordingControls } from "@/components/RecordingControls";
 import { LayerIndicator } from "@/components/LayerIndicator";
 import { ChordGenerator } from "@/components/ChordGenerator";
@@ -34,6 +35,8 @@ const Index = () => {
   const [gain, setGain] = useState(75);
   const [attack, setAttack] = useState(20);
   const [decay, setDecay] = useState(50);
+  const [sustain, setSustain] = useState(70);
+  const [release, setRelease] = useState(40);
   const [reverb, setReverb] = useState(30);
   
   // Slider values
@@ -110,7 +113,7 @@ const Index = () => {
     
     // Play a powerful C note when lightning strikes
     const config = { 
-      wave, filter, vibrato, gain, attack, decay, reverb, resonance,
+      wave, filter, vibrato, gain, attack, decay, sustain, release, reverb, resonance,
       distortionDrive, distortionTone, distortionMix 
     };
     audioEngine.play808(midiToFrequency(36), config, 36, true);
@@ -153,7 +156,7 @@ const Index = () => {
   const handleNoteOn = (midiNote: number) => {
     if (!audioEngine.isInitialized) return;
     const config = { 
-      wave, filter, vibrato, gain, attack, decay, reverb, resonance,
+      wave, filter, vibrato, gain, attack, decay, sustain, release, reverb, resonance,
       distortionDrive, distortionTone, distortionMix 
     };
 
@@ -224,7 +227,7 @@ const Index = () => {
     const padNotes = [36, 38, 40, 41, 43, 45, 47, 48]; // C2, D2, E2, F2, G2, A2, B2, C3
     const midiNote = padNotes[padIndex];
     const config = { 
-      wave, filter, vibrato, gain, attack, decay, reverb, resonance,
+      wave, filter, vibrato, gain, attack, decay, sustain, release, reverb, resonance,
       distortionDrive, distortionTone, distortionMix 
     };
     const frequency = midiToFrequency(midiNote);
@@ -438,11 +441,21 @@ const Index = () => {
 
           {/* Right Panel */}
           <div className="col-span-3 space-y-6">
+            {/* ADSR Envelope Module */}
+            <ADSRModule
+              attack={attack}
+              onAttackChange={setAttack}
+              decay={decay}
+              onDecayChange={setDecay}
+              sustain={sustain}
+              onSustainChange={setSustain}
+              release={release}
+              onReleaseChange={setRelease}
+            />
+
             <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-6 space-y-6">
               <div className="flex justify-around">
                 <Knob label="Gain" value={gain} onChange={setGain} />
-                <Knob label="Attack" value={attack} onChange={setAttack} />
-                <Knob label="Decay" value={decay} onChange={setDecay} />
                 <Knob label="Reverb" value={reverb} onChange={setReverb} />
               </div>
 
