@@ -4,7 +4,7 @@ import { Slider } from "@/components/Slider";
 import { PadGrid } from "@/components/PadGrid";
 import { Keyboard } from "@/components/Keyboard";
 import { WaveformDisplay } from "@/components/WaveformDisplay";
-import { Multi808Panel } from "@/components/Multi808Panel";
+import { ThorEngine } from "@/components/ThorEngine";
 import { SpectrumAnalyzer } from "@/components/SpectrumAnalyzer";
 import { VUMeter } from "@/components/VUMeter";
 import { VulcanForge } from "@/components/VulcanForge";
@@ -425,7 +425,7 @@ const Index = () => {
           {/* Left Panel */}
           <div className="col-span-3 space-y-6">
             {mode === "multi808" ? (
-              <Multi808Panel 
+              <ThorEngine 
                 onLayerChange={setActiveLayer}
                 onTriggerModeChange={audioEngine.setTriggerMode}
                 triggerMode={audioEngine.triggerMode}
