@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { Knob } from "@/components/Knob";
 import { Slider } from "@/components/Slider";
-import { PadGrid } from "@/components/PadGrid";
-import { Keyboard } from "@/components/Keyboard";
-import { WaveformDisplay } from "@/components/WaveformDisplay";
+import { OlympusPads } from "@/components/OlympusPads";
+import { OrpheusKeys } from "@/components/OrpheusKeys";
+import { PoseidonWave } from "@/components/PoseidonWave";
 import { ThorEngine } from "@/components/ThorEngine";
-import { SpectrumAnalyzer } from "@/components/SpectrumAnalyzer";
-import { VUMeter } from "@/components/VUMeter";
+import { IrisSpectrum } from "@/components/IrisSpectrum";
+import { HermesMeter } from "@/components/HermesMeter";
 import { VulcanForge } from "@/components/VulcanForge";
 import { EchoModule } from "@/components/EchoModule";
 import { SirenChorus } from "@/components/SirenChorus";
@@ -16,11 +16,11 @@ import { ChronosVerb } from "@/components/ChronosVerb";
 import { MorpheusModule } from "@/components/MorpheusModule";
 import { AtlasCompressor } from "@/components/AtlasCompressor";
 import { ApolloEnvelope } from "@/components/ApolloEnvelope";
-import { RecordingControls } from "@/components/RecordingControls";
-import { LayerIndicator } from "@/components/LayerIndicator";
-import { ChordGenerator } from "@/components/ChordGenerator";
-import { SoundLibrary } from "@/components/SoundLibrary";
-import { SoundMatcher } from "@/components/SoundMatcher";
+import { MnemosyneRecorder } from "@/components/MnemosyneRecorder";
+import { AthenaEye } from "@/components/AthenaEye";
+import { HarmoniaChords } from "@/components/HarmoniaChords";
+import { PandoraLibrary } from "@/components/PandoraLibrary";
+import { OracleMatcher } from "@/components/OracleMatcher";
 import { StudioView } from "@/components/studio/StudioView";
 import zeusImage from "@/assets/zeus-figure.png";
 import { Zap, Library, Music } from "lucide-react";
@@ -399,12 +399,12 @@ const Index = () => {
         <div className="space-y-6">
           {activeView === "library" ? (
             <div className="grid grid-cols-2 gap-6 h-[800px]">
-              <SoundLibrary
+              <PandoraLibrary
                 onFindSimilar={(sample) => {
                   toast("Analyzing sample...");
                 }}
               />
-              <SoundMatcher
+              <OracleMatcher
                 currentFeatures={currentSoundFeatures}
                 onClearFeatures={() => setCurrentSoundFeatures(null)}
                 onMatchSelect={(match) => {
@@ -451,12 +451,12 @@ const Index = () => {
                   <Slider label="Grenulate" value={grenulate} onChange={setGrenulate} />
                 </div>
 
-                <WaveformDisplay activeLayer={activeLayer} />
+                <PoseidonWave activeLayer={activeLayer} />
               </div>
             )}
             
             <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-4">
-              <PadGrid onPadTrigger={handlePadTrigger} />
+              <OlympusPads onPadTrigger={handlePadTrigger} />
             </div>
           </div>
 
@@ -464,7 +464,7 @@ const Index = () => {
           <div className="col-span-6 space-y-4">
             <div className="relative bg-synth-panel rounded-lg border-2 border-synth-border h-[500px] flex items-center justify-center overflow-hidden">
               {/* Layer indicator */}
-              <LayerIndicator activeLayer={lastTriggeredLayer} />
+              <AthenaEye activeLayer={lastTriggeredLayer} />
               <div 
                 className="absolute inset-0 bg-gradient-to-b from-primary/20 via-transparent to-transparent transition-all duration-150"
                 style={{
@@ -506,14 +506,14 @@ const Index = () => {
             </div>
 
             {/* Spectrum Analyzer */}
-            <SpectrumAnalyzer 
+            <IrisSpectrum 
               analyserNode={audioEngine.analyserNode} 
               isActive={audioEngine.isInitialized}
             />
 
             {/* Recording Controls */}
             <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-4">
-              <RecordingControls
+              <MnemosyneRecorder
                 isRecording={audioEngine.isRecording}
                 onStartRecording={audioEngine.startRecording}
                 onStopRecording={audioEngine.stopRecording}
@@ -545,12 +545,12 @@ const Index = () => {
 
               <div className="space-y-6 pt-6 border-t border-synth-border">
                 <div className="flex justify-center gap-6">
-                  <VUMeter 
+                  <HermesMeter 
                     analyserNode={audioEngine.analyserNode} 
                     label="L" 
                     isActive={audioEngine.isInitialized}
                   />
-                  <VUMeter 
+                  <HermesMeter 
                     analyserNode={audioEngine.analyserNode} 
                     label="R" 
                     isActive={audioEngine.isInitialized}
@@ -653,7 +653,7 @@ const Index = () => {
               onEnabledChange={setCompressorEnabled}
             />
 
-            <ChordGenerator
+            <HarmoniaChords
               enabled={chordEnabled}
               onEnabledChange={setChordEnabled}
               chordType={chordType}
@@ -671,7 +671,7 @@ const Index = () => {
           
           {/* Universal Keyboard - appears in all views */}
           <div className="mt-6">
-            <Keyboard onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} />
+            <OrpheusKeys onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} />
           </div>
         </div>
       </div>

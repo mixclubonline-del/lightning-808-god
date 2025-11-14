@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
-interface VUMeterProps {
+interface HermesMeterProps {
   analyserNode: AnalyserNode | null;
   label: string;
   isActive: boolean;
 }
 
-export const VUMeter = ({ analyserNode, label, isActive }: VUMeterProps) => {
+export const HermesMeter = ({ analyserNode, label, isActive }: HermesMeterProps) => {
   const [level, setLevel] = useState(0);
   const [peak, setPeak] = useState(0);
   const animationRef = useRef<number>();
@@ -60,27 +60,30 @@ export const VUMeter = ({ analyserNode, label, isActive }: VUMeterProps) => {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="relative h-24 w-3 bg-synth-deep border border-synth-border rounded-full overflow-hidden">
-        {/* Level bar */}
+      <div className="relative h-24 w-3 bg-synth-deep border border-slate-400/50 rounded-full overflow-hidden shadow-[0_0_10px_rgba(148,163,184,0.2)]">
+        {/* Level bar with silver glow */}
         <div
           className={cn(
             "absolute bottom-0 w-full transition-all duration-75 rounded-full",
-            level > 80 ? "bg-destructive" : level > 60 ? "bg-accent" : "bg-primary"
+            level > 80 ? "bg-destructive" : level > 60 ? "bg-amber-500" : "bg-slate-300"
           )}
           style={{
             height: `${level}%`,
-            boxShadow: level > 60 ? "0 0 10px currentColor" : "none",
+            boxShadow: level > 60 ? "0 0 12px currentColor" : "0 0 8px rgba(148,163,184,0.5)",
           }}
         />
         {/* Peak indicator */}
         {peak > 0 && (
           <div
-            className="absolute w-full h-1 bg-foreground"
+            className="absolute w-full h-1 bg-slate-100 shadow-[0_0_8px_rgba(241,245,249,0.8)]"
             style={{ bottom: `${peak}%` }}
           />
         )}
       </div>
-      <span className="text-xs text-primary font-medium uppercase tracking-wider text-center">
+      <span className="text-xs text-slate-300 font-medium uppercase tracking-wider text-center"
+        style={{
+          textShadow: "0 0 8px rgba(203, 213, 225, 0.4)",
+        }}>
         {label}
       </span>
     </div>

@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
 
-interface WaveformDisplayProps {
+interface PoseidonWaveProps {
   activeLayer?: "core" | "layer1" | "layer2" | "layer3";
 }
 
-export const WaveformDisplay = ({ activeLayer = "core" }: WaveformDisplayProps) => {
+export const PoseidonWave = ({ activeLayer = "core" }: PoseidonWaveProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -17,16 +17,16 @@ export const WaveformDisplay = ({ activeLayer = "core" }: WaveformDisplayProps) 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw gradient background
+      // Draw ocean gradient background
       const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-      gradient.addColorStop(0, "rgba(139, 0, 0, 0.3)");
-      gradient.addColorStop(0.5, "rgba(220, 38, 38, 0.4)");
-      gradient.addColorStop(1, "rgba(139, 0, 0, 0.3)");
+      gradient.addColorStop(0, "rgba(6, 78, 59, 0.3)");
+      gradient.addColorStop(0.5, "rgba(6, 182, 212, 0.4)");
+      gradient.addColorStop(1, "rgba(6, 78, 59, 0.3)");
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw core waveform (white)
-      ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+      // Draw core waveform (cyan/ocean)
+      ctx.strokeStyle = "rgba(34, 211, 238, 0.9)";
       ctx.lineWidth = 2;
       ctx.beginPath();
       for (let i = 0; i < canvas.width; i++) {
@@ -41,9 +41,9 @@ export const WaveformDisplay = ({ activeLayer = "core" }: WaveformDisplayProps) 
       }
       ctx.stroke();
 
-      // Draw active layer waveform (cyan)
+      // Draw active layer waveform (lighter cyan)
       if (activeLayer !== "core") {
-        ctx.strokeStyle = "rgba(0, 255, 255, 0.6)";
+        ctx.strokeStyle = "rgba(103, 232, 249, 0.7)";
         ctx.lineWidth = 1.5;
         ctx.beginPath();
         for (let i = 0; i < canvas.width; i++) {
@@ -74,7 +74,8 @@ export const WaveformDisplay = ({ activeLayer = "core" }: WaveformDisplayProps) 
       ref={canvasRef}
       width={300}
       height={80}
-      className="w-full h-20 rounded-lg"
+      className="w-full h-20 rounded-lg border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+      title="Poseidon Wave - God of the Sea"
     />
   );
 };

@@ -14,12 +14,12 @@ interface SoundSample {
   created_at: string;
 }
 
-interface SoundLibraryProps {
+interface PandoraLibraryProps {
   onSampleSelect?: (sample: SoundSample) => void;
   onFindSimilar?: (sample: SoundSample) => void;
 }
 
-export const SoundLibrary = ({ onSampleSelect, onFindSimilar }: SoundLibraryProps) => {
+export const PandoraLibrary = ({ onSampleSelect, onFindSimilar }: PandoraLibraryProps) => {
   const [samples, setSamples] = useState<SoundSample[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -111,12 +111,15 @@ export const SoundLibrary = ({ onSampleSelect, onFindSimilar }: SoundLibraryProp
   );
 
   return (
-    <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-4 h-full flex flex-col">
+    <div className="bg-synth-panel rounded-lg border-2 border-purple-500/50 p-4 h-full flex flex-col shadow-[0_0_20px_rgba(168,85,247,0.2)]">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Music2 size={16} className="text-primary" />
-          <span className="text-primary text-sm font-medium uppercase tracking-wider">
-            Sound Library
+          <Music2 size={16} className="text-purple-400" />
+          <span className="text-purple-400 text-sm font-medium uppercase tracking-wider"
+            style={{
+              textShadow: "0 0 10px rgba(168, 85, 247, 0.5)",
+            }}>
+            Pandora's Library
           </span>
         </div>
         <button
@@ -125,8 +128,8 @@ export const SoundLibrary = ({ onSampleSelect, onFindSimilar }: SoundLibraryProp
           className={cn(
             "px-3 py-1 rounded text-xs font-medium uppercase tracking-wider transition-all flex items-center gap-1",
             isUploading
-              ? "bg-synth-deep border-2 border-synth-border text-muted-foreground cursor-not-allowed"
-              : "bg-primary/20 border-2 border-primary text-primary hover:bg-primary/30 shadow-[0_0_10px_rgba(239,68,68,0.3)]"
+              ? "bg-synth-deep border border-synth-border text-muted-foreground cursor-not-allowed"
+              : "bg-purple-500/20 border border-purple-500 text-purple-400 hover:bg-purple-500/30 shadow-[0_0_10px_rgba(168,85,247,0.3)]"
           )}
         >
           <Upload size={12} />
@@ -142,55 +145,61 @@ export const SoundLibrary = ({ onSampleSelect, onFindSimilar }: SoundLibraryProp
         />
       </div>
 
-      <div className="relative mb-3">
-        <Search size={14} className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+      <div className="relative mb-4">
+        <Search size={14} className="absolute left-2 top-1/2 -translate-y-1/2 text-purple-400/50" />
         <input
           type="text"
-          placeholder="Search samples..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-synth-deep border-2 border-synth-border text-foreground rounded pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-primary transition-colors"
+          placeholder="Search sounds..."
+          className="w-full bg-synth-deep border border-purple-500/30 text-foreground rounded px-8 py-2 text-xs focus:outline-none focus:border-purple-500 transition-colors placeholder:text-purple-400/30"
         />
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-2">
         {filteredSamples.length === 0 ? (
-          <div className="text-center text-muted-foreground text-xs py-8">
-            {samples.length === 0 ? "Upload samples to get started" : "No samples found"}
+          <div className="text-center text-purple-400/60 text-xs py-8">
+            {samples.length === 0 ? "Box contains all sounds" : "No matching sounds"}
           </div>
         ) : (
           filteredSamples.map((sample) => (
             <div
               key={sample.id}
-              className="bg-synth-deep border border-synth-border rounded p-2 hover:border-primary/50 transition-all group"
+              className="bg-synth-deep border border-purple-500/30 rounded p-3 hover:border-purple-500/50 transition-all group"
             >
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <div className="text-foreground text-xs font-medium truncate">{sample.name}</div>
-                  <div className="text-muted-foreground text-[10px]">
-                    {sample.duration.toFixed(1)}s • {sample.category}
+                  <div className="text-purple-300 text-xs font-medium truncate">
+                    {sample.name}
+                  </div>
+                  <div className="text-purple-400/50 text-[10px] mt-1">
+                    {sample.duration.toFixed(2)}s • {sample.category}
                   </div>
                 </div>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {onFindSimilar && (
+                    <button
+                      onClick={() => onFindSimilar(sample)}
+                      className="p-1 rounded bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 text-[10px]"
+                      title="Find similar"
+                    >
+                      Find
+                    </button>
+                  )}
                   <button
-                    onClick={() => onFindSimilar?.(sample)}
-                    className="p-1 hover:bg-accent/20 rounded text-accent"
-                    title="Find similar"
+                    onClick={() => handleDelete(sample.id, sample.file_url.split('/').pop() || '')}
+                    className="p-1 rounded bg-destructive/20 text-destructive hover:bg-destructive/30"
                   >
-                    <Search size={12} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(sample.id, sample.file_url)}
-                    className="p-1 hover:bg-destructive/20 rounded text-destructive"
-                    title="Delete"
-                  >
-                    <Trash2 size={12} />
+                    <Trash2 size={10} />
                   </button>
                 </div>
               </div>
             </div>
           ))
         )}
+      </div>
+      <div className="text-purple-400/50 text-[10px] uppercase tracking-widest text-center mt-2">
+        All sounds within
       </div>
     </div>
   );

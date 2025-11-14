@@ -2,7 +2,7 @@ import { Knob } from "./Knob";
 import { cn } from "@/lib/utils";
 import { Music } from "lucide-react";
 
-interface ChordGeneratorProps {
+interface HarmoniaChordsProps {
   enabled: boolean;
   onEnabledChange: (enabled: boolean) => void;
   chordType: string;
@@ -15,7 +15,7 @@ interface ChordGeneratorProps {
   onStrumChange: (strum: number) => void;
 }
 
-export const ChordGenerator = ({
+export const HarmoniaChords = ({
   enabled,
   onEnabledChange,
   chordType,
@@ -26,7 +26,7 @@ export const ChordGenerator = ({
   onSpreadChange,
   strum,
   onStrumChange,
-}: ChordGeneratorProps) => {
+}: HarmoniaChordsProps) => {
   const chordTypes = [
     { value: "major", label: "Major", notes: "1-3-5" },
     { value: "minor", label: "Minor", notes: "1-♭3-5" },
@@ -49,12 +49,15 @@ export const ChordGenerator = ({
   ];
 
   return (
-    <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-4">
+    <div className="bg-synth-panel rounded-lg border-2 border-emerald-500/50 p-4 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Music size={16} className="text-accent" />
-          <span className="text-primary text-sm font-medium uppercase tracking-wider">
-            Chord Generator
+          <Music size={16} className="text-emerald-400" />
+          <span className="text-emerald-400 text-sm font-medium uppercase tracking-wider"
+            style={{
+              textShadow: "0 0 10px rgba(16, 185, 129, 0.5)",
+            }}>
+            Harmonia Chords
           </span>
         </div>
         <button
@@ -62,8 +65,8 @@ export const ChordGenerator = ({
           className={cn(
             "px-3 py-1 rounded text-xs font-medium uppercase tracking-wider transition-all",
             enabled
-              ? "bg-accent/20 border-2 border-accent text-accent shadow-[0_0_10px_rgba(249,115,22,0.5)]"
-              : "bg-synth-deep border-2 border-synth-border text-muted-foreground hover:border-accent/50"
+              ? "bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+              : "bg-synth-deep border-2 border-synth-border text-muted-foreground hover:border-emerald-500/50"
           )}
         >
           {enabled ? "ON" : "OFF"}
@@ -74,14 +77,14 @@ export const ChordGenerator = ({
         <div className="space-y-4">
           {/* Chord Type Selection */}
           <div className="relative">
-            <label className="text-xs text-muted-foreground uppercase tracking-wider block mb-2">
+            <label className="text-xs text-emerald-400/70 uppercase tracking-wider block mb-2">
               Chord Type
             </label>
             <select
               value={chordType}
               onChange={(e) => onChordTypeChange(e.target.value)}
-              className="w-full bg-synth-deep border-2 border-synth-border text-foreground rounded px-3 py-2 text-sm focus:outline-none focus:border-accent transition-colors appearance-none cursor-pointer relative z-50"
-              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%23F97316\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.5em 1.5em', paddingRight: '2.5rem' }}
+              className="w-full bg-synth-deep border-2 border-emerald-500/30 text-foreground rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 transition-colors appearance-none cursor-pointer relative z-50"
+              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%2310b981\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'%3E%3C/path%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.5rem center', backgroundSize: '1.5em 1.5em', paddingRight: '2.5rem' }}
             >
               {chordTypes.map((type) => (
                 <option key={type.value} value={type.value} className="bg-synth-panel text-foreground">
@@ -93,7 +96,7 @@ export const ChordGenerator = ({
 
           {/* Inversion Selection */}
           <div>
-            <label className="text-xs text-muted-foreground uppercase tracking-wider block mb-2">
+            <label className="text-xs text-emerald-400/70 uppercase tracking-wider block mb-2">
               Inversion
             </label>
             <div className="grid grid-cols-4 gap-2">
@@ -102,10 +105,10 @@ export const ChordGenerator = ({
                   key={inv.value}
                   onClick={() => onInversionChange(inv.value)}
                   className={cn(
-                    "px-3 py-2 rounded text-xs font-medium transition-all",
+                    "px-2 py-1 rounded text-xs font-medium uppercase tracking-wider transition-all",
                     inversion === inv.value
-                      ? "bg-primary/20 border-2 border-primary text-primary shadow-[0_0_10px_rgba(239,68,68,0.3)]"
-                      : "bg-synth-deep border-2 border-synth-border text-muted-foreground hover:border-primary/50"
+                      ? "bg-emerald-500/30 border-2 border-emerald-500 text-emerald-400"
+                      : "bg-synth-deep border-2 border-emerald-500/20 text-emerald-400/50 hover:border-emerald-500/40"
                   )}
                 >
                   {inv.label}
@@ -114,26 +117,14 @@ export const ChordGenerator = ({
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="grid grid-cols-2 gap-4 pt-2">
-            <Knob 
-              label="Spread" 
-              value={spread} 
-              onChange={onSpreadChange}
-              min={0}
-              max={100}
-            />
-            <Knob 
-              label="Strum" 
-              value={strum} 
-              onChange={onStrumChange}
-              min={0}
-              max={100}
-            />
+          {/* Knobs */}
+          <div className="flex justify-around pt-2">
+            <Knob label="Spread" value={spread} onChange={onSpreadChange} />
+            <Knob label="Strum" value={strum} onChange={onStrumChange} />
           </div>
 
-          <div className="text-xs text-muted-foreground bg-synth-deep/50 p-2 rounded border border-synth-border/50">
-            Press any key to play full chord through Multi 808 engine
+          <div className="text-center text-emerald-400/60 text-[10px] uppercase tracking-widest pt-2">
+            Play chords on Orpheus Keys • Goddess of Harmony
           </div>
         </div>
       )}

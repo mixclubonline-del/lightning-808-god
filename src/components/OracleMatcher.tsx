@@ -18,13 +18,13 @@ interface MatchResult {
   };
 }
 
-interface SoundMatcherProps {
+interface OracleMatcherProps {
   currentFeatures: AudioFeatures | null;
   onMatchSelect?: (match: MatchResult) => void;
   onClearFeatures?: () => void;
 }
 
-export const SoundMatcher = ({ currentFeatures, onMatchSelect, onClearFeatures }: SoundMatcherProps) => {
+export const OracleMatcher = ({ currentFeatures, onMatchSelect, onClearFeatures }: OracleMatcherProps) => {
   const [matches, setMatches] = useState<MatchResult[]>([]);
   const [isMatching, setIsMatching] = useState(false);
 
@@ -64,19 +64,22 @@ export const SoundMatcher = ({ currentFeatures, onMatchSelect, onClearFeatures }
   };
 
   return (
-    <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-4 h-full flex flex-col">
+    <div className="bg-synth-panel rounded-lg border-2 border-purple-500/50 p-4 h-full flex flex-col shadow-[0_0_20px_rgba(147,51,234,0.2)]">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Sparkles size={16} className="text-accent" />
-          <span className="text-primary text-sm font-medium uppercase tracking-wider">
-            Sound Match AI
+          <Sparkles size={16} className="text-purple-400" />
+          <span className="text-purple-400 text-sm font-medium uppercase tracking-wider"
+            style={{
+              textShadow: "0 0 10px rgba(147, 51, 234, 0.5)",
+            }}>
+            Oracle Matcher
           </span>
         </div>
         <div className="flex gap-2">
           {currentFeatures && onClearFeatures && (
             <button
               onClick={onClearFeatures}
-              className="px-2 py-1 rounded text-xs font-medium uppercase tracking-wider transition-all bg-synth-deep border-2 border-synth-border text-muted-foreground hover:border-primary/50"
+              className="px-2 py-1 rounded text-xs font-medium uppercase tracking-wider transition-all bg-synth-deep border-2 border-synth-border text-muted-foreground hover:border-purple-500/50"
               title="Clear and re-analyze"
             >
               Clear
@@ -89,13 +92,13 @@ export const SoundMatcher = ({ currentFeatures, onMatchSelect, onClearFeatures }
               "px-3 py-1 rounded text-xs font-medium uppercase tracking-wider transition-all flex items-center gap-1",
               !currentFeatures || isMatching
                 ? "bg-synth-deep border-2 border-synth-border text-muted-foreground cursor-not-allowed"
-                : "bg-accent/20 border-2 border-accent text-accent hover:bg-accent/30 shadow-[0_0_10px_rgba(249,115,22,0.3)]"
+                : "bg-purple-500/20 border-2 border-purple-500 text-purple-400 hover:bg-purple-500/30 shadow-[0_0_10px_rgba(147,51,234,0.3)]"
             )}
           >
             {isMatching ? (
               <>
                 <Loader2 size={12} className="animate-spin" />
-                Matching...
+                Divining...
               </>
             ) : (
               <>
@@ -109,62 +112,47 @@ export const SoundMatcher = ({ currentFeatures, onMatchSelect, onClearFeatures }
 
       <div className="flex-1 overflow-y-auto space-y-2">
         {matches.length === 0 ? (
-          <div className="text-center text-muted-foreground text-xs py-8">
+          <div className="text-center text-purple-400/60 text-xs py-8">
             {isMatching ? (
-              "Analyzing sounds with AI..."
+              "Consulting the Oracle..."
             ) : currentFeatures ? (
               <>
-                <div className="text-accent mb-2">✓ Audio analyzed</div>
-                Click 'Find Similar' to discover matches in your library
+                <div className="text-purple-400 mb-2">✓ Audio analyzed</div>
+                <div>Click "Find Similar" to divine matches</div>
               </>
             ) : (
-              "Play any note to analyze and find similar sounds"
+              "Upload or analyze audio to divine similar sounds"
             )}
           </div>
         ) : (
-          matches.map((match, index) => (
-            <div
+          matches.map((match) => (
+            <button
               key={match.id}
               onClick={() => onMatchSelect?.(match)}
-              className="bg-synth-deep border border-synth-border rounded p-3 hover:border-accent transition-all cursor-pointer group"
+              className="w-full bg-synth-deep border border-purple-500/30 rounded p-3 hover:border-purple-500 transition-all text-left group"
             >
-              <div className="flex items-start justify-between mb-2">
+              <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-accent text-xs font-bold">#{index + 1}</span>
-                    <span className="text-foreground text-xs font-medium truncate">
-                      {match.sample.name}
-                    </span>
+                  <div className="text-purple-300 text-xs font-medium truncate">
+                    {match.sample.name}
                   </div>
-                  <div className="text-muted-foreground text-[10px]">
-                    {match.sample.duration.toFixed(1)}s • {match.sample.category}
+                  <div className="text-purple-400/50 text-[10px] mt-1">
+                    {match.sample.duration.toFixed(2)}s • {match.sample.category}
                   </div>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <div className="text-accent text-xs font-bold">
-                    {(match.similarity * 100).toFixed(0)}%
-                  </div>
-                  <div className="w-12 h-1.5 bg-synth-deep rounded-full overflow-hidden">
-                    <div
-                      className={cn(
-                        "h-full transition-all rounded-full",
-                        match.similarity > 0.8
-                          ? "bg-accent"
-                          : match.similarity > 0.6
-                          ? "bg-primary"
-                          : "bg-muted-foreground"
-                      )}
-                      style={{ width: `${match.similarity * 100}%` }}
-                    />
+                  <div className="text-purple-400 text-[10px] mt-2 italic">
+                    {match.reason}
                   </div>
                 </div>
+                <div className="text-purple-400 text-xs font-bold whitespace-nowrap">
+                  {Math.round(match.similarity * 100)}%
+                </div>
               </div>
-              <div className="text-muted-foreground text-[10px] leading-relaxed">
-                {match.reason}
-              </div>
-            </div>
+            </button>
           ))
         )}
+      </div>
+      <div className="text-purple-400/50 text-[10px] uppercase tracking-widest text-center mt-2">
+        Divine Prophecy AI
       </div>
     </div>
   );
