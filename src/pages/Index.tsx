@@ -24,6 +24,7 @@ import { OracleMatcher } from "@/components/OracleMatcher";
 import { StudioView } from "@/components/studio/StudioView";
 import { SignalFlowView } from "@/components/SignalFlowView";
 import { AppSidebar } from "@/components/AppSidebar";
+import { DraggableEffectModule } from "@/components/DraggableEffectModule";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import zeusImage from "@/assets/zeus-figure.png";
 import { Menu, Zap } from "lucide-react";
@@ -127,6 +128,44 @@ const Index = () => {
   const [showLibrary, setShowLibrary] = useState(false);
   const [currentSoundFeatures, setCurrentSoundFeatures] = useState<AudioFeatures | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // Effects order state for drag-and-drop
+  const [effectsOrder, setEffectsOrder] = useState([
+    "vulcan",
+    "atlas",
+    "echo",
+    "siren",
+    "reverb",
+    "mars",
+    "chronos",
+    "morpheus",
+    "harmonia"
+  ]);
+  const [draggedItem, setDraggedItem] = useState<string | null>(null);
+
+  // Drag handlers
+  const handleDragStart = (id: string) => {
+    setDraggedItem(id);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (targetId: string) => {
+    if (!draggedItem || draggedItem === targetId) return;
+
+    const currentIndex = effectsOrder.indexOf(draggedItem);
+    const targetIndex = effectsOrder.indexOf(targetId);
+
+    const newOrder = [...effectsOrder];
+    newOrder.splice(currentIndex, 1);
+    newOrder.splice(targetIndex, 0, draggedItem);
+
+    setEffectsOrder(newOrder);
+    setDraggedItem(null);
+    toast.success("Effects reordered");
+  };
 
   // Initialize audio on first user interaction
   useEffect(() => {
@@ -560,107 +599,133 @@ const Index = () => {
             </div>
 
             {/* Bottom Row - Effects Modules Grid */}
-            <div className="grid grid-cols-4 gap-6">
-              <VulcanForge
-                drive={distortionDrive}
-                onDriveChange={setDistortionDrive}
-                tone={distortionTone}
-                onToneChange={setDistortionTone}
-                mix={distortionMix}
-                onMixChange={setDistortionMix}
-              />
+            <div className="grid grid-cols-4 gap-6 relative">
+              {effectsOrder.map((effectId) => {
+                const effectComponents: Record<string, JSX.Element> = {
+                  vulcan: (
+                    <VulcanForge
+                      drive={distortionDrive}
+                      onDriveChange={setDistortionDrive}
+                      tone={distortionTone}
+                      onToneChange={setDistortionTone}
+                      mix={distortionMix}
+                      onMixChange={setDistortionMix}
+                    />
+                  ),
+                  atlas: (
+                    <AtlasCompressor
+                      threshold={compressorThreshold}
+                      ratio={compressorRatio}
+                      attack={compressorAttack}
+                      release={compressorRelease}
+                      enabled={compressorEnabled}
+                      onThresholdChange={setCompressorThreshold}
+                      onRatioChange={setCompressorRatio}
+                      onAttackChange={setCompressorAttack}
+                      onReleaseChange={setCompressorRelease}
+                      onEnabledChange={setCompressorEnabled}
+                    />
+                  ),
+                  echo: (
+                    <EchoModule
+                      time={delayTime}
+                      onTimeChange={setDelayTime}
+                      feedback={delayFeedback}
+                      onFeedbackChange={setDelayFeedback}
+                      mix={delayMix}
+                      onMixChange={setDelayMix}
+                      enabled={delayEnabled}
+                      onEnabledChange={setDelayEnabled}
+                    />
+                  ),
+                  siren: (
+                    <SirenChorus
+                      rate={chorusRate}
+                      onRateChange={setChorusRate}
+                      depth={chorusDepth}
+                      onDepthChange={setChorusDepth}
+                      mix={chorusMix}
+                      onMixChange={setChorusMix}
+                      enabled={chorusEnabled}
+                      onEnabledChange={setChorusEnabled}
+                    />
+                  ),
+                  reverb: (
+                    <ReverbModule
+                      size={reverbSize}
+                      damping={reverbDamping}
+                      mix={reverbMix}
+                      enabled={reverbEnabled}
+                      onSizeChange={setReverbSize}
+                      onDampingChange={setReverbDamping}
+                      onMixChange={setReverbMix}
+                      onEnabledChange={setReverbEnabled}
+                    />
+                  ),
+                  mars: (
+                    <MarsVerb
+                      size={marsSize}
+                      shimmer={marsShimmer}
+                      mix={marsMix}
+                      enabled={marsEnabled}
+                      onSizeChange={setMarsSize}
+                      onShimmerChange={setMarsShimmer}
+                      onMixChange={setMarsMix}
+                      onEnabledChange={setMarsEnabled}
+                    />
+                  ),
+                  chronos: (
+                    <ChronosVerb
+                      size={pastTimeSize}
+                      reverse={pastTimeReverse}
+                      mix={pastTimeMix}
+                      enabled={pastTimeEnabled}
+                      onSizeChange={setPastTimeSize}
+                      onReverseChange={setPastTimeReverse}
+                      onMixChange={setPastTimeMix}
+                      onEnabledChange={setPastTimeEnabled}
+                    />
+                  ),
+                  morpheus: (
+                    <MorpheusModule
+                      amount={halfTimeAmount}
+                      smoothing={halfTimeSmoothing}
+                      mix={halfTimeMix}
+                      enabled={halfTimeEnabled}
+                      onAmountChange={setHalfTimeAmount}
+                      onSmoothingChange={setHalfTimeSmoothing}
+                      onMixChange={setHalfTimeMix}
+                      onEnabledChange={setHalfTimeEnabled}
+                    />
+                  ),
+                  harmonia: (
+                    <HarmoniaChords
+                      enabled={chordEnabled}
+                      onEnabledChange={setChordEnabled}
+                      chordType={chordType}
+                      onChordTypeChange={setChordType}
+                      inversion={chordInversion}
+                      onInversionChange={setChordInversion}
+                      spread={chordSpread}
+                      onSpreadChange={setChordSpread}
+                      strum={chordStrum}
+                      onStrumChange={setChordStrum}
+                    />
+                  ),
+                };
 
-              <AtlasCompressor
-                threshold={compressorThreshold}
-                ratio={compressorRatio}
-                attack={compressorAttack}
-                release={compressorRelease}
-                enabled={compressorEnabled}
-                onThresholdChange={setCompressorThreshold}
-                onRatioChange={setCompressorRatio}
-                onAttackChange={setCompressorAttack}
-                onReleaseChange={setCompressorRelease}
-                onEnabledChange={setCompressorEnabled}
-              />
-
-              <EchoModule
-                time={delayTime}
-                onTimeChange={setDelayTime}
-                feedback={delayFeedback}
-                onFeedbackChange={setDelayFeedback}
-                mix={delayMix}
-                onMixChange={setDelayMix}
-                enabled={delayEnabled}
-                onEnabledChange={setDelayEnabled}
-              />
-
-              <SirenChorus
-                rate={chorusRate}
-                onRateChange={setChorusRate}
-                depth={chorusDepth}
-                onDepthChange={setChorusDepth}
-                mix={chorusMix}
-                onMixChange={setChorusMix}
-                enabled={chorusEnabled}
-                onEnabledChange={setChorusEnabled}
-              />
-
-              <ReverbModule
-                size={reverbSize}
-                damping={reverbDamping}
-                mix={reverbMix}
-                enabled={reverbEnabled}
-                onSizeChange={setReverbSize}
-                onDampingChange={setReverbDamping}
-                onMixChange={setReverbMix}
-                onEnabledChange={setReverbEnabled}
-              />
-              
-              <MarsVerb
-                size={marsSize}
-                shimmer={marsShimmer}
-                mix={marsMix}
-                enabled={marsEnabled}
-                onSizeChange={setMarsSize}
-                onShimmerChange={setMarsShimmer}
-                onMixChange={setMarsMix}
-                onEnabledChange={setMarsEnabled}
-              />
-              
-              <ChronosVerb
-                size={pastTimeSize}
-                reverse={pastTimeReverse}
-                mix={pastTimeMix}
-                enabled={pastTimeEnabled}
-                onSizeChange={setPastTimeSize}
-                onReverseChange={setPastTimeReverse}
-                onMixChange={setPastTimeMix}
-                onEnabledChange={setPastTimeEnabled}
-              />
-              
-              <MorpheusModule
-                amount={halfTimeAmount}
-                smoothing={halfTimeSmoothing}
-                mix={halfTimeMix}
-                enabled={halfTimeEnabled}
-                onAmountChange={setHalfTimeAmount}
-                onSmoothingChange={setHalfTimeSmoothing}
-                onMixChange={setHalfTimeMix}
-                onEnabledChange={setHalfTimeEnabled}
-              />
-
-              <HarmoniaChords
-                enabled={chordEnabled}
-                onEnabledChange={setChordEnabled}
-                chordType={chordType}
-                onChordTypeChange={setChordType}
-                inversion={chordInversion}
-                onInversionChange={setChordInversion}
-                spread={chordSpread}
-                onSpreadChange={setChordSpread}
-                strum={chordStrum}
-                onStrumChange={setChordStrum}
-              />
+                return (
+                  <DraggableEffectModule
+                    key={effectId}
+                    id={effectId}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                  >
+                    {effectComponents[effectId]}
+                  </DraggableEffectModule>
+                );
+              })}
             </div>
           </div>
           )}
