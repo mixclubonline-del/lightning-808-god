@@ -70,12 +70,14 @@ export const PoseidonWave = ({ activeLayer = "core" }: PoseidonWaveProps) => {
   }, [activeLayer]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={300}
-      height={80}
-      className="w-full h-20 rounded-lg border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)] divine-shimmer"
-      title="Poseidon Wave - God of the Sea"
-    />
+    <div className="relative poseidon-waves rounded-lg overflow-hidden">
+      <canvas
+        ref={canvasRef}
+        width={300}
+        height={80}
+        className="w-full h-20 rounded-lg border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)] divine-shimmer relative z-10"
+        title="Poseidon Wave - God of the Sea"
+      />
+    </div>
   );
 };

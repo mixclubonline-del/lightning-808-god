@@ -23,7 +23,7 @@ export const ChronosVerb = ({
 }: ChronosVerbProps) => {
   return (
     <div className={`bg-synth-panel rounded-lg border-2 p-4 transition-all marble-texture sacred-geometry ${
-      enabled ? 'border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] deity-aura' : 'border-synth-border'
+      enabled ? 'border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] deity-aura chronos-time' : 'border-synth-border'
     }`}>
       <div className="flex items-center justify-between mb-4">
         <div className="text-yellow-400 text-sm font-medium uppercase tracking-wider">
