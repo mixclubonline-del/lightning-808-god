@@ -17,7 +17,7 @@ export const AppContainer = ({ children }: AppContainerProps) => {
           <div className="w-5 h-5 rounded-xl bg-gradient-to-br from-primary to-synth-accent flex items-center justify-center text-[10px] font-bold shadow-lg">
             ⚡
           </div>
-          <span className="text-xs font-semibold text-foreground/90">Lightning 808 God</span>
+          <span className="text-xs font-semibold text-foreground/90">VST God</span>
         </div>
 
         {/* Menu Bar */}
