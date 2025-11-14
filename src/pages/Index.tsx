@@ -9,6 +9,7 @@ import { SpectrumAnalyzer } from "@/components/SpectrumAnalyzer";
 import { VUMeter } from "@/components/VUMeter";
 import { DistortionModule } from "@/components/DistortionModule";
 import { DelayModule } from "@/components/DelayModule";
+import { ChorusModule } from "@/components/ChorusModule";
 import { ADSRModule } from "@/components/ADSRModule";
 import { RecordingControls } from "@/components/RecordingControls";
 import { LayerIndicator } from "@/components/LayerIndicator";
@@ -64,6 +65,12 @@ const Index = () => {
   const [delayMix, setDelayMix] = useState(30);
   const [delayEnabled, setDelayEnabled] = useState(false);
 
+  // Chorus values
+  const [chorusRate, setChorusRate] = useState(50);
+  const [chorusDepth, setChorusDepth] = useState(50);
+  const [chorusMix, setChorusMix] = useState(40);
+  const [chorusEnabled, setChorusEnabled] = useState(false);
+
   const [lightningActive, setLightningActive] = useState(false);
   const [bassHit, setBassHit] = useState(false);
   const [lastTriggeredLayer, setLastTriggeredLayer] = useState<"layer1" | "layer2" | "layer3" | null>(null);
@@ -115,6 +122,10 @@ const Index = () => {
   useEffect(() => {
     audioEngine.updateDelay(delayTime, delayFeedback, delayMix, delayEnabled);
   }, [delayTime, delayFeedback, delayMix, delayEnabled, audioEngine]);
+
+  useEffect(() => {
+    audioEngine.updateChorus(chorusRate, chorusDepth, chorusMix, chorusEnabled);
+  }, [chorusRate, chorusDepth, chorusMix, chorusEnabled, audioEngine]);
 
   const triggerLightning = () => {
     setLightningActive(true);
@@ -510,6 +521,17 @@ const Index = () => {
               onMixChange={setDelayMix}
               enabled={delayEnabled}
               onEnabledChange={setDelayEnabled}
+            />
+
+            <ChorusModule
+              rate={chorusRate}
+              onRateChange={setChorusRate}
+              depth={chorusDepth}
+              onDepthChange={setChorusDepth}
+              mix={chorusMix}
+              onMixChange={setChorusMix}
+              enabled={chorusEnabled}
+              onEnabledChange={setChorusEnabled}
             />
 
             <ChordGenerator
