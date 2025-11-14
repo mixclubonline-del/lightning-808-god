@@ -303,6 +303,20 @@ export const useAudioEngine = () => {
     URL.revokeObjectURL(url);
   };
 
+  const getRecordedAudioBuffer = async (): Promise<AudioBuffer | null> => {
+    if (recordedChunksRef.current.length === 0 || !audioContextRef.current) return null;
+
+    try {
+      const blob = new Blob(recordedChunksRef.current, { type: "audio/webm" });
+      const arrayBuffer = await blob.arrayBuffer();
+      const audioBuffer = await audioContextRef.current.decodeAudioData(arrayBuffer);
+      return audioBuffer;
+    } catch (error) {
+      console.error("Failed to decode recorded audio:", error);
+      return null;
+    }
+  };
+
   return {
     initialize,
     play808,
@@ -314,6 +328,7 @@ export const useAudioEngine = () => {
     startRecording,
     stopRecording,
     downloadRecording,
+    getRecordedAudioBuffer,
     setTriggerMode,
     isInitialized,
     isRecording,

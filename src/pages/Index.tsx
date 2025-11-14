@@ -13,8 +13,9 @@ import { LayerIndicator } from "@/components/LayerIndicator";
 import { ChordGenerator } from "@/components/ChordGenerator";
 import { SoundLibrary } from "@/components/SoundLibrary";
 import { SoundMatcher } from "@/components/SoundMatcher";
+import { StudioView } from "@/components/studio/StudioView";
 import zeusImage from "@/assets/zeus-figure.png";
-import { Zap, Library } from "lucide-react";
+import { Zap, Library, Music } from "lucide-react";
 import { useAudioEngine, midiToFrequency } from "@/hooks/useAudioEngine";
 import { generateChord, calculateStrumDelay } from "@/utils/chordGenerator";
 import { AudioFeatures, extractAudioFeatures } from "@/utils/audioFeatureExtraction";
@@ -23,6 +24,7 @@ import { toast } from "sonner";
 const Index = () => {
   const [mode, setMode] = useState<"standard" | "multi808">("multi808");
   const [activeLayer, setActiveLayer] = useState<"core" | "layer1" | "layer2" | "layer3">("core");
+  const [activeView, setActiveView] = useState<"synth" | "library" | "studio">("synth");
   const audioEngine = useAudioEngine();
   
   // Control values
@@ -63,7 +65,7 @@ const Index = () => {
   const [chordSpread, setChordSpread] = useState(30);
   const [chordStrum, setChordStrum] = useState(0);
 
-  // Sound library state
+  // Sound library state (deprecated - now using activeView)
   const [showLibrary, setShowLibrary] = useState(false);
   const [currentSoundFeatures, setCurrentSoundFeatures] = useState<AudioFeatures | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -252,45 +254,65 @@ const Index = () => {
           </h1>
           <div className="flex justify-center gap-4 mt-4">
             <button
-              onClick={() => setMode("standard")}
+              onClick={() => setActiveView("synth")}
               className={`px-6 py-2 rounded-lg border-2 transition-all ${
-                mode === "standard"
+                activeView === "synth"
                   ? "border-primary bg-primary/20 text-primary shadow-[0_0_20px_rgba(239,68,68,0.5)]"
                   : "border-synth-border bg-synth-panel text-muted-foreground hover:border-primary/50"
               }`}
             >
-              Standard
+              <Zap size={18} className="inline mr-2" />
+              Synth
             </button>
             <button
-              onClick={() => setMode("multi808")}
+              onClick={() => setActiveView("studio")}
               className={`px-6 py-2 rounded-lg border-2 transition-all ${
-                mode === "multi808"
+                activeView === "studio"
                   ? "border-primary bg-primary/20 text-primary shadow-[0_0_20px_rgba(239,68,68,0.5)]"
                   : "border-synth-border bg-synth-panel text-muted-foreground hover:border-primary/50"
               }`}
             >
-              Multi 808
+              <Music size={18} className="inline mr-2" />
+              Studio
             </button>
             <button
-              onClick={() => setShowLibrary(!showLibrary)}
+              onClick={() => setActiveView("library")}
               className={`px-6 py-2 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                showLibrary
+                activeView === "library"
                   ? "border-accent bg-accent/20 text-accent shadow-[0_0_20px_rgba(249,115,22,0.5)]"
                   : "border-synth-border bg-synth-panel text-muted-foreground hover:border-accent/50"
               }`}
             >
               <Library size={18} />
-              Sound Library
+              Library
             </button>
           </div>
+          {activeView === "synth" && (
+            <div className="flex justify-center gap-4 mt-4">
+              <button
+                onClick={() => setMode("standard")}
+                className={`px-4 py-1 rounded border transition-all ${
+                  mode === "standard" ? "border-primary text-primary" : "border-synth-border text-muted-foreground"
+                }`}
+              >
+                Standard
+              </button>
+              <button
+                onClick={() => setMode("multi808")}
+                className={`px-4 py-1 rounded border transition-all ${
+                  mode === "multi808" ? "border-primary text-primary" : "border-synth-border text-muted-foreground"
+                }`}
+              >
+                Multi 808
+              </button>
+            </div>
+          )}
         </div>
 
-        {showLibrary ? (
-          // Sound Library View
+        {activeView === "library" ? (
           <div className="grid grid-cols-2 gap-6 h-[800px]">
             <SoundLibrary
               onFindSimilar={(sample) => {
-                // Extract features from selected sample
                 toast("Analyzing sample...");
               }}
             />
@@ -302,6 +324,13 @@ const Index = () => {
               }}
             />
           </div>
+        ) : activeView === "studio" ? (
+          <StudioView
+            isRecording={audioEngine.isRecording}
+            onStartRecording={audioEngine.startRecording}
+            onStopRecording={audioEngine.stopRecording}
+            getRecordedAudioBuffer={audioEngine.getRecordedAudioBuffer}
+          />
         ) : (
           // Main Synth View
           <div className="grid grid-cols-12 gap-6">
