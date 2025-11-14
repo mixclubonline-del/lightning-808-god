@@ -17,7 +17,7 @@ import zeusImage from "@/assets/zeus-figure.png";
 import { Zap, Library } from "lucide-react";
 import { useAudioEngine, midiToFrequency } from "@/hooks/useAudioEngine";
 import { generateChord, calculateStrumDelay } from "@/utils/chordGenerator";
-import { AudioFeatures } from "@/utils/audioFeatureExtraction";
+import { AudioFeatures, extractAudioFeatures } from "@/utils/audioFeatureExtraction";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -66,6 +66,7 @@ const Index = () => {
   // Sound library state
   const [showLibrary, setShowLibrary] = useState(false);
   const [currentSoundFeatures, setCurrentSoundFeatures] = useState<AudioFeatures | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Initialize audio on first user interaction
   useEffect(() => {
@@ -114,12 +115,51 @@ const Index = () => {
     toast("⚡ Lightning strikes!");
   };
 
+  const captureAndAnalyzeAudio = async (frequency: number) => {
+    if (isAnalyzing) return;
+    setIsAnalyzing(true);
+    
+    try {
+      const offlineContext = new OfflineAudioContext(1, 44100 * 2, 44100);
+      const osc = offlineContext.createOscillator();
+      osc.frequency.value = frequency;
+      osc.type = "sine";
+      
+      const gain = offlineContext.createGain();
+      gain.gain.setValueAtTime(0, offlineContext.currentTime);
+      gain.gain.linearRampToValueAtTime(0.5, offlineContext.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.01, offlineContext.currentTime + 1.5);
+      
+      osc.connect(gain);
+      gain.connect(offlineContext.destination);
+      osc.start(0);
+      osc.stop(2);
+      
+      const audioBuffer = await offlineContext.startRendering();
+      const features = await extractAudioFeatures(audioBuffer);
+      
+      setCurrentSoundFeatures(features);
+      toast.success("Audio analyzed! Click 'Find Similar' in Sound Match panel");
+    } catch (error) {
+      console.error("Audio analysis error:", error);
+      toast.error("Failed to analyze audio");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const handleNoteOn = (midiNote: number) => {
     if (!audioEngine.isInitialized) return;
     const config = { 
       wave, filter, vibrato, gain, attack, decay, reverb, resonance,
       distortionDrive, distortionTone, distortionMix 
     };
+
+    // Capture first note for sound matching
+    if (!currentSoundFeatures && !isAnalyzing) {
+      const frequency = midiToFrequency(midiNote);
+      captureAndAnalyzeAudio(frequency);
+    }
 
     // Check if chord generator is enabled
     if (chordEnabled) {
@@ -256,6 +296,7 @@ const Index = () => {
             />
             <SoundMatcher
               currentFeatures={currentSoundFeatures}
+              onClearFeatures={() => setCurrentSoundFeatures(null)}
               onMatchSelect={(match) => {
                 toast.success(`Selected: ${match.sample.name}`);
               }}
