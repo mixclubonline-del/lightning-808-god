@@ -49,7 +49,7 @@ export const Knob = ({ label, value, onChange, min = 0, max = 100, className }: 
   };
 
   return (
-    <div className={cn("flex flex-col items-center gap-2", className)}>
+    <div className={cn("flex flex-col items-center gap-1", className)}>
       <div
         ref={knobRef}
         onMouseDown={handleMouseDown}
@@ -89,6 +89,7 @@ export const Knob = ({ label, value, onChange, min = 0, max = 100, className }: 
         </svg>
       </div>
       <span className="text-xs text-primary font-medium uppercase tracking-wider">{label}</span>
+      <span className="text-[10px] text-muted-foreground font-mono">{value.toFixed(1)}</span>
     </div>
   );
 };
