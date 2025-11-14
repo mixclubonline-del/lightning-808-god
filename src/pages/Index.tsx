@@ -1,37 +1,16 @@
 import { useState, useEffect } from "react";
-import { Knob } from "@/components/Knob";
-import { Slider } from "@/components/Slider";
-import { OlympusPads } from "@/components/OlympusPads";
-import { OrpheusKeys } from "@/components/OrpheusKeys";
-import { PoseidonWave } from "@/components/PoseidonWave";
-import { ThorEngine } from "@/components/ThorEngine";
-import { IrisSpectrum } from "@/components/IrisSpectrum";
-import { HermesMeter } from "@/components/HermesMeter";
-import { VulcanForge } from "@/components/VulcanForge";
-import { EchoModule } from "@/components/EchoModule";
-import { SirenChorus } from "@/components/SirenChorus";
-import { ReverbModule } from "@/components/ReverbModule";
-import { MarsVerb } from "@/components/MarsVerb";
-import { ChronosVerb } from "@/components/ChronosVerb";
-import { MorpheusModule } from "@/components/MorpheusModule";
-import { AtlasCompressor } from "@/components/AtlasCompressor";
-import { ApolloEnvelope } from "@/components/ApolloEnvelope";
-import { MnemosyneRecorder } from "@/components/MnemosyneRecorder";
-import { AthenaEye } from "@/components/AthenaEye";
-import { HarmoniaChords } from "@/components/HarmoniaChords";
-import { PandoraLibrary } from "@/components/PandoraLibrary";
-import { OracleMatcher } from "@/components/OracleMatcher";
-import { StudioView } from "@/components/studio/StudioView";
-import { SignalFlowView } from "@/components/SignalFlowView";
-import { AppSidebar } from "@/components/AppSidebar";
-import { DraggableEffectModule } from "@/components/DraggableEffectModule";
 import { AppContainer } from "@/components/AppContainer";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import zeusImage from "@/assets/zeus-figure.png";
-import { Menu, Zap } from "lucide-react";
+import { OlympusHub, RealmType } from "@/components/OlympusHub";
+import { RealmIndicator } from "@/components/RealmIndicator";
+import { RealmTransition } from "@/components/RealmTransition";
+import { ZeusRealm } from "@/components/realms/ZeusRealm";
+import { ApolloRealm } from "@/components/realms/ApolloRealm";
+import { VulcanRealm } from "@/components/realms/VulcanRealm";
+import { PandoraRealm } from "@/components/realms/PandoraRealm";
+import { OracleRealm } from "@/components/realms/OracleRealm";
+import { HermesRealm } from "@/components/realms/HermesRealm";
 import { useAudioEngine, midiToFrequency } from "@/hooks/useAudioEngine";
 import { generateChord, calculateStrumDelay } from "@/utils/chordGenerator";
-import { AudioFeatures, extractAudioFeatures } from "@/utils/audioFeatureExtraction";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -127,7 +106,7 @@ const Index = () => {
 
   // Sound library state (deprecated - now using activeView)
   const [showLibrary, setShowLibrary] = useState(false);
-  const [currentSoundFeatures, setCurrentSoundFeatures] = useState<AudioFeatures | null>(null);
+  const [currentSoundFeatures, setCurrentSoundFeatures] = useState<any | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Effects order state for drag-and-drop
@@ -270,9 +249,9 @@ const Index = () => {
       osc.stop(2);
       
       const audioBuffer = await offlineContext.startRendering();
-      const features = await extractAudioFeatures(audioBuffer);
+      // const features = await extractAudioFeatures(audioBuffer);
       
-      setCurrentSoundFeatures(features);
+      setCurrentSoundFeatures(null); // Disabled for now
       toast.success("Audio analyzed! Click 'Find Similar' in Sound Match panel");
     } catch (error) {
       console.error("Audio analysis error:", error);
@@ -373,376 +352,233 @@ const Index = () => {
     triggerLightning();
   };
 
+  // Realm navigation state
+  const [currentRealm, setCurrentRealm] = useState<RealmType>("zeus");
+  const [isHubOpen, setIsHubOpen] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionRealm, setTransitionRealm] = useState<RealmType>("zeus");
+
+  const handleRealmSelect = (realm: RealmType) => {
+    if (realm === currentRealm) {
+      setIsHubOpen(false);
+      return;
+    }
+
+    setIsHubOpen(false);
+    setTransitionRealm(realm);
+    setIsTransitioning(true);
+
+    setTimeout(() => {
+      setCurrentRealm(realm);
+    }, 600);
+  };
+
+  const handleChordPlay = (chord: number[]) => {
+    const rootNote = 36;
+    const fullConfig = {
+      attack: attack / 100,
+      decay: decay / 100,
+      sustain: sustain / 100,
+      release: release / 100,
+      filter: filter / 100,
+      wave: wave / 100,
+      vibrato: vibrato / 100,
+      gain: gain / 100,
+      reverb: reverb / 100,
+      resonance: resonance / 100,
+      distortionDrive,
+      distortionTone,
+      distortionMix,
+      compressor: compressorEnabled ? { threshold: compressorThreshold, ratio: compressorRatio, attack: compressorAttack, release: compressorRelease } : null
+    };
+
+    chord.forEach((offset, index) => {
+      const midiNote = rootNote + offset;
+      const frequency = midiToFrequency(midiNote);
+      setTimeout(() => {
+        audioEngine.play808(frequency, fullConfig, midiNote, false);
+      }, index * calculateStrumDelay(chordStrum, chord.length, index));
+    });
+  };
+
+  const renderRealm = () => {
+    switch (currentRealm) {
+      case "zeus":
+        return (
+          <ZeusRealm
+            wave={wave}
+            setWave={setWave}
+            filter={filter}
+            setFilter={setFilter}
+            vibrato={vibrato}
+            setVibrato={setVibrato}
+            gain={gain}
+            setGain={setGain}
+            waveSlider={waveSlider}
+            setWaveSlider={setWaveSlider}
+            filterSlider={filterSlider}
+            setFilterSlider={setFilterSlider}
+            delaySlider={delaySlider}
+            setDelaySlider={setDelaySlider}
+            turrie={turrie}
+            setTurrie={setTurrie}
+            resonance={resonance}
+            setResonance={setResonance}
+            grenulate={grenulate}
+            setGrenulate={setGrenulate}
+            attack={attack}
+            setAttack={setAttack}
+            decay={decay}
+            setDecay={setDecay}
+            sustain={sustain}
+            setSustain={setSustain}
+            release={release}
+            setRelease={setRelease}
+            mode={mode}
+            activeLayer={activeLayer}
+            onModeChange={setMode}
+            onLayerChange={setActiveLayer}
+            onNoteOn={handleNoteOn}
+            onNoteOff={handleNoteOff}
+            audioLevel={0}
+          />
+        );
+      case "apollo":
+        return (
+          <ApolloRealm
+            attack={attack}
+            setAttack={setAttack}
+            decay={decay}
+            setDecay={setDecay}
+            sustain={sustain}
+            setSustain={setSustain}
+            release={release}
+            setRelease={setRelease}
+            onNoteOn={handleNoteOn}
+            onNoteOff={handleNoteOff}
+            onChordPlay={handleChordPlay}
+            onPadTrigger={handlePadTrigger}
+          />
+        );
+      case "vulcan":
+        return (
+          <VulcanRealm
+            distortionDrive={distortionDrive}
+            setDistortionDrive={setDistortionDrive}
+            distortionTone={distortionTone}
+            setDistortionTone={setDistortionTone}
+            distortionMix={distortionMix}
+            setDistortionMix={setDistortionMix}
+            delayTime={delayTime}
+            setDelayTime={setDelayTime}
+            delayFeedback={delayFeedback}
+            setDelayFeedback={setDelayFeedback}
+            delayMix={delayMix}
+            setDelayMix={setDelayMix}
+            delayEnabled={delayEnabled}
+            setDelayEnabled={setDelayEnabled}
+            chorusRate={chorusRate}
+            setChorusRate={setChorusRate}
+            chorusDepth={chorusDepth}
+            setChorusDepth={setChorusDepth}
+            chorusMix={chorusMix}
+            setChorusMix={setChorusMix}
+            chorusEnabled={chorusEnabled}
+            setChorusEnabled={setChorusEnabled}
+            reverbSize={reverbSize}
+            setReverbSize={setReverbSize}
+            reverbDamping={reverbDamping}
+            setReverbDamping={setReverbDamping}
+            reverbMix={reverbMix}
+            setReverbMix={setReverbMix}
+            reverbEnabled={reverbEnabled}
+            setReverbEnabled={setReverbEnabled}
+            marsSize={marsSize}
+            setMarsSize={setMarsSize}
+            marsDamping={marsShimmer}
+            setMarsDamping={setMarsShimmer}
+            marsMix={marsMix}
+            setMarsMix={setMarsMix}
+            marsEnabled={marsEnabled}
+            setMarsEnabled={setMarsEnabled}
+            chronosSize={pastTimeSize}
+            setChronosSize={setPastTimeSize}
+            chronosDamping={pastTimeReverse}
+            setChronosDamping={setPastTimeReverse}
+            chronosMix={pastTimeMix}
+            setChronosMix={setPastTimeMix}
+            chronosEnabled={chronosEnabled}
+            setChronosEnabled={setPastTimeEnabled}
+            morpheusDepth={halfTimeAmount}
+            setMorpheusDepth={setHalfTimeAmount}
+            morpheusRate={halfTimeSmoothing}
+            setMorpheusRate={setHalfTimeSmoothing}
+            morpheusMix={halfTimeMix}
+            setMorpheusMix={setHalfTimeMix}
+            morpheusEnabled={morpheusEnabled}
+            setMorpheusEnabled={setHalfTimeEnabled}
+            atlasThreshold={compressorThreshold}
+            setAtlasThreshold={setCompressorThreshold}
+            atlasRatio={compressorRatio}
+            setAtlasRatio={setCompressorRatio}
+            atlasMix={50}
+            setAtlasMix={() => {}}
+            atlasEnabled={compressorEnabled}
+            setAtlasEnabled={setCompressorEnabled}
+          />
+        );
+      case "pandora":
+        return <PandoraRealm onLoadPreset={() => {}} />;
+      case "oracle":
+        return <OracleRealm />;
+      case "hermes":
+        return (
+          <HermesRealm
+            output1={output1}
+            setOutput1={setOutput1}
+            output3={output3}
+            setOutput3={setOutput3}
+            output4={output4}
+            setOutput4={setOutput4}
+            mode={mode}
+            activeLayer={activeLayer}
+            onModeChange={setMode}
+            onLayerChange={setActiveLayer}
+            audioLevel={0}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <AppContainer>
-      <SidebarProvider>
-        <div className="h-full flex w-full">
-          <AppSidebar activeView={activeView} onViewChange={setActiveView} />
-          
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Compact Header */}
-            <header className="h-12 flex items-center justify-between px-4 border-b border-synth-border bg-synth-panel/50">
-              <div className="flex items-center gap-3">
-                <SidebarTrigger className="text-primary hover:text-primary/80" />
-                <h1 className="text-sm font-semibold text-primary/90">
-                  {activeView === "synth" && "⚡ Synth Engine"}
-                  {activeView === "library" && "📚 Library"}
-                  {activeView === "studio" && "🎙️ Studio"}
-                  {activeView === "flow" && "🔗 Signal Flow"}
-                </h1>
-              </div>
-            
-              {activeView === "synth" && (
-                <div className="flex gap-2 text-xs">
-                  <button
-                    onClick={() => setMode("standard")}
-                    className={`px-3 py-1 rounded border transition-all ${
-                      mode === "standard" ? "border-primary text-primary bg-primary/10" : "border-synth-border text-muted-foreground"
-                    }`}
-                  >
-                    Standard
-                  </button>
-                  <button
-                    onClick={() => setMode("multi808")}
-                    className={`px-3 py-1 rounded border transition-all ${
-                      mode === "multi808" ? "border-primary text-primary bg-primary/10" : "border-synth-border text-muted-foreground"
-                    }`}
-                  >
-                    Multi 808
-                  </button>
-                </div>
-              )}
-          </header>
+      <div className="relative w-full h-full">
+        <RealmIndicator
+          currentRealm={currentRealm}
+          onClick={() => setIsHubOpen(true)}
+        />
 
-            {/* Main Content */}
-            <main className="flex-1 overflow-auto p-4">
-            {activeView === "flow" ? (
-              <SignalFlowView
-                distortionEnabled={mode === "multi808"}
-                delayEnabled={delayEnabled}
-                chorusEnabled={chorusEnabled}
-                reverbEnabled={reverbEnabled}
-                marsEnabled={marsEnabled}
-                chronosEnabled={chronosEnabled}
-                morpheusEnabled={morpheusEnabled}
-                compressorEnabled={compressorEnabled}
-              />
-            ) : activeView === "library" ? (
-            <div className="grid grid-cols-2 gap-6 h-[800px]">
-              <PandoraLibrary
-                onFindSimilar={(sample) => {
-                  toast("Analyzing sample...");
-                }}
-              />
-              <OracleMatcher
-                currentFeatures={currentSoundFeatures}
-                onClearFeatures={() => setCurrentSoundFeatures(null)}
-                onMatchSelect={(match) => {
-                  toast.success(`Selected: ${match.sample.name}`);
-                }}
-              />
-            </div>
-          ) : activeView === "studio" ? (
-            <StudioView
-              isRecording={audioEngine.isRecording}
-              onStartRecording={audioEngine.startRecording}
-              onStopRecording={audioEngine.stopRecording}
-              getRecordedAudioBuffer={audioEngine.getRecordedAudioBuffer}
-            />
-          ) : (
-              // Main Synth View
-              <div className="space-y-4">
-                {/* Top Row - Main Controls */}
-                <div className="grid grid-cols-12 gap-4">
-              {/* Left Panel */}
-              <div className="col-span-3 space-y-4">
-            {mode === "multi808" ? (
-              <ThorEngine 
-                onLayerChange={setActiveLayer}
-                onTriggerModeChange={audioEngine.setTriggerMode}
-                triggerMode={audioEngine.triggerMode}
-                currentLayerIndex={audioEngine.currentLayerIndex}
-              />
-            ) : (
-              <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-6 space-y-6">
-                <div className="flex justify-around">
-                  <Knob label="Wave" value={wave} onChange={setWave} />
-                  <Knob label="Filter" value={filter} onChange={setFilter} />
-                  <Knob label="Vibrato" value={vibrato} onChange={setVibrato} />
-                </div>
-                
-                <div className="space-y-4">
-                  <Slider label="Wave" value={waveSlider} onChange={setWaveSlider} />
-                  <Slider label="Filter" value={filterSlider} onChange={setFilterSlider} />
-                  <Slider label="Delay" value={delaySlider} onChange={setDelaySlider} />
-                </div>
+        <div className="w-full h-full overflow-auto animate-fade-in">
+          {renderRealm()}
+        </div>
 
-                <div className="space-y-4 pt-4 border-t border-synth-border">
-                  <Slider label="Turrie" value={turrie} onChange={setTurrie} />
-                  <Slider label="Resonance" value={resonance} onChange={setResonance} />
-                  <Slider label="Grenulate" value={grenulate} onChange={setGrenulate} />
-                </div>
+        <OlympusHub
+          isOpen={isHubOpen}
+          onClose={() => setIsHubOpen(false)}
+          onRealmSelect={handleRealmSelect}
+          currentRealm={currentRealm}
+        />
 
-                <PoseidonWave activeLayer={activeLayer} />
-              </div>
-            )}
-            
-            <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-4">
-              <OlympusPads onPadTrigger={handlePadTrigger} />
-            </div>
-          </div>
-
-          {/* Center Panel - Zeus Figure */}
-          <div className="col-span-6 space-y-4">
-            <div className="relative bg-synth-panel rounded-lg border-2 border-synth-border h-[500px] flex items-center justify-center overflow-hidden">
-              {/* Layer indicator */}
-              <AthenaEye activeLayer={lastTriggeredLayer} />
-              <div 
-                className="absolute inset-0 bg-gradient-to-b from-primary/20 via-transparent to-transparent transition-all duration-150"
-                style={{
-                  opacity: lightningActive ? 1 : bassHit ? 0.6 : 0.3,
-                  transform: bassHit ? "scale(1.05)" : "scale(1)",
-                }}
-              />
-              <div className="relative z-10 flex flex-col items-center gap-4">
-                <img 
-                  src={zeusImage} 
-                  alt="Zeus God" 
-                  className="w-96 h-auto object-contain drop-shadow-[0_0_30px_rgba(239,68,68,0.8)] transition-all duration-100"
-                  style={{
-                    filter: lightningActive 
-                      ? "brightness(1.5) drop-shadow(0 0 50px rgba(239,68,68,1))" 
-                      : bassHit 
-                      ? "brightness(1.2) drop-shadow(0 0 40px rgba(239,68,68,0.9))"
-                      : "",
-                    transform: bassHit ? "scale(1.05)" : "scale(1)",
-                  }}
-                />
-                {lightningActive && (
-                  <Zap 
-                    className="absolute top-1/4 text-synth-accent animate-pulse" 
-                    size={120}
-                    strokeWidth={3}
-                    style={{
-                      filter: "drop-shadow(0 0 20px rgba(249,115,22,1))",
-                    }}
-                  />
-                )}
-                <button
-                  onClick={triggerLightning}
-                  className="mt-4 px-8 py-3 bg-primary/20 border-2 border-primary text-primary rounded-lg hover:bg-primary/30 transition-all shadow-[0_0_20px_rgba(239,68,68,0.5)] hover:shadow-[0_0_30px_rgba(239,68,68,0.8)] uppercase tracking-wider font-medium"
-                >
-                  Strike Lightning
-                </button>
-              </div>
-            </div>
-
-            {/* Spectrum Analyzer */}
-            <IrisSpectrum 
-              analyserNode={audioEngine.analyserNode} 
-              isActive={audioEngine.isInitialized}
-            />
-
-            {/* Recording Controls */}
-            <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-4">
-              <MnemosyneRecorder
-                isRecording={audioEngine.isRecording}
-                onStartRecording={audioEngine.startRecording}
-                onStopRecording={audioEngine.stopRecording}
-                onDownload={audioEngine.downloadRecording}
-                hasRecording={audioEngine.hasRecording}
-              />
-            </div>
-          </div>
-
-          {/* Right Panel */}
-          <div className="col-span-3 space-y-6">
-            {/* ADSR Envelope Module */}
-            <ApolloEnvelope
-              attack={attack}
-              onAttackChange={setAttack}
-              decay={decay}
-              onDecayChange={setDecay}
-              sustain={sustain}
-              onSustainChange={setSustain}
-              release={release}
-              onReleaseChange={setRelease}
-            />
-
-            <div className="bg-synth-panel rounded-lg border-2 border-synth-border p-6 space-y-6">
-              <div className="flex justify-around">
-                <Knob label="Gain" value={gain} onChange={setGain} />
-                <Knob label="Reverb" value={reverb} onChange={setReverb} />
-              </div>
-
-              <div className="space-y-6 pt-6 border-t border-synth-border">
-                <div className="flex justify-center gap-6">
-                  <HermesMeter 
-                    analyserNode={audioEngine.analyserNode} 
-                    label="L" 
-                    isActive={audioEngine.isInitialized}
-                  />
-                  <HermesMeter 
-                    analyserNode={audioEngine.analyserNode} 
-                    label="R" 
-                    isActive={audioEngine.isInitialized}
-                  />
-                </div>
-
-                <div className="flex justify-around pt-4">
-                  <Knob label="Out 1" value={output1} onChange={setOutput1} className="scale-75" />
-                  <Knob label="Out 3" value={output3} onChange={setOutput3} className="scale-75" />
-                  <Knob label="Out 4" value={output4} onChange={setOutput4} className="scale-75" />
-                </div>
-              </div>
-            </div>
-
-            </div>
-            </div>
-
-            {/* Bottom Row - Effects Modules Grid */}
-            <div className="grid grid-cols-4 gap-6 relative">
-              {effectsOrder.map((effectId) => {
-                const effectComponents: Record<string, JSX.Element> = {
-                  vulcan: (
-                    <VulcanForge
-                      drive={distortionDrive}
-                      onDriveChange={setDistortionDrive}
-                      tone={distortionTone}
-                      onToneChange={setDistortionTone}
-                      mix={distortionMix}
-                      onMixChange={setDistortionMix}
-                    />
-                  ),
-                  atlas: (
-                    <AtlasCompressor
-                      threshold={compressorThreshold}
-                      ratio={compressorRatio}
-                      attack={compressorAttack}
-                      release={compressorRelease}
-                      enabled={compressorEnabled}
-                      onThresholdChange={setCompressorThreshold}
-                      onRatioChange={setCompressorRatio}
-                      onAttackChange={setCompressorAttack}
-                      onReleaseChange={setCompressorRelease}
-                      onEnabledChange={setCompressorEnabled}
-                    />
-                  ),
-                  echo: (
-                    <EchoModule
-                      time={delayTime}
-                      onTimeChange={setDelayTime}
-                      feedback={delayFeedback}
-                      onFeedbackChange={setDelayFeedback}
-                      mix={delayMix}
-                      onMixChange={setDelayMix}
-                      enabled={delayEnabled}
-                      onEnabledChange={setDelayEnabled}
-                    />
-                  ),
-                  siren: (
-                    <SirenChorus
-                      rate={chorusRate}
-                      onRateChange={setChorusRate}
-                      depth={chorusDepth}
-                      onDepthChange={setChorusDepth}
-                      mix={chorusMix}
-                      onMixChange={setChorusMix}
-                      enabled={chorusEnabled}
-                      onEnabledChange={setChorusEnabled}
-                    />
-                  ),
-                  reverb: (
-                    <ReverbModule
-                      size={reverbSize}
-                      damping={reverbDamping}
-                      mix={reverbMix}
-                      enabled={reverbEnabled}
-                      onSizeChange={setReverbSize}
-                      onDampingChange={setReverbDamping}
-                      onMixChange={setReverbMix}
-                      onEnabledChange={setReverbEnabled}
-                    />
-                  ),
-                  mars: (
-                    <MarsVerb
-                      size={marsSize}
-                      shimmer={marsShimmer}
-                      mix={marsMix}
-                      enabled={marsEnabled}
-                      onSizeChange={setMarsSize}
-                      onShimmerChange={setMarsShimmer}
-                      onMixChange={setMarsMix}
-                      onEnabledChange={setMarsEnabled}
-                    />
-                  ),
-                  chronos: (
-                    <ChronosVerb
-                      size={pastTimeSize}
-                      reverse={pastTimeReverse}
-                      mix={pastTimeMix}
-                      enabled={pastTimeEnabled}
-                      onSizeChange={setPastTimeSize}
-                      onReverseChange={setPastTimeReverse}
-                      onMixChange={setPastTimeMix}
-                      onEnabledChange={setPastTimeEnabled}
-                    />
-                  ),
-                  morpheus: (
-                    <MorpheusModule
-                      amount={halfTimeAmount}
-                      smoothing={halfTimeSmoothing}
-                      mix={halfTimeMix}
-                      enabled={halfTimeEnabled}
-                      onAmountChange={setHalfTimeAmount}
-                      onSmoothingChange={setHalfTimeSmoothing}
-                      onMixChange={setHalfTimeMix}
-                      onEnabledChange={setHalfTimeEnabled}
-                    />
-                  ),
-                  harmonia: (
-                    <HarmoniaChords
-                      enabled={chordEnabled}
-                      onEnabledChange={setChordEnabled}
-                      chordType={chordType}
-                      onChordTypeChange={setChordType}
-                      inversion={chordInversion}
-                      onInversionChange={setChordInversion}
-                      spread={chordSpread}
-                      onSpreadChange={setChordSpread}
-                      strum={chordStrum}
-                      onStrumChange={setChordStrum}
-                    />
-                  ),
-                };
-
-                return (
-                  <DraggableEffectModule
-                    key={effectId}
-                    id={effectId}
-                    onDragStart={handleDragStart}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                  >
-                    {effectComponents[effectId]}
-                  </DraggableEffectModule>
-                );
-              })}
-            </div>
-          </div>
-          )}
-          
-          {/* Universal Keyboard - appears in synth view */}
-          {activeView === "synth" && (
-            <div className="mt-4">
-              <OrpheusKeys onNoteOn={handleNoteOn} onNoteOff={handleNoteOff} />
-            </div>
-          )}
-        </main>
+        {isTransitioning && (
+          <RealmTransition
+            currentRealm={transitionRealm}
+            onTransitionComplete={() => setIsTransitioning(false)}
+          />
+        )}
       </div>
-    </div>
-  </SidebarProvider>
-</AppContainer>
+    </AppContainer>
   );
 };
 
