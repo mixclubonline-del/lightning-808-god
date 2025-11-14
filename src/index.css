@@ -317,6 +317,44 @@ All colors MUST be HSL.
       );
   }
 
+  /* Realm Transition Animations */
+  @keyframes particle-fade {
+    0% {
+      opacity: 0;
+      transform: translate(0, 0) scale(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translate(calc(var(--tx, 1) * 20px), calc(var(--ty, -1) * 20px)) scale(1.2);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(calc(var(--tx, 1) * 40px), calc(var(--ty, -1) * 40px)) scale(0.5);
+    }
+  }
+
+  @keyframes realm-reveal {
+    0% {
+      opacity: 0;
+      transform: scale(0.8) translateY(30px);
+      filter: blur(10px);
+    }
+    40% {
+      opacity: 1;
+      transform: scale(1.1) translateY(0);
+      filter: blur(0px);
+    }
+    60% {
+      opacity: 1;
+      transform: scale(1.05) translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.2) translateY(-20px);
+      filter: blur(5px);
+    }
+  }
+
   /* Greek Fret Border */
   .fret-border {
     border-image: repeating-linear-gradient(
