@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { midiHandler, type MidiMessage } from "@/utils/midiHandler";
+import { keyboardMapper } from "@/utils/keyboardMapper";
 
 interface AudioEngineConfig {
   wave: number;
@@ -653,11 +655,38 @@ export const useAudioEngine = () => {
     }
   };
 
+  // MIDI and Keyboard Integration
+  const enableMidiInput = (config: AudioEngineConfig) => {
+    const unsubscribe = midiHandler.subscribe((message: MidiMessage) => {
+      if (message.type === 'noteon' && message.note !== undefined && message.velocity !== undefined) {
+        const frequency = midiToFrequency(message.note);
+        play808(frequency, config, message.note, true);
+      } else if (message.type === 'noteoff' && message.note !== undefined) {
+        stopNote(message.note);
+      }
+    });
+    return unsubscribe;
+  };
+
+  const enableKeyboardInput = (config: AudioEngineConfig) => {
+    const unsubscribe = keyboardMapper.subscribe((note: number, velocity: number, isNoteOn: boolean) => {
+      if (isNoteOn) {
+        const frequency = midiToFrequency(note);
+        play808(frequency, config, note, true);
+      } else {
+        stopNote(note);
+      }
+    });
+    return unsubscribe;
+  };
+
   return {
     initialize,
     play808,
     playMulti808,
     stopNote,
+    enableMidiInput,
+    enableKeyboardInput,
     updateMasterGain,
     updateFilter,
     updateDistortion,
