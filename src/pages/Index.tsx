@@ -4,6 +4,7 @@ import { OlympusHub, RealmType } from "@/components/OlympusHub";
 import { RealmIndicator } from "@/components/RealmIndicator";
 import { RealmTransition } from "@/components/RealmTransition";
 import { OpeningAnimation } from "@/components/OpeningAnimation";
+import { MidiKeyboardControls } from "@/components/MidiKeyboardControls";
 import { ZeusRealm } from "@/components/realms/ZeusRealm";
 import { ApolloRealm } from "@/components/realms/ApolloRealm";
 import { VulcanRealm } from "@/components/realms/VulcanRealm";
@@ -105,6 +106,10 @@ const Index = () => {
   const [chordInversion, setChordInversion] = useState(0);
   const [chordSpread, setChordSpread] = useState(30);
   const [chordStrum, setChordStrum] = useState(0);
+
+  // MIDI and Keyboard controls
+  const [midiEnabled, setMidiEnabled] = useState(false);
+  const [keyboardEnabled, setKeyboardEnabled] = useState(false);
 
   // Sound library state (deprecated - now using activeView)
   const [showLibrary, setShowLibrary] = useState(false);
@@ -232,6 +237,31 @@ const Index = () => {
   useEffect(() => {
     audioEngine.updateCompressor(compressorThreshold, compressorRatio, compressorAttack, compressorRelease, compressorEnabled);
   }, [compressorThreshold, compressorRatio, compressorAttack, compressorRelease, compressorEnabled, audioEngine]);
+
+  // MIDI and Keyboard integration
+  useEffect(() => {
+    if (!midiEnabled || !audioEngine.isInitialized) return;
+    
+    const config = {
+      wave, filter, vibrato, gain, attack, decay, sustain, release, reverb, resonance,
+      distortionDrive, distortionTone, distortionMix
+    };
+    
+    const unsubscribe = audioEngine.enableMidiInput(config);
+    return () => unsubscribe();
+  }, [midiEnabled, audioEngine, wave, filter, vibrato, gain, attack, decay, sustain, release, reverb, resonance, distortionDrive, distortionTone, distortionMix]);
+
+  useEffect(() => {
+    if (!keyboardEnabled || !audioEngine.isInitialized) return;
+    
+    const config = {
+      wave, filter, vibrato, gain, attack, decay, sustain, release, reverb, resonance,
+      distortionDrive, distortionTone, distortionMix
+    };
+    
+    const unsubscribe = audioEngine.enableKeyboardInput(config);
+    return () => unsubscribe();
+  }, [keyboardEnabled, audioEngine, wave, filter, vibrato, gain, attack, decay, sustain, release, reverb, resonance, distortionDrive, distortionTone, distortionMix]);
 
   const triggerLightning = () => {
     setLightningActive(true);
@@ -596,6 +626,14 @@ const Index = () => {
       {/* Main App */}
       <AppContainer>
         <div className="relative w-full h-full">
+          {/* MIDI/Keyboard Controls - Fixed top-right */}
+          <div className="fixed top-20 right-4 z-40">
+            <MidiKeyboardControls
+              onMidiEnabled={setMidiEnabled}
+              onKeyboardEnabled={setKeyboardEnabled}
+            />
+          </div>
+
           <RealmIndicator
             currentRealm={currentRealm}
             onClick={() => setIsHubOpen(true)}
