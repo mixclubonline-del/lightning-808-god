@@ -131,7 +131,7 @@ export const OpeningAnimation = ({ onComplete }: OpeningAnimationProps) => {
                   textShadow: '0 0 40px rgba(239,68,68,0.8), 0 0 80px rgba(239,68,68,0.4)',
                 }}
               >
-                OLYMPUS
+                VST GOD
               </h1>
               <p 
                 className="text-2xl text-foreground/80 tracking-[0.2em]"
@@ -140,7 +140,7 @@ export const OpeningAnimation = ({ onComplete }: OpeningAnimationProps) => {
                   textShadow: '0 0 20px rgba(255,255,255,0.5)',
                 }}
               >
-                Welcome to the Divine Realm
+                Divine Sound Design
               </p>
               
               {/* Decorative Lines */}
