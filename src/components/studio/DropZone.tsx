@@ -29,7 +29,7 @@ export const DropZone = ({ onFileUpload, className }: DropZoneProps) => {
     const files = Array.from(e.dataTransfer.files);
     const audioFile = files.find(file => 
       file.type.startsWith('audio/') || 
-      file.name.match(/\.(mp3|wav|ogg|m4a|flac)$/i)
+      file.name.match(/\.(mp3|wav|ogg|m4a|flac|aiff|aif|opus|wma|aac|alac|ape|wv|mp2|ac3|dts|sfz|exs|nki|nkm|rex|rx2|asd|akp|w64|wav64)$/i)
     );
 
     if (audioFile) {
@@ -37,7 +37,7 @@ export const DropZone = ({ onFileUpload, className }: DropZoneProps) => {
       onFileUpload(audioFile);
       toast.success(`Loaded: ${audioFile.name}`);
     } else {
-      toast.error("Please upload an audio file (MP3, WAV, OGG, M4A, FLAC)");
+      toast.error("Please upload a supported audio or sample library file");
     }
   }, [onFileUpload]);
 
@@ -148,15 +148,18 @@ export const DropZone = ({ onFileUpload, className }: DropZoneProps) => {
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
                 Drag & drop an audio file here or click to browse
               </p>
-              <p className="text-xs text-muted-foreground/60 uppercase tracking-wider">
-                Supports: MP3, WAV, OGG, M4A, FLAC
+              <p className="text-xs text-muted-foreground/70">
+                All audio formats • Sound packs • Sample libraries
+              </p>
+              <p className="text-[10px] text-muted-foreground/50 mt-1">
+                MP3 • WAV • FLAC • AIFF • OGG • M4A • OPUS • WMA • AAC • ALAC • SFZ • REX • NKI
               </p>
             </div>
 
             <label className="inline-block">
               <input
                 type="file"
-                accept="audio/*,.mp3,.wav,.ogg,.m4a,.flac"
+                accept="audio/*,.mp3,.wav,.ogg,.m4a,.flac,.aiff,.aif,.opus,.wma,.aac,.alac,.ape,.wv,.mp2,.ac3,.dts,.sfz,.exs,.nki,.nkm,.rex,.rx2,.asd,.akp,.w64,.wav64"
                 onChange={handleFileInput}
                 className="hidden"
               />
