@@ -23,7 +23,9 @@ export const Knob = ({ label, value, onChange, min = 0, max = 100, className }: 
       if (!isDragging) return;
       
       const delta = startYRef.current - e.clientY;
-      const valueChange = (delta / 200) * (max - min); // Reduced sensitivity from 100 to 200
+      // Improved sensitivity with acceleration: faster movement = faster value change
+      const sensitivity = e.shiftKey ? 400 : 150; // Hold shift for fine control
+      const valueChange = (delta / sensitivity) * (max - min);
       const newValue = Math.max(min, Math.min(max, startValueRef.current + valueChange));
       onChange(newValue);
     };
@@ -53,7 +55,7 @@ export const Knob = ({ label, value, onChange, min = 0, max = 100, className }: 
       <div
         ref={knobRef}
         onMouseDown={handleMouseDown}
-        className="relative w-16 h-16 cursor-pointer select-none"
+        className="relative w-16 h-16 cursor-pointer select-none transition-transform hover:scale-105 active:scale-95"
       >
         <svg className="w-full h-full" viewBox="0 0 100 100">
           <circle

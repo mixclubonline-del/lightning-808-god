@@ -83,6 +83,11 @@ export const useAudioEngine = () => {
 
     const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
     audioContextRef.current = new AudioContext();
+    
+    // Resume context if suspended to prevent clicks
+    if (audioContextRef.current.state === 'suspended') {
+      await audioContextRef.current.resume();
+    }
 
     // Create analyser for visualization
     analyserRef.current = audioContextRef.current.createAnalyser();
@@ -302,7 +307,7 @@ export const useAudioEngine = () => {
     }
   };
 
-  const play808 = (
+  const play808 = async (
     frequency: number,
     config: AudioEngineConfig,
     midiNote: number,
@@ -311,6 +316,12 @@ export const useAudioEngine = () => {
     if (!audioContextRef.current || !masterGainRef.current || !reverbRef.current) return;
 
     const context = audioContextRef.current;
+    
+    // Ensure context is running to prevent clicks
+    if (context.state === 'suspended') {
+      await context.resume();
+    }
+    
     const now = context.currentTime;
 
     // Create oscillator for 808 bass
@@ -341,9 +352,17 @@ export const useAudioEngine = () => {
     const peakGain = (config.gain / 100) * gainMultiplier;
 
     // ADSR: Attack -> Decay -> Sustain (hold until note off)
-    oscGain.gain.setValueAtTime(0, now);
-    oscGain.gain.linearRampToValueAtTime(peakGain, now + attackTime);
-    oscGain.gain.exponentialRampToValueAtTime(Math.max(0.001, peakGain * sustainLevel), now + attackTime + decayTime);
+    // Start from tiny value to prevent clicks, use exponential for smoother envelope
+    const minGain = 0.001;
+    oscGain.gain.setValueAtTime(minGain, now);
+    oscGain.gain.exponentialRampToValueAtTime(
+      Math.max(minGain, peakGain), 
+      now + Math.max(0.005, attackTime) // Min 5ms to prevent clicks
+    );
+    oscGain.gain.exponentialRampToValueAtTime(
+      Math.max(minGain, peakGain * sustainLevel), 
+      now + Math.max(0.005, attackTime) + Math.max(0.01, decayTime)
+    );
 
     // Add vibrato
     if (config.vibrato > 0) {
@@ -425,18 +444,38 @@ export const useAudioEngine = () => {
     return activeLayer;
   };
 
-  const stopNote = (midiNote: number) => {
+  const stopNote = (midiNote: number, config?: AudioEngineConfig) => {
     const note = activeNotesRef.current.get(midiNote);
     if (note && audioContextRef.current) {
       const now = audioContextRef.current.currentTime;
-      const releaseTime = 0.5; // Default release time
+      const releaseTime = config ? Math.max(0.01, (config.release / 100) * 2) : 0.05; // Min 10ms release
       
-      // Apply release envelope
+      // Get current gain value for smooth release
+      const currentGain = note.gain.gain.value;
+      const minGain = 0.001;
+      
+      // Apply smooth exponential release to prevent clicks
       note.gain.gain.cancelScheduledValues(now);
-      note.gain.gain.setValueAtTime(note.gain.gain.value, now);
-      note.gain.gain.exponentialRampToValueAtTime(0.001, now + releaseTime);
-      note.osc.stop(now + releaseTime + 0.1);
-      activeNotesRef.current.delete(midiNote);
+      note.gain.gain.setValueAtTime(Math.max(minGain, currentGain), now);
+      note.gain.gain.exponentialRampToValueAtTime(minGain, now + releaseTime);
+      
+      // Stop oscillator with buffer time
+      try {
+        note.osc.stop(now + releaseTime + 0.05);
+      } catch (e) {
+        // Oscillator may already be stopped
+      }
+      
+      // Cleanup
+      setTimeout(() => {
+        try {
+          note.osc.disconnect();
+          note.gain.disconnect();
+        } catch (e) {
+          // Already disconnected
+        }
+        activeNotesRef.current.delete(midiNote);
+      }, (releaseTime + 0.1) * 1000);
     }
   };
 
@@ -662,7 +701,7 @@ export const useAudioEngine = () => {
         const frequency = midiToFrequency(message.note);
         play808(frequency, config, message.note, true);
       } else if (message.type === 'noteoff' && message.note !== undefined) {
-        stopNote(message.note);
+        stopNote(message.note, config);
       }
     });
     return unsubscribe;
@@ -674,7 +713,7 @@ export const useAudioEngine = () => {
         const frequency = midiToFrequency(note);
         play808(frequency, config, note, true);
       } else {
-        stopNote(note);
+        stopNote(note, config);
       }
     });
     return unsubscribe;

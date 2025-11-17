@@ -22,6 +22,7 @@ export const Slider = ({ label, value, onChange, min = 0, max = 100, className }
         type="range"
         min={min}
         max={max}
+        step={(max - min) / 1000} // Higher resolution for smoother control
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full h-1 bg-synth-border rounded-full appearance-none cursor-pointer slider-thumb"
