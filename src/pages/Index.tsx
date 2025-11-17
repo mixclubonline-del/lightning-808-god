@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AppContainer } from "@/components/AppContainer";
 import { OlympusHub, RealmType } from "@/components/OlympusHub";
 import { RealmIndicator } from "@/components/RealmIndicator";
 import { RealmTransition } from "@/components/RealmTransition";
 import { OpeningAnimation } from "@/components/OpeningAnimation";
 import { MidiKeyboardControls } from "@/components/MidiKeyboardControls";
+import { PresetPanel } from "@/components/PresetPanel";
 import { ZeusRealm } from "@/components/realms/ZeusRealm";
 import { ApolloRealm } from "@/components/realms/ApolloRealm";
 import { VulcanRealm } from "@/components/realms/VulcanRealm";
@@ -14,6 +15,9 @@ import { HermesRealm } from "@/components/realms/HermesRealm";
 import { useAudioEngine, midiToFrequency } from "@/hooks/useAudioEngine";
 import { generateChord, calculateStrumDelay } from "@/utils/chordGenerator";
 import { mythSounds } from "@/utils/mythologicalSounds";
+import { usePresets } from "@/hooks/usePresets";
+import { usePresetKeyboard } from "@/hooks/usePresetKeyboard";
+import { PresetConfig } from "@/types/preset";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -110,6 +114,17 @@ const Index = () => {
   // MIDI and Keyboard controls
   const [midiEnabled, setMidiEnabled] = useState(false);
   const [keyboardEnabled, setKeyboardEnabled] = useState(false);
+
+  // Preset system
+  const {
+    presets,
+    currentPresetIndex,
+    savePreset,
+    loadPreset,
+    deletePreset,
+    renamePreset,
+    initializePreset,
+  } = usePresets();
 
   // Sound library state (deprecated - now using activeView)
   const [showLibrary, setShowLibrary] = useState(false);
@@ -237,6 +252,68 @@ const Index = () => {
   useEffect(() => {
     audioEngine.updateCompressor(compressorThreshold, compressorRatio, compressorAttack, compressorRelease, compressorEnabled);
   }, [compressorThreshold, compressorRatio, compressorAttack, compressorRelease, compressorEnabled, audioEngine]);
+
+  // Get current configuration for preset saving
+  const getCurrentConfig = useCallback((): PresetConfig => ({
+    wave,
+    filter,
+    vibrato,
+    gain,
+    attack,
+    decay,
+    sustain,
+    release,
+    reverb,
+    resonance,
+    distortionDrive,
+    distortionTone,
+    distortionMix,
+  }), [wave, filter, vibrato, gain, attack, decay, sustain, release, reverb, resonance, distortionDrive, distortionTone, distortionMix]);
+
+  // Apply configuration from preset loading
+  const applyConfig = useCallback((config: PresetConfig) => {
+    setWave(config.wave);
+    setFilter(config.filter);
+    setVibrato(config.vibrato);
+    setGain(config.gain);
+    setAttack(config.attack);
+    setDecay(config.decay);
+    setSustain(config.sustain);
+    setRelease(config.release);
+    setReverb(config.reverb);
+    setResonance(config.resonance);
+    setDistortionDrive(config.distortionDrive);
+    setDistortionTone(config.distortionTone);
+    setDistortionMix(config.distortionMix);
+  }, []);
+
+  // Preset handlers
+  const handleSavePreset = useCallback((index: number, config?: PresetConfig) => {
+    const configToSave = config || getCurrentConfig();
+    savePreset(index, configToSave);
+    mythSounds.playApolloPluck();
+  }, [getCurrentConfig, savePreset]);
+
+  const handleLoadPreset = useCallback((index: number) => {
+    const config = loadPreset(index);
+    if (config) {
+      applyConfig(config);
+      mythSounds.playPandoraOpen();
+    }
+  }, [loadPreset, applyConfig]);
+
+  const handleDeletePreset = useCallback((index: number) => {
+    deletePreset(index);
+    mythSounds.playVulcanForge();
+  }, [deletePreset]);
+
+  // Keyboard shortcuts for presets
+  usePresetKeyboard({
+    onSave: handleSavePreset,
+    onLoad: handleLoadPreset,
+    getCurrentConfig,
+    enabled: true, // Always enabled
+  });
 
   // MIDI and Keyboard integration
   useEffect(() => {
@@ -626,11 +703,20 @@ const Index = () => {
       {/* Main App */}
       <AppContainer>
         <div className="relative w-full h-full">
-          {/* MIDI/Keyboard Controls - Fixed top-right */}
-          <div className="fixed top-20 right-4 z-40">
+          {/* Controls Panel - Fixed top-right */}
+          <div className="fixed top-20 right-4 z-40 space-y-4">
             <MidiKeyboardControls
               onMidiEnabled={setMidiEnabled}
               onKeyboardEnabled={setKeyboardEnabled}
+            />
+            <PresetPanel
+              presets={presets}
+              currentPresetIndex={currentPresetIndex}
+              onLoad={handleLoadPreset}
+              onSave={() => handleSavePreset(currentPresetIndex ?? 0)}
+              onDelete={handleDeletePreset}
+              onRename={renamePreset}
+              onInitialize={initializePreset}
             />
           </div>
 
