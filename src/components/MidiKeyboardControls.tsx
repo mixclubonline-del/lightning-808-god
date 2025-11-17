@@ -146,6 +146,7 @@ export const MidiKeyboardControls = ({
                 <p>White keys: A S D F G H J K</p>
                 <p>Black keys: W E T Y U</p>
                 <p>Octave: Z (down) / X (up)</p>
+                <p className="text-accent mt-2">💡 Hold Shift for fine knob control</p>
               </div>
             </div>
           )}
