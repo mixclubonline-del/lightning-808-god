@@ -16,11 +16,18 @@ interface AudioEngineConfig {
   distortionDrive: number;
   distortionTone: number;
   distortionMix: number;
+  velocityCurve?: "linear" | "exponential" | "logarithmic";
+  velocityToVolume?: number;
+  velocityToFilter?: number;
+  masterVolume?: number;
+  limiterEnabled?: boolean;
+  limiterThreshold?: number;
 }
 
 export const useAudioEngine = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const masterGainRef = useRef<GainNode | null>(null);
+  const limiterRef = useRef<DynamicsCompressorNode | null>(null);
   const reverbRef = useRef<ConvolverNode | null>(null);
   const reverbMixRef = useRef<GainNode | null>(null);
   const reverbDryRef = useRef<GainNode | null>(null);
@@ -144,9 +151,16 @@ export const useAudioEngine = () => {
       chorusGainsRef.current.push(lfoGain);
     }
 
-    // Create master gain
+    // Create master gain and limiter
     masterGainRef.current = audioContextRef.current.createGain();
-    masterGainRef.current.gain.value = 0.5;
+    masterGainRef.current.gain.value = 0.8;
+
+    limiterRef.current = audioContextRef.current.createDynamicsCompressor();
+    limiterRef.current.threshold.value = -10;
+    limiterRef.current.knee.value = 0;
+    limiterRef.current.ratio.value = 20;
+    limiterRef.current.attack.value = 0.001;
+    limiterRef.current.release.value = 0.1;
 
     // Create reverb (Pluto Verb - simple convolver with wet/dry mix)
     reverbRef.current = audioContextRef.current.createConvolver();
@@ -194,7 +208,7 @@ export const useAudioEngine = () => {
     // Create media stream for recording
     mediaStreamDestinationRef.current = audioContextRef.current.createMediaStreamDestination();
 
-    // Connect audio graph: distortion -> compressor -> chorus -> delay -> reverbs -> analyser -> master gain -> destination
+    // Connect audio graph: distortion -> compressor -> chorus -> delay -> reverbs -> analyser -> master gain -> limiter -> destination
     distortionRef.current.connect(compressorRef.current);
     compressorRef.current.connect(compressorMakeupRef.current);
     
@@ -234,8 +248,9 @@ export const useAudioEngine = () => {
     halfTimeMixRef.current.connect(analyserRef.current);
     
     analyserRef.current.connect(masterGainRef.current);
-    masterGainRef.current.connect(audioContextRef.current.destination);
-    masterGainRef.current.connect(mediaStreamDestinationRef.current);
+    masterGainRef.current.connect(limiterRef.current);
+    limiterRef.current.connect(audioContextRef.current.destination);
+    limiterRef.current.connect(mediaStreamDestinationRef.current);
 
     setIsInitialized(true);
   };
@@ -311,7 +326,8 @@ export const useAudioEngine = () => {
     frequency: number,
     config: AudioEngineConfig,
     midiNote: number,
-    isCore: boolean = true
+    isCore: boolean = true,
+    velocity: number = 1.0
   ) => {
     if (!audioContextRef.current || !masterGainRef.current || !reverbRef.current) return;
 
@@ -323,6 +339,19 @@ export const useAudioEngine = () => {
     }
     
     const now = context.currentTime;
+
+    // Apply velocity curve
+    const velocityCurve = config.velocityCurve || "linear";
+    const velocityToVolume = (config.velocityToVolume || 80) / 100;
+    const velocityToFilter = (config.velocityToFilter || 50) / 100;
+
+    // Transform velocity based on curve
+    let transformedVelocity = velocity;
+    if (velocityCurve === "exponential") {
+      transformedVelocity = Math.pow(velocity, 2);
+    } else if (velocityCurve === "logarithmic") {
+      transformedVelocity = Math.sqrt(velocity);
+    }
 
     // Create oscillator for 808 bass
     const osc = context.createOscillator();
@@ -338,26 +367,28 @@ export const useAudioEngine = () => {
     osc.frequency.setValueAtTime(pitchEnvelope, now);
     osc.frequency.exponentialRampToValueAtTime(frequency, now + 0.05);
 
-    // Configure filter
+    // Configure filter with velocity sensitivity
+    const baseFilterFreq = 200 + (config.filter * 50);
+    const velocityFilterMod = transformedVelocity * velocityToFilter * 2000;
     filter.type = "lowpass";
-    filter.frequency.value = 200 + (config.filter * 50); // 200Hz to 5200Hz
+    filter.frequency.value = baseFilterFreq + velocityFilterMod;
     filter.Q.value = config.resonance / 10;
 
-    // Configure ADSR envelope - full control
-    const attackTime = (config.attack / 100) * 0.5; // 0 to 500ms
-    const decayTime = (config.decay / 100) * 2; // 0 to 2 seconds
-    const sustainLevel = (config.sustain / 100); // Sustain as percentage of peak
-    const releaseTime = (config.release / 100) * 2; // 0 to 2 seconds
-    const gainMultiplier = isCore ? 1 : 0.6; // Layers are quieter
-    const peakGain = (config.gain / 100) * gainMultiplier;
+    // Configure ADSR envelope with velocity
+    const attackTime = (config.attack / 100) * 0.5;
+    const decayTime = (config.decay / 100) * 2;
+    const sustainLevel = (config.sustain / 100);
+    const releaseTime = (config.release / 100) * 2;
+    const gainMultiplier = isCore ? 1 : 0.6;
+    const baseGain = (config.gain / 100) * gainMultiplier;
+    const peakGain = baseGain * (1 - velocityToVolume + (velocityToVolume * transformedVelocity));
 
-    // ADSR: Attack -> Decay -> Sustain (hold until note off)
-    // Start from tiny value to prevent clicks, use exponential for smoother envelope
+    // ADSR: Attack -> Decay -> Sustain
     const minGain = 0.001;
     oscGain.gain.setValueAtTime(minGain, now);
     oscGain.gain.exponentialRampToValueAtTime(
       Math.max(minGain, peakGain), 
-      now + Math.max(0.005, attackTime) // Min 5ms to prevent clicks
+      now + Math.max(0.005, attackTime)
     );
     oscGain.gain.exponentialRampToValueAtTime(
       Math.max(minGain, peakGain * sustainLevel), 
@@ -476,6 +507,23 @@ export const useAudioEngine = () => {
         }
         activeNotesRef.current.delete(midiNote);
       }, (releaseTime + 0.1) * 1000);
+    }
+  };
+
+  const updateMasterVolume = (volume: number, limiterEnabled: boolean, limiterThreshold: number) => {
+    if (masterGainRef.current && limiterRef.current) {
+      masterGainRef.current.gain.value = volume / 100;
+      
+      if (limiterEnabled) {
+        // Threshold: 50-100 maps to -20dB to 0dB
+        const thresholdDb = -20 + ((limiterThreshold - 50) / 50) * 20;
+        limiterRef.current.threshold.value = thresholdDb;
+        limiterRef.current.ratio.value = 20;
+      } else {
+        // Disable limiter by setting threshold very high
+        limiterRef.current.threshold.value = 0;
+        limiterRef.current.ratio.value = 1;
+      }
     }
   };
 
@@ -727,6 +775,7 @@ export const useAudioEngine = () => {
     enableMidiInput,
     enableKeyboardInput,
     updateMasterGain,
+    updateMasterVolume,
     updateFilter,
     updateDistortion,
     updateDelay,
