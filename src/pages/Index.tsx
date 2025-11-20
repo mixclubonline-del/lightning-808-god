@@ -6,6 +6,9 @@ import { RealmTransition } from "@/components/RealmTransition";
 import { OpeningAnimation } from "@/components/OpeningAnimation";
 import { MidiKeyboardControls } from "@/components/MidiKeyboardControls";
 import { PresetPanel } from "@/components/PresetPanel";
+import { VelocityControls } from "@/components/VelocityControls";
+import { ADSRVisualEditor } from "@/components/ADSRVisualEditor";
+import { MasterControls } from "@/components/MasterControls";
 import { ZeusRealm } from "@/components/realms/ZeusRealm";
 import { ApolloRealm } from "@/components/realms/ApolloRealm";
 import { VulcanRealm } from "@/components/realms/VulcanRealm";
@@ -99,6 +102,14 @@ const Index = () => {
   const [compressorAttack, setCompressorAttack] = useState(30);
   const [compressorRelease, setCompressorRelease] = useState(50);
   const [compressorEnabled, setCompressorEnabled] = useState(false);
+
+  // Phase 1: Velocity & Master controls
+  const [velocityCurve, setVelocityCurve] = useState<"linear" | "exponential" | "logarithmic">("linear");
+  const [velocityToVolume, setVelocityToVolume] = useState(80);
+  const [velocityToFilter, setVelocityToFilter] = useState(50);
+  const [masterVolume, setMasterVolume] = useState(80);
+  const [limiterEnabled, setLimiterEnabled] = useState(true);
+  const [limiterThreshold, setLimiterThreshold] = useState(90);
 
   const [lightningActive, setLightningActive] = useState(false);
   const [bassHit, setBassHit] = useState(false);
@@ -208,8 +219,8 @@ const Index = () => {
 
   // Update audio parameters when controls change
   useEffect(() => {
-    audioEngine.updateMasterGain(gain);
-  }, [gain, audioEngine]);
+    audioEngine.updateMasterVolume(masterVolume, limiterEnabled, limiterThreshold);
+  }, [masterVolume, limiterEnabled, limiterThreshold, audioEngine]);
 
   useEffect(() => {
     audioEngine.updateFilter(filter, resonance);
@@ -268,7 +279,13 @@ const Index = () => {
     distortionDrive,
     distortionTone,
     distortionMix,
-  }), [wave, filter, vibrato, gain, attack, decay, sustain, release, reverb, resonance, distortionDrive, distortionTone, distortionMix]);
+    velocityCurve,
+    velocityToVolume,
+    velocityToFilter,
+    masterVolume,
+    limiterEnabled,
+    limiterThreshold,
+  }), [wave, filter, vibrato, gain, attack, decay, sustain, release, reverb, resonance, distortionDrive, distortionTone, distortionMix, velocityCurve, velocityToVolume, velocityToFilter, masterVolume, limiterEnabled, limiterThreshold]);
 
   // Apply configuration from preset loading
   const applyConfig = useCallback((config: PresetConfig) => {
@@ -285,6 +302,12 @@ const Index = () => {
     setDistortionDrive(config.distortionDrive);
     setDistortionTone(config.distortionTone);
     setDistortionMix(config.distortionMix);
+    setVelocityCurve(config.velocityCurve);
+    setVelocityToVolume(config.velocityToVolume);
+    setVelocityToFilter(config.velocityToFilter);
+    setMasterVolume(config.masterVolume);
+    setLimiterEnabled(config.limiterEnabled);
+    setLimiterThreshold(config.limiterThreshold);
   }, []);
 
   // Preset handlers
@@ -704,7 +727,7 @@ const Index = () => {
       <AppContainer>
         <div className="relative w-full h-full">
           {/* Controls Panel - Fixed top-right */}
-          <div className="fixed top-20 right-4 z-40 space-y-4">
+          <div className="fixed top-20 right-4 z-40 space-y-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
             <MidiKeyboardControls
               onMidiEnabled={setMidiEnabled}
               onKeyboardEnabled={setKeyboardEnabled}
@@ -717,6 +740,33 @@ const Index = () => {
               onDelete={handleDeletePreset}
               onRename={renamePreset}
               onInitialize={initializePreset}
+            />
+            <VelocityControls
+              velocityCurve={velocityCurve}
+              velocityToVolume={velocityToVolume}
+              velocityToFilter={velocityToFilter}
+              onVelocityCurveChange={setVelocityCurve}
+              onVelocityToVolumeChange={setVelocityToVolume}
+              onVelocityToFilterChange={setVelocityToFilter}
+            />
+            <ADSRVisualEditor
+              attack={attack}
+              decay={decay}
+              sustain={sustain}
+              release={release}
+              onAttackChange={setAttack}
+              onDecayChange={setDecay}
+              onSustainChange={setSustain}
+              onReleaseChange={setRelease}
+            />
+            <MasterControls
+              masterVolume={masterVolume}
+              limiterEnabled={limiterEnabled}
+              limiterThreshold={limiterThreshold}
+              onMasterVolumeChange={setMasterVolume}
+              onLimiterEnabledChange={setLimiterEnabled}
+              onLimiterThresholdChange={setLimiterThreshold}
+              analyser={audioEngine.analyserNode}
             />
           </div>
 

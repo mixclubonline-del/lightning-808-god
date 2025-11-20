@@ -20,6 +20,14 @@ export interface PresetConfig {
   distortionDrive: number;
   distortionTone: number;
   distortionMix: number;
+  // Velocity sensitivity
+  velocityCurve: "linear" | "exponential" | "logarithmic";
+  velocityToVolume: number;
+  velocityToFilter: number;
+  // Master controls
+  masterVolume: number;
+  limiterEnabled: boolean;
+  limiterThreshold: number;
 }
 
 export const DEFAULT_PRESET_CONFIG: PresetConfig = {
@@ -36,6 +44,12 @@ export const DEFAULT_PRESET_CONFIG: PresetConfig = {
   distortionDrive: 0,
   distortionTone: 50,
   distortionMix: 0,
+  velocityCurve: "linear",
+  velocityToVolume: 80,
+  velocityToFilter: 50,
+  masterVolume: 80,
+  limiterEnabled: true,
+  limiterThreshold: 90,
 };
 
 export const PRESET_SLOTS = 9;
