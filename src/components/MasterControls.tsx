@@ -64,8 +64,18 @@ export const MasterControls = ({
 
       ctx.clearRect(0, 0, width, height);
 
+      // Get computed colors from CSS variables
+      const getComputedColor = (varName: string) => {
+        const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+        // If it's HSL values without hsl(), wrap them
+        if (value && !value.startsWith('hsl') && !value.startsWith('#')) {
+          return `hsl(${value})`;
+        }
+        return value || '#000';
+      };
+
       // Background
-      ctx.fillStyle = "hsl(var(--synth-deep))";
+      ctx.fillStyle = getComputedColor('--synth-deep');
       ctx.fillRect(0, 0, width, height);
 
       // Level bar
@@ -73,8 +83,8 @@ export const MasterControls = ({
       
       // Gradient based on level
       const gradient = ctx.createLinearGradient(0, 0, width, 0);
-      gradient.addColorStop(0, "hsl(var(--primary))");
-      gradient.addColorStop(0.7, "hsl(var(--accent))");
+      gradient.addColorStop(0, getComputedColor('--primary'));
+      gradient.addColorStop(0.7, getComputedColor('--accent'));
       gradient.addColorStop(0.9, "hsl(45, 100%, 50%)"); // Yellow
       gradient.addColorStop(1, "hsl(0, 100%, 50%)"); // Red
 
@@ -84,7 +94,7 @@ export const MasterControls = ({
       // Threshold line
       if (limiterEnabled) {
         const thresholdX = (limiterThreshold / 100) * width;
-        ctx.strokeStyle = "hsl(var(--destructive))";
+        ctx.strokeStyle = getComputedColor('--destructive');
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 5]);
         ctx.beginPath();
