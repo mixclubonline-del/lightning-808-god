@@ -12,6 +12,7 @@ import { PresetShareDialog } from "@/components/PresetShareDialog";
 import { VelocityControls } from "@/components/VelocityControls";
 import { ADSRVisualEditor } from "@/components/ADSRVisualEditor";
 import { MasterControls } from "@/components/MasterControls";
+import { AudioVisualizerPanel } from "@/components/AudioVisualizerPanel";
 import { ZeusRealm } from "@/components/realms/ZeusRealm";
 import { ApolloRealm } from "@/components/realms/ApolloRealm";
 import { VulcanRealm } from "@/components/realms/VulcanRealm";
@@ -823,6 +824,9 @@ const Index = () => {
               onLimiterThresholdChange={setLimiterThreshold}
               analyser={audioEngine.analyserNode}
             />
+            
+            {/* Audio Visualizers */}
+            <AudioVisualizerPanel analyser={audioEngine.analyserNode} />
           </div>
 
           <RealmIndicator
