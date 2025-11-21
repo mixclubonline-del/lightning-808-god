@@ -6,6 +6,9 @@ import { RealmTransition } from "@/components/RealmTransition";
 import { OpeningAnimation } from "@/components/OpeningAnimation";
 import { MidiKeyboardControls } from "@/components/MidiKeyboardControls";
 import { PresetPanel } from "@/components/PresetPanel";
+import { PresetBrowser } from "@/components/PresetBrowser";
+import { PresetFileDropZone } from "@/components/PresetFileDropZone";
+import { PresetShareDialog } from "@/components/PresetShareDialog";
 import { VelocityControls } from "@/components/VelocityControls";
 import { ADSRVisualEditor } from "@/components/ADSRVisualEditor";
 import { MasterControls } from "@/components/MasterControls";
@@ -20,7 +23,9 @@ import { generateChord, calculateStrumDelay } from "@/utils/chordGenerator";
 import { mythSounds } from "@/utils/mythologicalSounds";
 import { usePresets } from "@/hooks/usePresets";
 import { usePresetKeyboard } from "@/hooks/usePresetKeyboard";
-import { PresetConfig } from "@/types/preset";
+import { useCloudPresets } from "@/hooks/useCloudPresets";
+import { PresetConfig, Preset } from "@/types/preset";
+import { downloadPresetFile } from "@/utils/presetIO";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -136,6 +141,9 @@ const Index = () => {
     renamePreset,
     initializePreset,
   } = usePresets();
+
+  // Cloud presets
+  const { downloadCloudPreset } = useCloudPresets();
 
   // Sound library state (deprecated - now using activeView)
   const [showLibrary, setShowLibrary] = useState(false);
@@ -329,6 +337,34 @@ const Index = () => {
     deletePreset(index);
     mythSounds.playVulcanForge();
   }, [deletePreset]);
+
+  const handleExportPreset = useCallback((index: number) => {
+    const preset = presets[index];
+    if (preset) {
+      downloadPresetFile(preset);
+      toast.success("Preset exported", {
+        description: `${preset.name} downloaded as JSON`,
+      });
+    }
+  }, [presets]);
+
+  const handleImportPreset = useCallback((preset: Preset) => {
+    // Find first empty slot or overwrite last slot
+    const emptyIndex = presets.findIndex(p => p === null);
+    const targetIndex = emptyIndex !== -1 ? emptyIndex : presets.length - 1;
+    
+    savePreset(targetIndex, preset.config, preset.name);
+    applyConfig(preset.config);
+    mythSounds.playPandoraOpen();
+  }, [presets, savePreset, applyConfig]);
+
+  const handleDownloadCloudPreset = useCallback(async (presetId: string) => {
+    const config = await downloadCloudPreset(presetId);
+    if (config) {
+      applyConfig(config);
+      mythSounds.playPandoraOpen();
+    }
+  }, [downloadCloudPreset, applyConfig]);
 
   // Keyboard shortcuts for presets
   usePresetKeyboard({
@@ -732,6 +768,8 @@ const Index = () => {
               onMidiEnabled={setMidiEnabled}
               onKeyboardEnabled={setKeyboardEnabled}
             />
+            
+            {/* Preset Management */}
             <PresetPanel
               presets={presets}
               currentPresetIndex={currentPresetIndex}
@@ -740,7 +778,24 @@ const Index = () => {
               onDelete={handleDeletePreset}
               onRename={renamePreset}
               onInitialize={initializePreset}
+              onExport={handleExportPreset}
+              onImport={handleImportPreset}
             />
+            
+            {/* Preset Import/Export & Sharing */}
+            <div className="space-y-3">
+              <PresetFileDropZone onPresetLoaded={handleImportPreset} />
+              {currentPresetIndex !== null && presets[currentPresetIndex] && (
+                <PresetShareDialog
+                  currentPresetName={presets[currentPresetIndex]!.name}
+                  currentConfig={getCurrentConfig()}
+                />
+              )}
+            </div>
+            
+            {/* Cloud Preset Browser */}
+            <PresetBrowser onDownload={handleDownloadCloudPreset} />
+            
             <VelocityControls
               velocityCurve={velocityCurve}
               velocityToVolume={velocityToVolume}

@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      shared_presets: {
+        Row: {
+          author: string | null
+          category: string
+          config: Json
+          created_at: string
+          description: string | null
+          downloads: number
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          category?: string
+          config: Json
+          created_at?: string
+          description?: string | null
+          downloads?: number
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          category?: string
+          config?: Json
+          created_at?: string
+          description?: string | null
+          downloads?: number
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sound_samples: {
         Row: {
           bpm: number | null
