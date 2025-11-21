@@ -11,6 +11,8 @@ import {
   X,
   Package,
   Sparkles,
+  Download,
+  Upload,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Preset } from "@/types/preset";
@@ -20,6 +22,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { downloadPresetFile } from "@/utils/presetIO";
 
 interface PresetPanelProps {
   presets: (Preset | null)[];
@@ -29,6 +32,8 @@ interface PresetPanelProps {
   onDelete: (index: number) => void;
   onRename: (index: number, name: string) => void;
   onInitialize: (index: number) => void;
+  onImport?: (preset: Preset) => void;
+  onExport?: (index: number) => void;
 }
 
 export const PresetPanel = ({
@@ -39,6 +44,8 @@ export const PresetPanel = ({
   onDelete,
   onRename,
   onInitialize,
+  onImport,
+  onExport,
 }: PresetPanelProps) => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editName, setEditName] = useState("");
@@ -224,11 +231,49 @@ export const PresetPanel = ({
                       <TooltipContent>Overwrite (Ctrl+{index + 1})</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
+
+                  {onExport && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 bg-synth-panel/90 hover:bg-accent"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onExport(index);
+                            }}
+                          >
+                            <Download className="w-3 h-3" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Export</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </div>
               )}
             </div>
           ))}
         </div>
+
+        {/* Import/Export Actions */}
+        {(onImport || onExport) && (
+          <div className="flex gap-2 pt-2 border-t border-synth-border">
+            {onExport && currentPresetIndex !== null && presets[currentPresetIndex] && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onExport(currentPresetIndex)}
+                className="flex-1 gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Export Current
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Quick Reference */}
         <div className="pt-2 border-t border-synth-border">

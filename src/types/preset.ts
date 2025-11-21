@@ -1,9 +1,24 @@
 export interface Preset {
   id: string;
   name: string;
+  category?: string;
+  description?: string;
+  author?: string;
   config: PresetConfig;
   createdAt: number;
   updatedAt: number;
+}
+
+export interface SharedPreset {
+  id: string;
+  name: string;
+  category: string;
+  description: string | null;
+  author: string | null;
+  config: PresetConfig;
+  downloads: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PresetConfig {
