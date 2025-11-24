@@ -10,6 +10,8 @@ import { PresetBrowser } from "@/components/PresetBrowser";
 import { PresetFileDropZone } from "@/components/PresetFileDropZone";
 import { PresetShareDialog } from "@/components/PresetShareDialog";
 import { VelocityControls } from "@/components/VelocityControls";
+import { PolyphonyControls } from "@/components/PolyphonyControls";
+import { VelocityDisplay } from "@/components/VelocityDisplay";
 import { ADSRVisualEditor } from "@/components/ADSRVisualEditor";
 import { MasterControls } from "@/components/MasterControls";
 import { AudioVisualizerPanel } from "@/components/AudioVisualizerPanel";
@@ -805,6 +807,15 @@ const Index = () => {
               onVelocityToVolumeChange={setVelocityToVolume}
               onVelocityToFilterChange={setVelocityToFilter}
             />
+            
+            <PolyphonyControls
+              maxPolyphony={audioEngine.maxPolyphony}
+              currentVoices={audioEngine.currentVoices}
+              onMaxPolyphonyChange={audioEngine.setMaxPolyphony}
+            />
+            
+            <VelocityDisplay activeVelocities={audioEngine.activeVelocities} />
+            
             <ADSRVisualEditor
               attack={attack}
               decay={decay}

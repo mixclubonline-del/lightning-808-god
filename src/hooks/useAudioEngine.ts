@@ -74,7 +74,10 @@ export const useAudioEngine = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [currentLayerIndex, setCurrentLayerIndex] = useState(0);
   const [triggerMode, setTriggerMode] = useState<"cycle" | "random">("cycle");
-  const activeNotesRef = useRef<Map<number, { osc: OscillatorNode; gain: GainNode; filter: BiquadFilterNode }>>(new Map());
+  const [maxPolyphony, setMaxPolyphony] = useState(16);
+  const [currentVoices, setCurrentVoices] = useState(0);
+  const activeNotesRef = useRef<Map<number, { osc: OscillatorNode; gain: GainNode; filter: BiquadFilterNode; velocity: number }>>(new Map());
+  const activeVelocitiesRef = useRef<Map<number, number>>(new Map());
 
   useEffect(() => {
     return () => {
@@ -331,6 +334,15 @@ export const useAudioEngine = () => {
   ) => {
     if (!audioContextRef.current || !masterGainRef.current || !reverbRef.current) return;
 
+    // Enforce polyphony limit
+    if (activeNotesRef.current.size >= maxPolyphony) {
+      // Find oldest note and stop it
+      const oldestNote = Array.from(activeNotesRef.current.keys())[0];
+      if (oldestNote !== undefined) {
+        stopNote(oldestNote, config);
+      }
+    }
+
     const context = audioContextRef.current;
     
     // Ensure context is running to prevent clicks
@@ -449,12 +461,16 @@ export const useAudioEngine = () => {
     osc.stop(now + totalTime);
 
     // Store active note
-    activeNotesRef.current.set(midiNote, { osc, gain: oscGain, filter });
+    activeNotesRef.current.set(midiNote, { osc, gain: oscGain, filter, velocity: transformedVelocity });
+    activeVelocitiesRef.current.set(midiNote, transformedVelocity);
+    setCurrentVoices(activeNotesRef.current.size);
 
     // Clean up after note ends - use unique key for layers
     const noteKey = isCore ? midiNote : midiNote + 10000;
     setTimeout(() => {
       activeNotesRef.current.delete(noteKey);
+      activeVelocitiesRef.current.delete(midiNote);
+      setCurrentVoices(activeNotesRef.current.size);
     }, (attackTime + decayTime + 0.5) * 1000);
 
     return !isCore; // Return true if this was a layer (for visual feedback)
@@ -506,6 +522,8 @@ export const useAudioEngine = () => {
           // Already disconnected
         }
         activeNotesRef.current.delete(midiNote);
+        activeVelocitiesRef.current.delete(midiNote);
+        setCurrentVoices(activeNotesRef.current.size);
       }, (releaseTime + 0.1) * 1000);
     }
   };
@@ -796,6 +814,10 @@ export const useAudioEngine = () => {
     triggerMode,
     analyserNode: analyserRef.current,
     hasRecording: recordedChunksRef.current.length > 0,
+    maxPolyphony,
+    setMaxPolyphony,
+    currentVoices,
+    activeVelocities: activeVelocitiesRef.current,
   };
 };
 
