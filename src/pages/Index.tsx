@@ -12,6 +12,7 @@ import { PresetShareDialog } from "@/components/PresetShareDialog";
 import { VelocityControls } from "@/components/VelocityControls";
 import { PolyphonyControls } from "@/components/PolyphonyControls";
 import { VelocityDisplay } from "@/components/VelocityDisplay";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { ADSRVisualEditor } from "@/components/ADSRVisualEditor";
 import { MasterControls } from "@/components/MasterControls";
 import { AudioVisualizerPanel } from "@/components/AudioVisualizerPanel";
@@ -815,6 +816,8 @@ const Index = () => {
             />
             
             <VelocityDisplay activeVelocities={audioEngine.activeVelocities} />
+            
+            <ThemeSwitcher />
             
             <ADSRVisualEditor
               attack={attack}
