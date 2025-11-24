@@ -4,7 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WaveformVisualizer } from "@/components/visualizers/WaveformVisualizer";
 import { SpectrumAnalyzer } from "@/components/visualizers/SpectrumAnalyzer";
 import { LevelMeter } from "@/components/visualizers/LevelMeter";
-import { Eye, EyeOff } from "lucide-react";
+import { FullScreenVisualizer } from "@/components/visualizers/FullScreenVisualizer";
+import { Eye, EyeOff, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface AudioVisualizerPanelProps {
@@ -13,6 +14,7 @@ interface AudioVisualizerPanelProps {
 
 export const AudioVisualizerPanel = ({ analyser }: AudioVisualizerPanelProps) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [fullScreen, setFullScreen] = useState(false);
 
   if (collapsed) {
     return (
@@ -31,20 +33,40 @@ export const AudioVisualizerPanel = ({ analyser }: AudioVisualizerPanelProps) =>
   }
 
   return (
-    <Card className="p-4 bg-synth-panel border-synth-border">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
-          Audio Visualizers
-        </h3>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setCollapsed(true)}
-          className="h-6 w-6"
-        >
-          <EyeOff className="w-4 h-4" />
-        </Button>
-      </div>
+    <>
+      {fullScreen && (
+        <FullScreenVisualizer
+          analyser={analyser}
+          onClose={() => setFullScreen(false)}
+        />
+      )}
+      
+      <Card className="p-4 bg-synth-panel border-synth-border">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
+            Audio Visualizers
+          </h3>
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setFullScreen(true)}
+              className="h-6 w-6"
+              title="Full Screen Mode"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setCollapsed(true)}
+              className="h-6 w-6"
+              title="Hide Visualizers"
+            >
+              <EyeOff className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
 
       <Tabs defaultValue="waveform" className="w-full">
         <TabsList className="grid w-full grid-cols-3 mb-3">
@@ -108,5 +130,6 @@ export const AudioVisualizerPanel = ({ analyser }: AudioVisualizerPanelProps) =>
         </TabsContent>
       </Tabs>
     </Card>
+    </>
   );
 };
