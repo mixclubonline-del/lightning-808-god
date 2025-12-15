@@ -558,15 +558,43 @@ const Index = () => {
   // Map realm to deity for AI chat context
   const currentDeity: DeityName = currentRealm as DeityName;
   
-  // Build context for deity AI based on current state
-  const deityContext = {
-    currentTask: `Working in ${currentRealm} realm`,
-    parameters: {
-      wave, filter, gain, attack, decay, sustain, release,
-      distortionDrive, reverbSize, delayTime,
-    },
-    recentActions: [],
+  // Build current parameters for deity AI control
+  const currentParameters = {
+    wave, filter, gain, attack, decay, sustain, release,
+    distortionDrive, distortionMix, reverbSize, reverbMix, 
+    delayTime, delayFeedback, delayMix,
+    chorusRate, chorusDepth, chorusMix,
+    compressorThreshold, compressorRatio, resonance, masterVolume,
   };
+
+  // Handle parameter changes from deity AI
+  const handleDeityParameterChange = useCallback((changes: Record<string, number>) => {
+    Object.entries(changes).forEach(([key, value]) => {
+      switch (key) {
+        case 'wave': setWave(value); break;
+        case 'filter': setFilter(value); break;
+        case 'gain': setGain(value); break;
+        case 'attack': setAttack(value); break;
+        case 'decay': setDecay(value); break;
+        case 'sustain': setSustain(value); break;
+        case 'release': setRelease(value); break;
+        case 'distortionDrive': setDistortionDrive(value); break;
+        case 'distortionMix': setDistortionMix(value); break;
+        case 'reverbSize': setReverbSize(value); break;
+        case 'reverbMix': setReverbMix(value); break;
+        case 'delayTime': setDelayTime(value); break;
+        case 'delayFeedback': setDelayFeedback(value); break;
+        case 'delayMix': setDelayMix(value); break;
+        case 'chorusRate': setChorusRate(value); break;
+        case 'chorusDepth': setChorusDepth(value); break;
+        case 'chorusMix': setChorusMix(value); break;
+        case 'compressorThreshold': setCompressorThreshold(value); break;
+        case 'compressorRatio': setCompressorRatio(value); break;
+        case 'resonance': setResonance(value); break;
+        case 'masterVolume': setMasterVolume(value); break;
+      }
+    });
+  }, []);
 
   const handleRealmSelect = (realm: RealmType) => {
     if (realm === currentRealm) {
@@ -900,7 +928,8 @@ const Index = () => {
           {/* Deity AI Presence - contextual chat with realm god */}
           <DeityPresence
             deity={currentDeity}
-            context={deityContext}
+            currentParameters={currentParameters}
+            onParameterChange={handleDeityParameterChange}
           />
         </div>
       </AppContainer>

@@ -1,23 +1,30 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { DeityName, DEITY_CONFIG } from '@/types/deity';
 import { DeityAvatar } from './DeityAvatar';
-import { DeityChat } from './DeityChat';
-import { MessageCircle } from 'lucide-react';
+import { DeityConsole } from './DeityConsole';
+import { ParameterChange } from '@/hooks/useDeityParameters';
+import { MessageCircle, Sliders } from 'lucide-react';
 
 interface DeityPresenceProps {
   deity: DeityName;
-  context?: Record<string, unknown>;
+  currentParameters: Record<string, number>;
+  onParameterChange: (changes: ParameterChange) => void;
   className?: string;
 }
 
 export function DeityPresence({
   deity,
-  context,
+  currentParameters,
+  onParameterChange,
   className,
 }: DeityPresenceProps) {
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isConsoleOpen, setIsConsoleOpen] = useState(false);
   const config = DEITY_CONFIG[deity];
+
+  const handleParameterChange = useCallback((changes: ParameterChange) => {
+    onParameterChange(changes);
+  }, [onParameterChange]);
 
   return (
     <>
@@ -27,50 +34,49 @@ export function DeityPresence({
           'fixed bottom-4 right-4 z-40',
           'flex items-center gap-3',
           'transition-all duration-300',
-          isChatOpen && 'opacity-0 pointer-events-none',
+          isConsoleOpen && 'opacity-0 pointer-events-none',
           className
         )}
       >
         <button
-          onClick={() => setIsChatOpen(true)}
+          onClick={() => setIsConsoleOpen(true)}
           className={cn(
-            'group flex items-center gap-3 px-4 py-2 rounded-full',
+            'group flex items-center gap-3 px-4 py-3 rounded-2xl',
             'border backdrop-blur-sm transition-all duration-300',
-            'hover:scale-105'
+            'hover:scale-105 active:scale-95'
           )}
           style={{
             borderColor: `${config.color}40`,
             background: `linear-gradient(135deg, ${config.color}20, transparent)`,
-            boxShadow: `0 0 20px ${config.color}30`,
+            boxShadow: `0 0 30px ${config.color}30`,
           }}
         >
           <DeityAvatar deity={deity} size="sm" isActive />
           
           <div className="text-left">
-            <p
-              className="text-sm font-medium"
-              style={{ color: config.accentColor }}
-            >
+            <p className="text-sm font-bold flex items-center gap-2" style={{ color: config.accentColor }}>
               {config.name}
+              <Sliders className="w-3 h-3 opacity-60" />
             </p>
             <p className="text-xs text-muted-foreground">
-              Click to commune
+              Ask me to shape your sound
             </p>
           </div>
 
           <MessageCircle
-            className="w-5 h-5 transition-transform group-hover:scale-110"
+            className="w-5 h-5 transition-transform group-hover:scale-110 group-hover:rotate-12"
             style={{ color: config.accentColor }}
           />
         </button>
       </div>
 
-      {/* Chat panel */}
-      <DeityChat
+      {/* Console panel */}
+      <DeityConsole
         deity={deity}
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        context={context}
+        isOpen={isConsoleOpen}
+        onClose={() => setIsConsoleOpen(false)}
+        currentParameters={currentParameters}
+        onParameterChange={handleParameterChange}
       />
     </>
   );
