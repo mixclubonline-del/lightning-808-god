@@ -3,6 +3,8 @@ import { AppContainer } from "@/components/AppContainer";
 import { OlympusHub, RealmType } from "@/components/OlympusHub";
 import { RealmIndicator } from "@/components/RealmIndicator";
 import { RealmTransition } from "@/components/RealmTransition";
+import { ImmersiveRealmPortal } from "@/components/ImmersiveRealmPortal";
+import { DeityPresence } from "@/components/DeityPresence";
 import { OpeningAnimation } from "@/components/OpeningAnimation";
 import { MidiKeyboardControls } from "@/components/MidiKeyboardControls";
 import { PresetPanel } from "@/components/PresetPanel";
@@ -31,6 +33,7 @@ import { useCloudPresets } from "@/hooks/useCloudPresets";
 import { PresetConfig, Preset } from "@/types/preset";
 import { downloadPresetFile } from "@/utils/presetIO";
 import { toast } from "sonner";
+import { DeityName } from "@/types/deity";
 
 const Index = () => {
   const [mode, setMode] = useState<"standard" | "multi808">("multi808");
@@ -550,6 +553,20 @@ const Index = () => {
   const [isHubOpen, setIsHubOpen] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [transitionRealm, setTransitionRealm] = useState<RealmType>("zeus");
+  const [useImmersivePortal, setUseImmersivePortal] = useState(true);
+
+  // Map realm to deity for AI chat context
+  const currentDeity: DeityName = currentRealm as DeityName;
+  
+  // Build context for deity AI based on current state
+  const deityContext = {
+    currentTask: `Working in ${currentRealm} realm`,
+    parameters: {
+      wave, filter, gain, attack, decay, sustain, release,
+      distortionDrive, reverbSize, delayTime,
+    },
+    recentActions: [],
+  };
 
   const handleRealmSelect = (realm: RealmType) => {
     if (realm === currentRealm) {
@@ -557,17 +574,23 @@ const Index = () => {
       return;
     }
 
-    // Play transition sound
-    mythSounds.playRealmTransition();
-
     setIsHubOpen(false);
     setTransitionRealm(realm);
     setIsTransitioning(true);
 
-    setTimeout(() => {
-      setCurrentRealm(realm);
-    }, 600);
+    // If using immersive portal, the transition handles timing
+    if (!useImmersivePortal) {
+      mythSounds.playRealmTransition();
+      setTimeout(() => {
+        setCurrentRealm(realm);
+      }, 600);
+    }
   };
+
+  const handleImmersiveTransitionComplete = useCallback(() => {
+    setCurrentRealm(transitionRealm);
+    setIsTransitioning(false);
+  }, [transitionRealm]);
 
   const handleChordPlay = (chord: number[]) => {
     const rootNote = 36;
@@ -859,12 +882,26 @@ const Index = () => {
             currentRealm={currentRealm}
           />
 
-          {isTransitioning && (
+          {isTransitioning && useImmersivePortal && (
+            <ImmersiveRealmPortal
+              targetRealm={transitionRealm as DeityName}
+              isActive={isTransitioning}
+              onTransitionComplete={handleImmersiveTransitionComplete}
+            />
+          )}
+
+          {isTransitioning && !useImmersivePortal && (
             <RealmTransition
               currentRealm={transitionRealm}
               onTransitionComplete={() => setIsTransitioning(false)}
             />
           )}
+
+          {/* Deity AI Presence - contextual chat with realm god */}
+          <DeityPresence
+            deity={currentDeity}
+            context={deityContext}
+          />
         </div>
       </AppContainer>
     </>
