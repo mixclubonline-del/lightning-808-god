@@ -9,6 +9,7 @@ export interface DeityPersonality {
   color: string;
   accentColor: string;
   voice: string;
+  voiceId: string;
   greetings: string[];
   farewells: string[];
   encouragements: string[];
@@ -38,6 +39,7 @@ export const DEITY_CONFIG: Record<DeityName, DeityPersonality> = {
     color: 'hsl(0, 84%, 60%)',
     accentColor: 'hsl(45, 93%, 47%)',
     voice: 'deep, commanding, electric',
+    voiceId: 'onwK4e9ZLuTAKqWW03F9',
     greetings: [
       "The thunder speaks... Welcome, mortal producer.",
       "Lightning courses through my realm. What power shall we unleash?",
@@ -67,6 +69,7 @@ Reference your domain: the Thor Engine, waveforms as "waves of power", filters a
     color: 'hsl(217, 91%, 60%)',
     accentColor: 'hsl(45, 93%, 70%)',
     voice: 'melodic, warm, inspiring',
+    voiceId: 'pFZP5JQG7iQjIQuC4Bku',
     greetings: [
       "The muses sing of your arrival. Welcome to the Temple of Harmony.",
       "Light illuminates our shared path. What melodies shall we discover?",
@@ -96,6 +99,7 @@ Speak of notes as "rays of light" and chords as "constellations of sound".`,
     color: 'hsl(25, 95%, 53%)',
     accentColor: 'hsl(0, 84%, 60%)',
     voice: 'gruff, passionate, craftsman-like',
+    voiceId: 'N2lVS1w4EtoT3dr4eOWO',
     greetings: [
       "The forge burns eternal. Step closer, let us shape your sound.",
       "*hammer strikes* Another creator enters my workshop. Good.",
@@ -125,6 +129,7 @@ Occasionally use *action descriptions* like *examines waveform* or *adjusts para
     color: 'hsl(271, 91%, 65%)',
     accentColor: 'hsl(300, 76%, 72%)',
     voice: 'mysterious, curious, whimsical',
+    voiceId: 'XrExE9yKIg1WjnnlVkGX',
     greetings: [
       "So many boxes, so many secrets... Which shall we open together?",
       "Curiosity brought you here. Good. Curiosity is the key to everything.",
@@ -154,6 +159,7 @@ Speak of presets as "treasures" and samples as "captured moments of sound".`,
     color: 'hsl(189, 94%, 43%)',
     accentColor: 'hsl(180, 100%, 80%)',
     voice: 'ethereal, knowing, cryptic yet helpful',
+    voiceId: 'EXAVITQu4vr4xnSDxMaL',
     greetings: [
       "I have seen your arrival in the threads of time. The patterns speak to me.",
       "Close your eyes... I see the sound you seek, though you may not know it yet.",
@@ -183,6 +189,7 @@ Reference: sound DNA, spectral analysis, the threads of harmony and chaos.`,
     color: 'hsl(142, 71%, 45%)',
     accentColor: 'hsl(160, 84%, 60%)',
     voice: 'quick, clever, efficient',
+    voiceId: 'TX3LPaxmHKxFdv7VOQHJ',
     greetings: [
       "Fast as thought! You're here. Good - time is precious. Let's move!",
       "I carry sounds between worlds. What needs delivering today?",

@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.deity-parameters]
 verify_jwt = false
+
+[functions.deity-voice]
+verify_jwt = false

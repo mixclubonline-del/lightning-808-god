@@ -2,11 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { DeityName, DEITY_CONFIG } from '@/types/deity';
 import { useDeityChat } from '@/hooks/useDeityChat';
+import { useDeityVoice } from '@/hooks/useDeityVoice';
 import { DeityAvatar } from './DeityAvatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, X, Sparkles } from 'lucide-react';
+import { Send, X, Sparkles, Volume2, VolumeX } from 'lucide-react';
 
 interface DeityChatProps {
   deity: DeityName;
@@ -24,8 +25,10 @@ export function DeityChat({
   className,
 }: DeityChatProps) {
   const [input, setInput] = useState('');
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastSpokenMessageRef = useRef<string | null>(null);
   
   const {
     messages,
@@ -35,6 +38,13 @@ export function DeityChat({
     initializeWithGreeting,
   } = useDeityChat(deity, context);
 
+  const {
+    isSpeaking,
+    isLoading: isVoiceLoading,
+    speak,
+    stop,
+  } = useDeityVoice(deity);
+
   const config = DEITY_CONFIG[deity];
 
   // Initialize with greeting when opened
@@ -43,6 +53,21 @@ export function DeityChat({
       initializeWithGreeting();
     }
   }, [isOpen, messages.length, initializeWithGreeting]);
+
+  // Auto-speak deity messages when voice is enabled
+  useEffect(() => {
+    if (!voiceEnabled || isLoading) return;
+    
+    const lastMessage = messages[messages.length - 1];
+    if (
+      lastMessage?.role === 'deity' &&
+      lastMessage.content &&
+      lastMessage.content !== lastSpokenMessageRef.current
+    ) {
+      lastSpokenMessageRef.current = lastMessage.content;
+      speak(lastMessage.content);
+    }
+  }, [messages, voiceEnabled, isLoading, speak]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -57,6 +82,19 @@ export function DeityChat({
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [isOpen]);
+
+  // Stop voice when closing
+  const handleClose = () => {
+    stop();
+    onClose();
+  };
+
+  const toggleVoice = () => {
+    if (isSpeaking) {
+      stop();
+    }
+    setVoiceEnabled(!voiceEnabled);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,7 +122,6 @@ export function DeityChat({
         boxShadow: `0 0 40px ${config.color}20, 0 0 80px ${config.color}10`,
       }}
     >
-      {/* Header */}
       <div
         className="flex items-center gap-3 p-4 border-b"
         style={{ borderColor: `${config.color}30` }}
@@ -92,7 +129,7 @@ export function DeityChat({
         <DeityAvatar
           deity={deity}
           size="sm"
-          isSpeaking={isLoading}
+          isSpeaking={isSpeaking || isVoiceLoading}
           isActive
         />
         <div className="flex-1">
@@ -102,12 +139,30 @@ export function DeityChat({
           >
             {config.name}
           </h3>
-          <p className="text-xs text-muted-foreground">{config.title}</p>
+          <p className="text-xs text-muted-foreground">
+            {isSpeaking ? 'Speaking...' : config.title}
+          </p>
         </div>
         <Button
           variant="ghost"
           size="icon"
-          onClick={onClose}
+          onClick={toggleVoice}
+          className={cn(
+            "hover:bg-background/50 transition-colors",
+            voiceEnabled && "text-primary"
+          )}
+          title={voiceEnabled ? "Mute voice" : "Enable voice"}
+        >
+          {voiceEnabled ? (
+            <Volume2 className="w-5 h-5" />
+          ) : (
+            <VolumeX className="w-5 h-5" />
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleClose}
           className="hover:bg-background/50"
         >
           <X className="w-5 h-5" />
