@@ -4,6 +4,7 @@ import { DeityName, DEITY_CONFIG } from '@/types/deity';
 import { useDeityChat } from '@/hooks/useDeityChat';
 import { useDeityVoice } from '@/hooks/useDeityVoice';
 import { DeityAvatar } from './DeityAvatar';
+import { DeityVoiceVisualizer } from './DeityVoiceVisualizer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -41,6 +42,7 @@ export function DeityChat({
   const {
     isSpeaking,
     isLoading: isVoiceLoading,
+    audioData,
     speak,
     stop,
   } = useDeityVoice(deity);
@@ -168,6 +170,18 @@ export function DeityChat({
           <X className="w-5 h-5" />
         </Button>
       </div>
+
+      {/* Voice Visualizer */}
+      {voiceEnabled && (
+        <div className="px-4 py-2">
+          <DeityVoiceVisualizer
+            audioData={audioData}
+            color={config.color}
+            accentColor={config.accentColor}
+            isActive={isSpeaking}
+          />
+        </div>
+      )}
 
       {/* Messages */}
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
