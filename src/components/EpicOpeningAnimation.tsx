@@ -28,6 +28,7 @@ export const EpicOpeningAnimation = ({ onComplete }: EpicOpeningAnimationProps) 
   const [isSkipping, setIsSkipping] = useState(false);
   const hasPlayedThunder = useRef(false);
   const hasSpoken = useRef(false);
+  const stopDroneRef = useRef<(() => void) | null>(null);
   
   const { speak, stop, isSpeaking, audioData } = useDeityVoice('zeus');
 
@@ -88,10 +89,34 @@ export const EpicOpeningAnimation = ({ onComplete }: EpicOpeningAnimationProps) 
     };
   }, [onComplete, isSkipping]);
 
+  // Start cosmic drone on mount, stop on transition
+  useEffect(() => {
+    // Start drone immediately
+    stopDroneRef.current = mythSounds.playCosmicDrone();
+
+    return () => {
+      // Cleanup drone on unmount
+      if (stopDroneRef.current) {
+        stopDroneRef.current();
+      }
+    };
+  }, []);
+
+  // Stop drone when transitioning out
+  useEffect(() => {
+    if (stage === 'transition' || stage === 'complete' || isSkipping) {
+      if (stopDroneRef.current) {
+        stopDroneRef.current();
+        stopDroneRef.current = null;
+      }
+    }
+  }, [stage, isSkipping]);
+
   // Play thunder sound when lightning starts
   useEffect(() => {
     if (stage === 'lightning' && !hasPlayedThunder.current) {
       hasPlayedThunder.current = true;
+      mythSounds.playThunderRumble();
       mythSounds.playZeusClick();
     }
   }, [stage]);
