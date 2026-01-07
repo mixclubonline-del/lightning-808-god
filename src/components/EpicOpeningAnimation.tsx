@@ -4,6 +4,7 @@ import { OlympusMountain } from './opening/OlympusMountain';
 import { LightningSystem } from './opening/LightningSystem';
 import { TitleReveal } from './opening/TitleReveal';
 import { ProphecyDisplay } from './opening/ProphecyDisplay';
+import { RealmCarousel } from './opening/RealmCarousel';
 import { useDeityVoice } from '@/hooks/useDeityVoice';
 import { mythSounds } from '@/utils/mythologicalSounds';
 import { supabase } from '@/integrations/supabase/client';
@@ -226,6 +227,9 @@ export const EpicOpeningAnimation = ({ onComplete }: EpicOpeningAnimationProps) 
         audioData={audioData}
         isSpeaking={isSpeaking}
       />
+
+      {/* Realm preview carousel during transition */}
+      <RealmCarousel isVisible={stage === 'transition'} />
 
       {/* Skip hint */}
       {canSkip && !isSkipping && stage !== 'complete' && (
