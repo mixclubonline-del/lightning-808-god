@@ -437,6 +437,127 @@ class MythologicalSoundEngine {
     };
   }
 
+  // Celestial choir for title reveal (returns stop function)
+  playCelestialChoir(): () => void {
+    if (!this.audioContext || !this.masterGain) return () => {};
+
+    const now = this.audioContext.currentTime;
+    const oscillators: OscillatorNode[] = [];
+    const gains: GainNode[] = [];
+
+    // Volume control
+    const volumeControl = this.audioContext.createGain();
+    volumeControl.gain.value = this.volumes.transition * 0.35;
+    volumeControl.connect(this.masterGain);
+
+    // Major chord frequencies (C major across octaves)
+    const baseFreqs = [261.63, 329.63, 392.00]; // C4, E4, G4
+    const highFreqs = [523.25, 659.25, 783.99]; // C5, E5, G5
+
+    // Base pad layer with slight detune for richness
+    baseFreqs.forEach((freq, i) => {
+      // Main tone
+      const osc = this.audioContext!.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq + (Math.random() - 0.5) * 4; // ±2 cents detune
+
+      // Slow amplitude LFO for shimmer
+      const lfo = this.audioContext!.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 0.3 + Math.random() * 0.4;
+      const lfoGain = this.audioContext!.createGain();
+      lfoGain.gain.value = 0.15;
+      lfo.connect(lfoGain);
+
+      const gain = this.audioContext!.createGain();
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.12, now + 1.5); // Slow attack
+      gain.gain.linearRampToValueAtTime(0.1, now + 3);
+
+      // Apply LFO to gain
+      lfoGain.connect(gain.gain);
+
+      osc.connect(gain);
+      gain.connect(volumeControl);
+      lfo.start(now);
+      osc.start(now);
+      oscillators.push(osc, lfo);
+      gains.push(gain);
+    });
+
+    // High shimmer layer (softer, more ethereal)
+    highFreqs.forEach((freq, i) => {
+      const osc = this.audioContext!.createOscillator();
+      osc.type = 'triangle'; // Softer than sine
+      osc.frequency.value = freq + (Math.random() - 0.5) * 6;
+
+      // Faster LFO for shimmer effect
+      const lfo = this.audioContext!.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 0.5 + Math.random() * 0.3;
+      const lfoGain = this.audioContext!.createGain();
+      lfoGain.gain.value = freq * 0.008; // Subtle pitch wobble
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+
+      const gain = this.audioContext!.createGain();
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.06, now + 2); // Slower attack for high layer
+      gain.gain.linearRampToValueAtTime(0.05, now + 3.5);
+
+      osc.connect(gain);
+      gain.connect(volumeControl);
+      lfo.start(now);
+      osc.start(now);
+      oscillators.push(osc, lfo);
+      gains.push(gain);
+    });
+
+    // Airy breath layer (filtered noise)
+    const noiseBuffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 4, this.audioContext.sampleRate);
+    const noiseData = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseData.length; i++) {
+      noiseData[i] = Math.random() * 2 - 1;
+    }
+    const noise = this.audioContext.createBufferSource();
+    noise.buffer = noiseBuffer;
+
+    const noiseFilter = this.audioContext.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.value = 3000;
+    noiseFilter.Q.value = 2;
+
+    const noiseGain = this.audioContext.createGain();
+    noiseGain.gain.setValueAtTime(0, now);
+    noiseGain.gain.linearRampToValueAtTime(0.015, now + 2);
+    noiseGain.gain.linearRampToValueAtTime(0.01, now + 3.5);
+
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(volumeControl);
+    noise.start(now);
+    gains.push(noiseGain);
+
+    // Return stop function with graceful fade
+    return () => {
+      if (!this.audioContext) return;
+      const stopTime = this.audioContext.currentTime;
+
+      gains.forEach(gain => {
+        gain.gain.cancelScheduledValues(stopTime);
+        gain.gain.setValueAtTime(gain.gain.value, stopTime);
+        gain.gain.linearRampToValueAtTime(0, stopTime + 2); // 2s fade out
+      });
+
+      setTimeout(() => {
+        oscillators.forEach(osc => {
+          try { osc.stop(); } catch {}
+        });
+        try { noise.stop(); } catch {}
+      }, 2100);
+    };
+  }
+
   // Thunder rumble for opening
   playThunderRumble() {
     if (!this.audioContext || !this.masterGain) return;
