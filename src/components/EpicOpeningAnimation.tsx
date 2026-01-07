@@ -27,8 +27,10 @@ export const EpicOpeningAnimation = ({ onComplete }: EpicOpeningAnimationProps) 
   const [canSkip, setCanSkip] = useState(false);
   const [isSkipping, setIsSkipping] = useState(false);
   const hasPlayedThunder = useRef(false);
+  const hasPlayedChoir = useRef(false);
   const hasSpoken = useRef(false);
   const stopDroneRef = useRef<(() => void) | null>(null);
+  const stopChoirRef = useRef<(() => void) | null>(null);
   
   const { speak, stop, isSpeaking, audioData } = useDeityVoice('zeus');
 
@@ -120,6 +122,20 @@ export const EpicOpeningAnimation = ({ onComplete }: EpicOpeningAnimationProps) 
       mythSounds.playZeusClick();
     }
   }, [stage]);
+
+  // Play celestial choir when title is revealed
+  useEffect(() => {
+    if (stage === 'title' && !hasPlayedChoir.current) {
+      hasPlayedChoir.current = true;
+      stopChoirRef.current = mythSounds.playCelestialChoir();
+    }
+    
+    // Stop choir when transitioning out
+    if ((stage === 'transition' || stage === 'complete' || isSkipping) && stopChoirRef.current) {
+      stopChoirRef.current();
+      stopChoirRef.current = null;
+    }
+  }, [stage, isSkipping]);
 
   // Speak prophecy when reaching prophecy stage
   useEffect(() => {
