@@ -331,6 +331,151 @@ class MythologicalSoundEngine {
     });
   }
 
+  // Cosmic drone for opening animation (returns stop function)
+  playCosmicDrone(): () => void {
+    if (!this.audioContext || !this.masterGain) return () => {};
+
+    const now = this.audioContext.currentTime;
+    const oscillators: OscillatorNode[] = [];
+    const gains: GainNode[] = [];
+
+    // Volume control for cosmic sounds
+    const volumeControl = this.audioContext.createGain();
+    volumeControl.gain.value = this.volumes.transition * 0.4;
+    volumeControl.connect(this.masterGain);
+
+    // Deep sub bass drone
+    const subBass = this.audioContext.createOscillator();
+    subBass.type = 'sine';
+    subBass.frequency.value = 40;
+    const subGain = this.audioContext.createGain();
+    subGain.gain.setValueAtTime(0, now);
+    subGain.gain.linearRampToValueAtTime(0.3, now + 2);
+    subBass.connect(subGain);
+    subGain.connect(volumeControl);
+    oscillators.push(subBass);
+    gains.push(subGain);
+
+    // Ethereal pad layers (detuned for richness)
+    const padFreqs = [110, 165, 220, 330];
+    padFreqs.forEach((freq, i) => {
+      const osc = this.audioContext!.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq + (Math.random() - 0.5) * 2; // Slight detune
+      
+      // Slow LFO for movement
+      const lfo = this.audioContext!.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 0.1 + Math.random() * 0.2;
+      const lfoGain = this.audioContext!.createGain();
+      lfoGain.gain.value = freq * 0.02;
+      lfo.connect(lfoGain);
+      lfoGain.connect(osc.frequency);
+      lfo.start(now);
+      oscillators.push(lfo);
+
+      const gain = this.audioContext!.createGain();
+      const baseAmp = 0.08 / (i + 1);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(baseAmp, now + 3 + i * 0.5);
+      
+      osc.connect(gain);
+      gain.connect(volumeControl);
+      oscillators.push(osc);
+      gains.push(gain);
+    });
+
+    // Shimmering high frequencies
+    const shimmer = this.audioContext.createOscillator();
+    shimmer.type = 'sine';
+    shimmer.frequency.value = 880;
+    const shimmerLfo = this.audioContext.createOscillator();
+    shimmerLfo.type = 'sine';
+    shimmerLfo.frequency.value = 0.5;
+    const shimmerLfoGain = this.audioContext.createGain();
+    shimmerLfoGain.gain.value = 50;
+    shimmerLfo.connect(shimmerLfoGain);
+    shimmerLfoGain.connect(shimmer.frequency);
+    
+    const shimmerGain = this.audioContext.createGain();
+    shimmerGain.gain.setValueAtTime(0, now);
+    shimmerGain.gain.linearRampToValueAtTime(0.03, now + 4);
+    
+    // High-pass filter for airiness
+    const shimmerFilter = this.audioContext.createBiquadFilter();
+    shimmerFilter.type = 'highpass';
+    shimmerFilter.frequency.value = 2000;
+    
+    shimmer.connect(shimmerFilter);
+    shimmerFilter.connect(shimmerGain);
+    shimmerGain.connect(volumeControl);
+    shimmerLfo.start(now);
+    oscillators.push(shimmer, shimmerLfo);
+    gains.push(shimmerGain);
+
+    // Start all oscillators
+    oscillators.forEach(osc => {
+      try { osc.start(now); } catch {}
+    });
+
+    // Return stop function with fade out
+    return () => {
+      if (!this.audioContext) return;
+      const stopTime = this.audioContext.currentTime;
+      
+      gains.forEach(gain => {
+        gain.gain.cancelScheduledValues(stopTime);
+        gain.gain.setValueAtTime(gain.gain.value, stopTime);
+        gain.gain.linearRampToValueAtTime(0, stopTime + 1.5);
+      });
+
+      setTimeout(() => {
+        oscillators.forEach(osc => {
+          try { osc.stop(); } catch {}
+        });
+      }, 1600);
+    };
+  }
+
+  // Thunder rumble for opening
+  playThunderRumble() {
+    if (!this.audioContext || !this.masterGain) return;
+
+    const now = this.audioContext.currentTime;
+    
+    const volumeControl = this.audioContext.createGain();
+    volumeControl.gain.value = this.volumes.zeus * 0.6;
+    volumeControl.connect(this.masterGain);
+
+    // Low rumble with noise
+    const bufferSize = this.audioContext.sampleRate * 1.5;
+    const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+    const output = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 0.5);
+    }
+    
+    const noise = this.audioContext.createBufferSource();
+    noise.buffer = buffer;
+    
+    // Low-pass filter for rumble
+    const filter = this.audioContext.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 150;
+    filter.Q.value = 1;
+    
+    const envelope = this.audioContext.createGain();
+    envelope.gain.setValueAtTime(0.8, now);
+    envelope.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+    
+    noise.connect(filter);
+    filter.connect(envelope);
+    envelope.connect(volumeControl);
+    
+    noise.start(now);
+    noise.stop(now + 1.5);
+  }
+
   // Volume control methods
   setMasterVolume(volume: number) {
     this.volumes.master = Math.max(0, Math.min(1, volume));
