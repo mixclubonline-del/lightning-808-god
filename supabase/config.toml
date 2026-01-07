@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.deity-voice]
 verify_jwt = false
+
+[functions.opening-prophecy]
+verify_jwt = false

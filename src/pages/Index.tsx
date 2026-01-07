@@ -5,7 +5,7 @@ import { RealmIndicator } from "@/components/RealmIndicator";
 import { RealmTransition } from "@/components/RealmTransition";
 import { ImmersiveRealmPortal } from "@/components/ImmersiveRealmPortal";
 import { DeityPresence } from "@/components/DeityPresence";
-import { OpeningAnimation } from "@/components/OpeningAnimation";
+import { EpicOpeningAnimation } from "@/components/EpicOpeningAnimation";
 import { MidiKeyboardControls } from "@/components/MidiKeyboardControls";
 import { PresetPanel } from "@/components/PresetPanel";
 import { PresetBrowser } from "@/components/PresetBrowser";
@@ -811,7 +811,7 @@ const Index = () => {
     <>
       {/* Opening Animation */}
       {showOpening && (
-        <OpeningAnimation onComplete={() => setShowOpening(false)} />
+        <EpicOpeningAnimation onComplete={() => setShowOpening(false)} />
       )}
 
       {/* Main App */}
