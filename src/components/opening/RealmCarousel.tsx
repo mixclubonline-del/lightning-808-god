@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Zap, Sun, Flame, Box, Eye, Gauge } from 'lucide-react';
+import { mythSounds } from '@/utils/mythologicalSounds';
 
 interface Realm {
   id: string;
@@ -68,6 +69,19 @@ interface RealmCarouselProps {
 export const RealmCarousel = ({ isVisible }: RealmCarouselProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isFlashing, setIsFlashing] = useState(false);
+  const hasPlayedFanfareRef = useRef(false);
+
+  // Play portal fanfare when carousel becomes visible
+  useEffect(() => {
+    if (isVisible && !hasPlayedFanfareRef.current) {
+      mythSounds.playPortalFanfare();
+      hasPlayedFanfareRef.current = true;
+    }
+    
+    if (!isVisible) {
+      hasPlayedFanfareRef.current = false;
+    }
+  }, [isVisible]);
 
   useEffect(() => {
     if (!isVisible) {

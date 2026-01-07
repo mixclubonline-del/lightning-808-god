@@ -437,6 +437,76 @@ class MythologicalSoundEngine {
     };
   }
 
+  // Portal fanfare for realm carousel (ascending arpeggio with shimmer)
+  playPortalFanfare() {
+    if (!this.audioContext || !this.masterGain) return;
+
+    const now = this.audioContext.currentTime;
+
+    // Volume control
+    const volumeControl = this.audioContext.createGain();
+    volumeControl.gain.value = this.volumes.transition * 0.5;
+    volumeControl.connect(this.masterGain);
+
+    // Ascending fanfare notes (pentatonic scale for mystical feel)
+    const notes = [392, 440, 523.25, 587.33, 659.25, 783.99]; // G4, A4, C5, D5, E5, G5
+    const noteDelay = 0.06;
+
+    notes.forEach((freq, i) => {
+      const osc = this.audioContext!.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      // Second detuned oscillator for richness
+      const osc2 = this.audioContext!.createOscillator();
+      osc2.type = 'triangle';
+      osc2.frequency.value = freq * 1.005; // Slight detune
+
+      const noteTime = now + i * noteDelay;
+
+      const gain = this.audioContext!.createGain();
+      gain.gain.setValueAtTime(0, noteTime);
+      gain.gain.linearRampToValueAtTime(0.2 - i * 0.02, noteTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.4);
+
+      const gain2 = this.audioContext!.createGain();
+      gain2.gain.setValueAtTime(0, noteTime);
+      gain2.gain.linearRampToValueAtTime(0.08, noteTime + 0.02);
+      gain2.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.3);
+
+      osc.connect(gain);
+      osc2.connect(gain2);
+      gain.connect(volumeControl);
+      gain2.connect(volumeControl);
+
+      osc.start(noteTime);
+      osc2.start(noteTime);
+      osc.stop(noteTime + 0.5);
+      osc2.stop(noteTime + 0.4);
+    });
+
+    // Final shimmer burst
+    const shimmerTime = now + notes.length * noteDelay;
+    const shimmerFreqs = [783.99, 987.77, 1174.66]; // G5, B5, D6
+
+    shimmerFreqs.forEach((freq) => {
+      const osc = this.audioContext!.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      const gain = this.audioContext!.createGain();
+      gain.gain.setValueAtTime(0, shimmerTime);
+      gain.gain.linearRampToValueAtTime(0.1, shimmerTime + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, shimmerTime + 0.6);
+
+      osc.connect(gain);
+      gain.connect(volumeControl);
+
+      osc.start(shimmerTime);
+      osc.stop(shimmerTime + 0.7);
+    });
+  }
+
   // Celestial choir for title reveal (returns stop function)
   playCelestialChoir(): () => void {
     if (!this.audioContext || !this.masterGain) return () => {};
