@@ -9,6 +9,32 @@ interface DeityVoiceVisualizerProps {
   className?: string;
 }
 
+// Helper function to convert color with alpha
+function colorWithAlpha(color: string, alpha: number): string {
+  // If it's already rgba/hsla, modify the alpha
+  if (color.startsWith('rgba') || color.startsWith('hsla')) {
+    return color.replace(/,\s*[\d.]+\)$/, `, ${alpha})`);
+  }
+  // If it's rgb, convert to rgba
+  if (color.startsWith('rgb(')) {
+    return color.replace('rgb(', 'rgba(').replace(')', `, ${alpha})`);
+  }
+  // If it's hsl, convert to hsla
+  if (color.startsWith('hsl(')) {
+    return color.replace('hsl(', 'hsla(').replace(')', `, ${alpha})`);
+  }
+  // If it's a hex color, convert to rgba
+  if (color.startsWith('#')) {
+    const hex = color.slice(1);
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  // Fallback: return as-is with attempted alpha
+  return color;
+}
+
 export function DeityVoiceVisualizer({
   audioData,
   color,
@@ -42,7 +68,7 @@ export function DeityVoiceVisualizer({
           ctx.lineTo(i, y);
         }
         
-        ctx.strokeStyle = `${color}40`;
+        ctx.strokeStyle = colorWithAlpha(color, 0.25);
         ctx.lineWidth = 2;
         ctx.stroke();
         return;
@@ -54,7 +80,7 @@ export function DeityVoiceVisualizer({
 
       // Create gradient
       const gradient = ctx.createLinearGradient(0, height, 0, 0);
-      gradient.addColorStop(0, `${color}20`);
+      gradient.addColorStop(0, colorWithAlpha(color, 0.12));
       gradient.addColorStop(0.5, color);
       gradient.addColorStop(1, accentColor);
 
@@ -91,7 +117,7 @@ export function DeityVoiceVisualizer({
         ctx.lineTo(i, y);
       }
       
-      ctx.strokeStyle = `${accentColor}80`;
+      ctx.strokeStyle = colorWithAlpha(accentColor, 0.5);
       ctx.lineWidth = 2;
       ctx.stroke();
     };
@@ -126,7 +152,7 @@ export function DeityVoiceVisualizer({
         ctx.lineTo(i, y);
       }
       
-      ctx.strokeStyle = `${color}30`;
+      ctx.strokeStyle = colorWithAlpha(color, 0.19);
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
@@ -147,7 +173,7 @@ export function DeityVoiceVisualizer({
         className
       )}
       style={{
-        background: `linear-gradient(180deg, ${color}10 0%, transparent 100%)`,
+        background: `linear-gradient(180deg, ${colorWithAlpha(color, 0.06)} 0%, transparent 100%)`,
       }}
     >
       <canvas
