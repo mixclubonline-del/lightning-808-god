@@ -120,7 +120,7 @@ export function DeityChat({
       )}
       style={{
         borderColor: `${config.color}40`,
-        background: `linear-gradient(135deg, hsl(var(--background))95%, ${config.color}10)`,
+        background: `linear-gradient(135deg, hsl(var(--background) / 0.95), ${config.color}10)`,
         boxShadow: `0 0 40px ${config.color}20, 0 0 80px ${config.color}10`,
       }}
     >
