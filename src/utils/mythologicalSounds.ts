@@ -628,6 +628,97 @@ class MythologicalSoundEngine {
     };
   }
 
+  // Portal close whoosh (descending sweep + noise for final transition)
+  playPortalClose() {
+    if (!this.audioContext || !this.masterGain) return;
+
+    const now = this.audioContext.currentTime;
+
+    // Volume control
+    const volumeControl = this.audioContext.createGain();
+    volumeControl.gain.value = this.volumes.transition * 0.6;
+    volumeControl.connect(this.masterGain);
+
+    // 1. Descending frequency sweep (main whoosh)
+    const sweep = this.audioContext.createOscillator();
+    sweep.type = 'sine';
+    sweep.frequency.setValueAtTime(2000, now);
+    sweep.frequency.exponentialRampToValueAtTime(200, now + 0.4);
+
+    const sweepGain = this.audioContext.createGain();
+    sweepGain.gain.setValueAtTime(0, now);
+    sweepGain.gain.linearRampToValueAtTime(0.25, now + 0.05);
+    sweepGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+    sweep.connect(sweepGain);
+    sweepGain.connect(volumeControl);
+    sweep.start(now);
+    sweep.stop(now + 0.5);
+
+    // 2. Filtered noise burst (air texture)
+    const noiseLength = 0.4;
+    const noiseBuffer = this.audioContext.createBuffer(
+      1,
+      this.audioContext.sampleRate * noiseLength,
+      this.audioContext.sampleRate
+    );
+    const noiseData = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < noiseData.length; i++) {
+      noiseData[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = this.audioContext.createBufferSource();
+    noise.buffer = noiseBuffer;
+
+    const noiseFilter = this.audioContext.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.setValueAtTime(3000, now);
+    noiseFilter.frequency.exponentialRampToValueAtTime(500, now + 0.4);
+    noiseFilter.Q.value = 1;
+
+    const noiseGain = this.audioContext.createGain();
+    noiseGain.gain.setValueAtTime(0, now);
+    noiseGain.gain.linearRampToValueAtTime(0.15, now + 0.03);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+    noise.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(volumeControl);
+    noise.start(now);
+    noise.stop(now + 0.4);
+
+    // 3. Sub-bass thump (impact)
+    const sub = this.audioContext.createOscillator();
+    sub.type = 'sine';
+    sub.frequency.value = 60;
+
+    const subGain = this.audioContext.createGain();
+    subGain.gain.setValueAtTime(0, now);
+    subGain.gain.linearRampToValueAtTime(0.4, now + 0.02);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+    sub.connect(subGain);
+    subGain.connect(volumeControl);
+    sub.start(now);
+    sub.stop(now + 0.25);
+
+    // 4. Harmonic tail (resonant fade)
+    const tail = this.audioContext.createOscillator();
+    tail.type = 'triangle';
+    tail.frequency.value = 400;
+    tail.frequency.exponentialRampToValueAtTime(150, now + 0.6);
+
+    const tailGain = this.audioContext.createGain();
+    tailGain.gain.setValueAtTime(0, now + 0.1);
+    tailGain.gain.linearRampToValueAtTime(0.08, now + 0.15);
+    tailGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+    tail.connect(tailGain);
+    tailGain.connect(volumeControl);
+    tail.start(now);
+    tail.stop(now + 0.6);
+  }
+
   // Thunder rumble for opening
   playThunderRumble() {
     if (!this.audioContext || !this.masterGain) return;
