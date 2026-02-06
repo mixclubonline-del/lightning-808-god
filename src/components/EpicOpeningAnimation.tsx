@@ -30,6 +30,7 @@ export const EpicOpeningAnimation = ({ onComplete }: EpicOpeningAnimationProps) 
   const hasPlayedThunder = useRef(false);
   const hasPlayedChoir = useRef(false);
   const hasSpoken = useRef(false);
+  const hasPlayedPortalClose = useRef(false);
   const stopDroneRef = useRef<(() => void) | null>(null);
   const stopChoirRef = useRef<(() => void) | null>(null);
   
@@ -148,11 +149,20 @@ export const EpicOpeningAnimation = ({ onComplete }: EpicOpeningAnimationProps) 
     }
   }, [stage, prophecy, speak]);
 
+  // Play portal close sound when animation completes
+  useEffect(() => {
+    if (stage === 'complete' && !hasPlayedPortalClose.current) {
+      hasPlayedPortalClose.current = true;
+      mythSounds.playPortalClose();
+    }
+  }, [stage]);
+
   // Handle skip
   const handleSkip = useCallback(() => {
     if (!canSkip || isSkipping) return;
     setIsSkipping(true);
     stop();
+    mythSounds.playPortalClose();
     setStage('complete');
     setTimeout(onComplete, 300);
   }, [canSkip, isSkipping, stop, onComplete]);
