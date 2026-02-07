@@ -1,185 +1,99 @@
 
-# Add Portal Close Whoosh Sound Effect
+# Collapsible Settings Panel
 
 ## Overview
-Add a "portal close" whoosh sound that plays when the opening animation completes and transitions to the main app. This creates an audio bookend to the portal fanfare that plays when the realm carousel starts.
+Transform the fixed right-side settings panel into a collapsible panel that can be toggled open/closed to save screen space. When collapsed, only a small toggle button remains visible.
 
----
+## Current State
+The settings panel is a fixed `div` positioned at `top-20 right-4` containing all synth controls (MIDI, presets, velocity, ADSR, master controls, etc.). It takes up significant horizontal space and cannot be hidden.
 
-## Sound Design
+## Proposed Solution
+Create a new `SettingsSidebar` component that wraps all the settings controls in a collapsible panel with:
+- A toggle button that's always visible (even when collapsed)
+- Smooth slide animation when expanding/collapsing
+- Visual indicator showing the current state
+- Keyboard shortcut (Ctrl+.) to toggle
 
-The portal close sound will be a **reverse whoosh** effect - the opposite of opening a portal:
+## Visual Design
 
-**Sound Characteristics:**
-- Descending frequency sweep (high to low, opposite of the ascending fanfare)
-- Filtered white noise burst for "air rush" texture
-- Low sub-bass thump for impact and finality
-- Quick attack, medium decay (~0.5-0.6s total)
+```text
+EXPANDED STATE                         COLLAPSED STATE
+┌──────────────────────────────┐       ┌───┐
+│ [<] Settings                 │       │[>]│
+├──────────────────────────────┤       │   │
+│  MIDI & Keyboard Controls    │       │ S │
+│  ─────────────────────────── │  →    │ e │
+│  Presets                     │       │ t │
+│  ─────────────────────────── │       │ t │
+│  Velocity Controls           │       │ i │
+│  ...                         │       │ n │
+│  Master Controls             │       │ g │
+└──────────────────────────────┘       │ s │
+                                       └───┘
+```
 
-**Synthesis Components:**
-| Component | Purpose | Parameters |
-|-----------|---------|------------|
-| Descending sweep | Main whoosh movement | Sine, 2000Hz → 200Hz over 0.4s |
-| Noise burst | Air texture | Bandpass filtered at 1500Hz |
-| Sub-bass thump | Impact/finality | Sine, 60Hz with quick decay |
-| Harmonic tail | Resonant fade | Triangle at 400Hz fading out |
+## Technical Approach
 
----
+### New Component: `src/components/SettingsSidebar.tsx`
 
-## Implementation
+A collapsible sidebar that:
+1. Uses React state to track open/closed
+2. Uses CSS transitions for smooth animation
+3. Persists state to localStorage
+4. Has a floating toggle button when collapsed
 
-### File 1: `src/utils/mythologicalSounds.ts`
+### Changes to `src/pages/Index.tsx`
 
-Add a new method `playPortalClose()` to the `MythologicalSoundEngine` class:
+Replace the current fixed `div` with the new `SettingsSidebar` component, passing all the same children as props.
 
+## Implementation Details
+
+### SettingsSidebar Component Structure
+
+| Feature | Implementation |
+|---------|----------------|
+| Toggle button | Always visible, positioned at panel edge |
+| Animation | CSS `translate-x` + `transition` for slide effect |
+| Persistence | `localStorage.getItem('settings-sidebar-open')` |
+| Keyboard shortcut | `Ctrl+.` or `Cmd+.` to toggle |
+| Collapsed indicator | Vertical "Settings" text or gear icon |
+| Panel width | ~320px when expanded, ~48px when collapsed |
+
+### Component Props
 ```typescript
-// Portal close whoosh (descending sweep + noise for final transition)
-playPortalClose() {
-  if (!this.audioContext || !this.masterGain) return;
-
-  const now = this.audioContext.currentTime;
-
-  // Volume control
-  const volumeControl = this.audioContext.createGain();
-  volumeControl.gain.value = this.volumes.transition * 0.6;
-  volumeControl.connect(this.masterGain);
-
-  // 1. Descending frequency sweep (main whoosh)
-  const sweep = this.audioContext.createOscillator();
-  sweep.type = 'sine';
-  sweep.frequency.setValueAtTime(2000, now);
-  sweep.frequency.exponentialRampToValueAtTime(200, now + 0.4);
-
-  const sweepGain = this.audioContext.createGain();
-  sweepGain.gain.setValueAtTime(0, now);
-  sweepGain.gain.linearRampToValueAtTime(0.25, now + 0.05);
-  sweepGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-
-  sweep.connect(sweepGain);
-  sweepGain.connect(volumeControl);
-  sweep.start(now);
-  sweep.stop(now + 0.5);
-
-  // 2. Filtered noise burst (air texture)
-  const noiseLength = 0.4;
-  const noiseBuffer = this.audioContext.createBuffer(
-    1, 
-    this.audioContext.sampleRate * noiseLength, 
-    this.audioContext.sampleRate
-  );
-  const noiseData = noiseBuffer.getChannelData(0);
-  for (let i = 0; i < noiseData.length; i++) {
-    noiseData[i] = Math.random() * 2 - 1;
-  }
-  
-  const noise = this.audioContext.createBufferSource();
-  noise.buffer = noiseBuffer;
-
-  const noiseFilter = this.audioContext.createBiquadFilter();
-  noiseFilter.type = 'bandpass';
-  noiseFilter.frequency.setValueAtTime(3000, now);
-  noiseFilter.frequency.exponentialRampToValueAtTime(500, now + 0.4);
-  noiseFilter.Q.value = 1;
-
-  const noiseGain = this.audioContext.createGain();
-  noiseGain.gain.setValueAtTime(0, now);
-  noiseGain.gain.linearRampToValueAtTime(0.15, now + 0.03);
-  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-
-  noise.connect(noiseFilter);
-  noiseFilter.connect(noiseGain);
-  noiseGain.connect(volumeControl);
-  noise.start(now);
-  noise.stop(now + 0.4);
-
-  // 3. Sub-bass thump (impact)
-  const sub = this.audioContext.createOscillator();
-  sub.type = 'sine';
-  sub.frequency.value = 60;
-
-  const subGain = this.audioContext.createGain();
-  subGain.gain.setValueAtTime(0, now);
-  subGain.gain.linearRampToValueAtTime(0.4, now + 0.02);
-  subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-
-  sub.connect(subGain);
-  subGain.connect(volumeControl);
-  sub.start(now);
-  sub.stop(now + 0.25);
-
-  // 4. Harmonic tail (resonant fade)
-  const tail = this.audioContext.createOscillator();
-  tail.type = 'triangle';
-  tail.frequency.value = 400;
-  tail.frequency.exponentialRampToValueAtTime(150, now + 0.6);
-
-  const tailGain = this.audioContext.createGain();
-  tailGain.gain.setValueAtTime(0, now + 0.1);
-  tailGain.gain.linearRampToValueAtTime(0.08, now + 0.15);
-  tailGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-
-  tail.connect(tailGain);
-  tailGain.connect(volumeControl);
-  tail.start(now);
-  tail.stop(now + 0.6);
+interface SettingsSidebarProps {
+  children: React.ReactNode;
+  defaultOpen?: boolean;
 }
 ```
 
-**Location:** Insert after the `playCelestialChoir()` method (around line 629), before `playThunderRumble()`.
-
----
-
-### File 2: `src/components/EpicOpeningAnimation.tsx`
-
-Add a ref to track if the portal close sound has played, and trigger it when stage becomes `'complete'`:
-
-1. **Add ref** (near line 34):
+### State Management
 ```typescript
-const hasPlayedPortalClose = useRef(false);
+const [isOpen, setIsOpen] = useState(() => {
+  const saved = localStorage.getItem('settings-sidebar-open');
+  return saved !== null ? saved === 'true' : true; // default open
+});
 ```
 
-2. **Add useEffect** to play sound when stage becomes `'complete'`:
-```typescript
-// Play portal close sound when animation completes
-useEffect(() => {
-  if (stage === 'complete' && !hasPlayedPortalClose.current) {
-    hasPlayedPortalClose.current = true;
-    mythSounds.playPortalClose();
-  }
-}, [stage]);
+### CSS Animation
+```css
+/* Expanded */
+transform: translateX(0);
+
+/* Collapsed */
+transform: translateX(calc(100% - 48px));
 ```
 
-3. **Also trigger on skip** - modify the `handleSkip` callback to play the sound:
-```typescript
-const handleSkip = useCallback(() => {
-  if (!canSkip || isSkipping) return;
-  setIsSkipping(true);
-  stop();
-  mythSounds.playPortalClose(); // Add this line
-  setStage('complete');
-  setTimeout(onComplete, 300);
-}, [canSkip, isSkipping, stop, onComplete]);
-```
+## Files to Create/Modify
 
----
+| File | Action | Description |
+|------|--------|-------------|
+| `src/components/SettingsSidebar.tsx` | Create | New collapsible panel component |
+| `src/pages/Index.tsx` | Modify | Replace fixed div with SettingsSidebar |
 
-## Audio Timeline
-
-```text
-Normal flow:
-13.0s  - transition stage starts (portal fanfare plays)
-14.0s  - complete stage starts (portal close whoosh plays)
-14.5s  - onComplete called, main app loads
-
-Skip flow:
-User presses key → portal close whoosh plays immediately → fade to main app
-```
-
----
-
-## Summary of Changes
-
-| File | Change |
-|------|--------|
-| `src/utils/mythologicalSounds.ts` | Add `playPortalClose()` method (~50 lines) |
-| `src/components/EpicOpeningAnimation.tsx` | Add ref + useEffect + handleSkip modification |
+## Benefits
+- Reclaims horizontal space for the main synth interface when not adjusting settings
+- Settings remain easily accessible with one click
+- State persists across sessions
+- Keyboard shortcut for power users
+- Clean animation provides good UX feedback
