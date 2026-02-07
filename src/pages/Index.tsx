@@ -7,6 +7,7 @@ import { ImmersiveRealmPortal } from "@/components/ImmersiveRealmPortal";
 import { DeityPresence } from "@/components/DeityPresence";
 import { EpicOpeningAnimation } from "@/components/EpicOpeningAnimation";
 import { MidiKeyboardControls } from "@/components/MidiKeyboardControls";
+import { SettingsSidebar } from "@/components/SettingsSidebar";
 import { PresetPanel } from "@/components/PresetPanel";
 import { PresetBrowser } from "@/components/PresetBrowser";
 import { PresetFileDropZone } from "@/components/PresetFileDropZone";
@@ -817,8 +818,8 @@ const Index = () => {
       {/* Main App */}
       <AppContainer>
         <div className="relative w-full h-full">
-          {/* Controls Panel - Fixed top-right */}
-          <div className="fixed top-20 right-4 z-40 space-y-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
+          {/* Collapsible Settings Sidebar */}
+          <SettingsSidebar>
             <MidiKeyboardControls
               onMidiEnabled={setMidiEnabled}
               onKeyboardEnabled={setKeyboardEnabled}
@@ -892,7 +893,7 @@ const Index = () => {
             
             {/* Audio Visualizers */}
             <AudioVisualizerPanel analyser={audioEngine.analyserNode} />
-          </div>
+          </SettingsSidebar>
 
           <RealmIndicator
             currentRealm={currentRealm}
