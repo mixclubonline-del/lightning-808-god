@@ -23,7 +23,8 @@ interface ApolloRealmProps {
 
 export function ApolloRealm(props: ApolloRealmProps) {
   const connections = [
-    { from: "apollo-keyboard", to: "apollo-envelope" },
+    { from: "apollo-keyboard", to: "apollo-sequencer" },
+    { from: "apollo-sequencer", to: "apollo-envelope" },
     { from: "apollo-envelope", to: "apollo-pads" },
   ];
 
