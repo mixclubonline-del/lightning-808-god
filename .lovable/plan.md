@@ -1,99 +1,74 @@
 
-# Collapsible Settings Panel
+
+# Piano Roll / Step Sequencer for Apollo Realm
 
 ## Overview
-Transform the fixed right-side settings panel into a collapsible panel that can be toggled open/closed to save screen space. When collapsed, only a small toggle button remains visible.
+Add a piano roll and step sequencer component to the Apollo Realm for programming melodies and rhythms with note input, velocity editing, and pattern looping. Also fix 3 existing build errors (`NodeJS.Timeout` namespace).
 
-## Current State
-The settings panel is a fixed `div` positioned at `top-20 right-4` containing all synth controls (MIDI, presets, velocity, ADSR, master controls, etc.). It takes up significant horizontal space and cannot be hidden.
+## Build Error Fixes
 
-## Proposed Solution
-Create a new `SettingsSidebar` component that wraps all the settings controls in a collapsible panel with:
-- A toggle button that's always visible (even when collapsed)
-- Smooth slide animation when expanding/collapsing
-- Visual indicator showing the current state
-- Keyboard shortcut (Ctrl+.) to toggle
+Replace `NodeJS.Timeout` with `ReturnType<typeof setTimeout>` in three files:
+- `src/components/EpicOpeningAnimation.tsx` line 65
+- `src/components/HermesMeter.tsx` line 15
+- `src/components/MidiKeyboardControls.tsx` line 35
 
-## Visual Design
+## Piano Roll Component
+
+### New file: `src/components/ApolloPianoRoll.tsx`
+
+A grid-based piano roll with:
 
 ```text
-EXPANDED STATE                         COLLAPSED STATE
-┌──────────────────────────────┐       ┌───┐
-│ [<] Settings                 │       │[>]│
-├──────────────────────────────┤       │   │
-│  MIDI & Keyboard Controls    │       │ S │
-│  ─────────────────────────── │  →    │ e │
-│  Presets                     │       │ t │
-│  ─────────────────────────── │       │ t │
-│  Velocity Controls           │       │ i │
-│  ...                         │       │ n │
-│  Master Controls             │       │ g │
-└──────────────────────────────┘       │ s │
-                                       └───┘
+┌─────────────────────────────────────────────────┐
+│ ▶ ■ ⟳  BPM:[120]  Steps:[16▼]  Pattern: 1/4   │
+├────┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬─┤
+│ C5 │  │  │  │  │  │  │  │  │  │  │  │  │  │  │ │
+│ B4 │  │██│  │  │  │  │  │  │  │██│  │  │  │  │ │
+│ A4 │  │  │  │██│  │  │  │  │  │  │  │██│  │  │ │
+│ G4 │  │  │  │  │  │  │██│  │  │  │  │  │  │  │ │
+│... │  │  │  │  │  │  │  │  │  │  │  │  │  │  │ │
+│ C4 │██│  │  │  │  │  │  │██│  │  │  │  │  │  │ │
+├────┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴─┤
+│ Velocity: [bar graph per step]                   │
+└─────────────────────────────────────────────────┘
 ```
 
-## Technical Approach
+**Features:**
+- **Grid**: 16/32-step grid × 2 octaves of note rows (C3–C5)
+- **Note input**: Click cells to toggle notes on/off; colored by velocity
+- **Velocity lane**: Bottom strip showing velocity bars per active note, draggable to adjust
+- **Transport**: Play/Stop/Loop buttons with BPM control
+- **Playback**: Uses Web Audio API scheduling via `onNoteOn`/`onNoteOff` props
+- **Pattern management**: 4 pattern slots, switchable
+- **Visual playhead**: Animated column highlight showing current step during playback
 
-### New Component: `src/components/SettingsSidebar.tsx`
-
-A collapsible sidebar that:
-1. Uses React state to track open/closed
-2. Uses CSS transitions for smooth animation
-3. Persists state to localStorage
-4. Has a floating toggle button when collapsed
-
-### Changes to `src/pages/Index.tsx`
-
-Replace the current fixed `div` with the new `SettingsSidebar` component, passing all the same children as props.
-
-## Implementation Details
-
-### SettingsSidebar Component Structure
-
-| Feature | Implementation |
-|---------|----------------|
-| Toggle button | Always visible, positioned at panel edge |
-| Animation | CSS `translate-x` + `transition` for slide effect |
-| Persistence | `localStorage.getItem('settings-sidebar-open')` |
-| Keyboard shortcut | `Ctrl+.` or `Cmd+.` to toggle |
-| Collapsed indicator | Vertical "Settings" text or gear icon |
-| Panel width | ~320px when expanded, ~48px when collapsed |
-
-### Component Props
+**Props:**
 ```typescript
-interface SettingsSidebarProps {
-  children: React.ReactNode;
-  defaultOpen?: boolean;
+interface ApolloPianoRollProps {
+  onNoteOn: (note: number, velocity?: number) => void;
+  onNoteOff: (note: number) => void;
 }
 ```
 
-### State Management
-```typescript
-const [isOpen, setIsOpen] = useState(() => {
-  const saved = localStorage.getItem('settings-sidebar-open');
-  return saved !== null ? saved === 'true' : true; // default open
-});
-```
+**Internal state:**
+- `notes`: `Map<string, { note: number; step: number; velocity: number }>`
+- `isPlaying`, `bpm`, `currentStep`, `stepCount` (16 or 32)
+- `patterns`: array of 4 pattern slots
+- `activePattern`: index
 
-### CSS Animation
-```css
-/* Expanded */
-transform: translateX(0);
+**Playback engine:** `setInterval` at `(60 / bpm / 4) * 1000` ms per step. On each tick, trigger `onNoteOn` for active notes at that step, schedule `onNoteOff` after a gate time.
 
-/* Collapsed */
-transform: translateX(calc(100% - 48px));
-```
+### Modified file: `src/components/realms/ApolloRealm.tsx`
 
-## Files to Create/Modify
+Add the `ApolloPianoRoll` between the keyboard and envelope sections, wrapped in `data-module="apollo-sequencer"`. Update constellation connections to include the new module.
 
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/SettingsSidebar.tsx` | Create | New collapsible panel component |
-| `src/pages/Index.tsx` | Modify | Replace fixed div with SettingsSidebar |
+## Files Summary
 
-## Benefits
-- Reclaims horizontal space for the main synth interface when not adjusting settings
-- Settings remain easily accessible with one click
-- State persists across sessions
-- Keyboard shortcut for power users
-- Clean animation provides good UX feedback
+| File | Action |
+|------|--------|
+| `src/components/EpicOpeningAnimation.tsx` | Fix `NodeJS.Timeout` → `ReturnType<typeof setTimeout>` |
+| `src/components/HermesMeter.tsx` | Fix `NodeJS.Timeout` → `ReturnType<typeof setTimeout>` |
+| `src/components/MidiKeyboardControls.tsx` | Fix `NodeJS.Timeout` → `ReturnType<typeof setTimeout>` |
+| `src/components/ApolloPianoRoll.tsx` | Create — piano roll/step sequencer component |
+| `src/components/realms/ApolloRealm.tsx` | Add piano roll to realm layout |
+
