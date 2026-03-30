@@ -55,6 +55,11 @@ export function ApolloRealm(props: ApolloRealmProps) {
           <OrpheusKeys onNoteOn={props.onNoteOn} onNoteOff={props.onNoteOff} />
         </div>
 
+        {/* Piano Roll / Step Sequencer */}
+        <div data-module="apollo-sequencer">
+          <ApolloPianoRoll onNoteOn={props.onNoteOn} onNoteOff={props.onNoteOff} />
+        </div>
+
         {/* Envelope */}
         <div data-module="apollo-envelope">
           <ApolloEnvelope
