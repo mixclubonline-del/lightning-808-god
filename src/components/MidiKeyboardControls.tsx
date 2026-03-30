@@ -32,7 +32,7 @@ export const MidiKeyboardControls = ({
     initMidi();
 
     // Update active keys periodically when keyboard is enabled
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (keyboardEnabled) {
       interval = setInterval(() => {
         setActiveKeys(keyboardMapper.getActiveKeys());

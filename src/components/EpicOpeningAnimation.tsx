@@ -62,7 +62,7 @@ export const EpicOpeningAnimation = ({ onComplete }: EpicOpeningAnimationProps) 
   useEffect(() => {
     if (isSkipping) return;
 
-    const timers: NodeJS.Timeout[] = [];
+    const timers: ReturnType<typeof setTimeout>[] = [];
 
     // Stage 1: Cosmos (0-2s)
     timers.push(setTimeout(() => setStage('olympus'), 2000));
