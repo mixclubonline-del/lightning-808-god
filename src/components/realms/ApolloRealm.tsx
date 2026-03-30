@@ -3,6 +3,7 @@ import { ApolloEnvelope } from "@/components/ApolloEnvelope";
 import { HarmoniaChords } from "@/components/HarmoniaChords";
 import { OlympusPads } from "@/components/OlympusPads";
 import { ConstellationLines } from "@/components/ConstellationLines";
+import { ApolloPianoRoll } from "@/components/ApolloPianoRoll";
 import { Music } from "lucide-react";
 
 interface ApolloRealmProps {
