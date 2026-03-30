@@ -3,6 +3,7 @@ import { ApolloEnvelope } from "@/components/ApolloEnvelope";
 import { HarmoniaChords } from "@/components/HarmoniaChords";
 import { OlympusPads } from "@/components/OlympusPads";
 import { ConstellationLines } from "@/components/ConstellationLines";
+import { ApolloPianoRoll } from "@/components/ApolloPianoRoll";
 import { Music } from "lucide-react";
 
 interface ApolloRealmProps {
@@ -22,7 +23,8 @@ interface ApolloRealmProps {
 
 export function ApolloRealm(props: ApolloRealmProps) {
   const connections = [
-    { from: "apollo-keyboard", to: "apollo-envelope" },
+    { from: "apollo-keyboard", to: "apollo-sequencer" },
+    { from: "apollo-sequencer", to: "apollo-envelope" },
     { from: "apollo-envelope", to: "apollo-pads" },
   ];
 
@@ -51,6 +53,11 @@ export function ApolloRealm(props: ApolloRealmProps) {
         {/* Full Keyboard */}
         <div data-module="apollo-keyboard">
           <OrpheusKeys onNoteOn={props.onNoteOn} onNoteOff={props.onNoteOff} />
+        </div>
+
+        {/* Piano Roll / Step Sequencer */}
+        <div data-module="apollo-sequencer">
+          <ApolloPianoRoll onNoteOn={props.onNoteOn} onNoteOff={props.onNoteOff} />
         </div>
 
         {/* Envelope */}

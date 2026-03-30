@@ -12,7 +12,7 @@ export const HermesMeter = ({ analyserNode, label, isActive }: HermesMeterProps)
   const [peak, setPeak] = useState(0);
   const animationRef = useRef<number>();
   const peakHoldRef = useRef<number>(0);
-  const peakTimeoutRef = useRef<NodeJS.Timeout>();
+  const peakTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     if (!analyserNode || !isActive) return;
