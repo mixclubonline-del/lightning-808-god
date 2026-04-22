@@ -172,6 +172,29 @@ const Index = () => {
   ]);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
+  // Parallel A/B routing lanes
+  const [effectLanes, setEffectLanes] = useState<Record<string, "A" | "B">>({
+    vulcan: "A",
+    atlas: "A",
+    echo: "A",
+    siren: "A",
+    reverb: "B",
+    mars: "B",
+    chronos: "B",
+    morpheus: "B",
+    harmonia: "A",
+  });
+  // Crossfader: 0 = full A, 100 = full B
+  const [abCrossfader, setAbCrossfader] = useState(50);
+
+  const toggleEffectLane = (id: string) => {
+    setEffectLanes((prev) => {
+      const next = { ...prev, [id]: (prev[id] === "A" ? "B" : "A") as "A" | "B" };
+      toast.success(`${id.charAt(0).toUpperCase() + id.slice(1)} → Lane ${next[id]}`);
+      return next;
+    });
+    mythSounds.playUIClick();
+  };
   const handleDragStart = (id: string) => {
     setDraggedItem(id);
     mythSounds.playUIClick();
