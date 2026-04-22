@@ -8,7 +8,7 @@ import { DeityVoiceVisualizer } from './DeityVoiceVisualizer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, X, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { Send, X, Sparkles, Volume2, VolumeX, Wand2 } from 'lucide-react';
 
 interface DeityChatProps {
   deity: DeityName;
