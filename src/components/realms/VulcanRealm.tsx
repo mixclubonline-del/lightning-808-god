@@ -11,7 +11,9 @@ import { AtlasCompressor } from "@/components/AtlasCompressor";
 import { ConstellationLines } from "@/components/ConstellationLines";
 import { DraggableEffectModule } from "@/components/DraggableEffectModule";
 import { HarmoniaChords } from "@/components/HarmoniaChords";
-import { Flame } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Flame, ArrowLeftRight } from "lucide-react";
 
 interface VulcanRealmProps {
   distortionDrive: number;
@@ -84,6 +86,10 @@ interface VulcanRealmProps {
   onDragLeave?: () => void;
   draggedItem?: string | null;
   dragOverItem?: string | null;
+  effectLanes?: Record<string, "A" | "B">;
+  onToggleLane?: (id: string) => void;
+  abCrossfader?: number;
+  onAbCrossfaderChange?: (v: number) => void;
 }
 
 export function VulcanRealm(props: VulcanRealmProps) {
@@ -200,31 +206,6 @@ export function VulcanRealm(props: VulcanRealmProps) {
     ),
   };
 
-  // Generate connections based on effectsOrder
-  const dynamicConnections = useMemo(() => {
-    if (!props.effectsOrder) {
-      return [
-        { from: "vulcan-vulcan", to: "vulcan-atlas" },
-        { from: "vulcan-atlas", to: "vulcan-echo" },
-        { from: "vulcan-echo", to: "vulcan-siren" },
-        { from: "vulcan-siren", to: "vulcan-reverb" },
-        { from: "vulcan-reverb", to: "vulcan-mars" },
-        { from: "vulcan-mars", to: "vulcan-chronos" },
-        { from: "vulcan-chronos", to: "vulcan-morpheus" },
-        { from: "vulcan-morpheus", to: "vulcan-harmonia" },
-      ];
-    }
-    
-    const conns = [];
-    for (let i = 0; i < props.effectsOrder.length - 1; i++) {
-      conns.push({
-        from: `vulcan-${props.effectsOrder[i]}`,
-        to: `vulcan-${props.effectsOrder[i + 1]}`,
-      });
-    }
-    return conns;
-  }, [props.effectsOrder]);
-
   const effectsOrder = props.effectsOrder || [
     "vulcan",
     "atlas",
@@ -234,12 +215,74 @@ export function VulcanRealm(props: VulcanRealmProps) {
     "mars",
     "chronos",
     "morpheus",
-    "harmonia"
+    "harmonia",
   ];
+
+  const effectLanes = props.effectLanes ?? {};
+  const xfade = props.abCrossfader ?? 50;
+  // Equal-power crossfader gains
+  const aGain = Math.cos((xfade / 100) * (Math.PI / 2));
+  const bGain = Math.sin((xfade / 100) * (Math.PI / 2));
+
+  const laneA = effectsOrder.filter((id) => (effectLanes[id] ?? "A") === "A");
+  const laneB = effectsOrder.filter((id) => effectLanes[id] === "B");
+
+  // Connections: serial within each lane, both feeding the crossfader
+  const dynamicConnections = useMemo(() => {
+    const conns: { from: string; to: string }[] = [];
+    const buildLane = (lane: string[]) => {
+      for (let i = 0; i < lane.length - 1; i++) {
+        conns.push({ from: `vulcan-${lane[i]}`, to: `vulcan-${lane[i + 1]}` });
+      }
+      if (lane.length > 0) {
+        conns.push({ from: `vulcan-${lane[lane.length - 1]}`, to: "vulcan-crossfader" });
+      }
+    };
+    buildLane(laneA);
+    buildLane(laneB);
+    return conns;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [laneA.join(","), laneB.join(",")]);
+
+  const renderEffect = (effectId: string) => {
+    const moduleId = `vulcan-${effectId}`;
+    const lane = effectLanes[effectId] ?? "A";
+    return (
+      <div key={effectId} data-module={moduleId} className="relative">
+        {props.onToggleLane && (
+          <button
+            type="button"
+            onClick={() => props.onToggleLane?.(effectId)}
+            className="absolute -top-2 -right-2 z-20 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-background/80 backdrop-blur hover:scale-110 transition-transform"
+            style={{
+              borderColor: lane === "A" ? "hsl(24 95% 53%)" : "hsl(200 95% 55%)",
+              color: lane === "A" ? "hsl(24 95% 53%)" : "hsl(200 95% 55%)",
+            }}
+            title={`Lane ${lane} — click to swap`}
+          >
+            {lane}
+          </button>
+        )}
+        {props.onDragStart && props.onDragOver && props.onDrop ? (
+          <DraggableEffectModule
+            id={effectId}
+            onDragStart={props.onDragStart}
+            onDragOver={props.onDragOver}
+            onDrop={props.onDrop}
+            isDragging={props.draggedItem === effectId}
+            isOver={props.dragOverItem === effectId}
+          >
+            {effectsMap[effectId]}
+          </DraggableEffectModule>
+        ) : (
+          effectsMap[effectId]
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="relative min-h-full p-8 bg-gradient-to-b from-orange-950/20 to-transparent constellation-container">
-      {/* Realm Title */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
         <div className="flex items-center gap-3 text-orange-500">
           <Flame className="w-8 h-8" />
@@ -248,10 +291,9 @@ export function VulcanRealm(props: VulcanRealmProps) {
           </h1>
           <Flame className="w-8 h-8" />
         </div>
-        <p className="text-center text-sm text-muted-foreground mt-1 tracking-wider">Effects Forge</p>
+        <p className="text-center text-sm text-muted-foreground mt-1 tracking-wider">Effects Forge — Parallel Routing</p>
       </div>
 
-      {/* Vulcan Watermark */}
       <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
         <Flame className="w-[600px] h-[600px]" />
       </div>
@@ -259,32 +301,113 @@ export function VulcanRealm(props: VulcanRealmProps) {
       <ConstellationLines connections={dynamicConnections} color="hsl(24, 95%, 53%)" active={true} />
 
       <div className="relative mt-24 space-y-6">
-        {/* Effects Grid - Now Dynamic */}
         <div className="grid grid-cols-2 gap-6">
-          {effectsOrder.map((effectId) => {
-            const moduleId = `vulcan-${effectId}`;
-            return (
-              <div key={effectId} data-module={moduleId}>
-                {props.onDragStart && props.onDragOver && props.onDrop ? (
-                  <DraggableEffectModule
-                    id={effectId}
-                    onDragStart={props.onDragStart}
-                    onDragOver={props.onDragOver}
-                    onDrop={props.onDrop}
-                    isDragging={props.draggedItem === effectId}
-                    isOver={props.dragOverItem === effectId}
-                  >
-                    {effectsMap[effectId]}
-                  </DraggableEffectModule>
-                ) : (
-                  effectsMap[effectId]
-                )}
+          {/* Lane A */}
+          <div className="space-y-4">
+            <div
+              className="flex items-center gap-2 px-3 py-1.5 rounded-md border"
+              style={{
+                borderColor: "hsl(24 95% 53% / 0.5)",
+                background: "hsl(24 95% 53% / 0.08)",
+              }}
+            >
+              <div className="w-2 h-2 rounded-full" style={{ background: "hsl(24 95% 53%)" }} />
+              <span className="text-sm font-bold tracking-wider" style={{ color: "hsl(24 95% 53%)" }}>
+                LANE A
+              </span>
+              <span className="ml-auto text-xs text-muted-foreground">
+                {Math.round(aGain * 100)}%
+              </span>
+            </div>
+            {laneA.length === 0 ? (
+              <div className="text-center text-xs text-muted-foreground italic py-8 border border-dashed rounded-md">
+                Empty — assign effects with the lane badge
               </div>
-            );
-          })}
+            ) : (
+              laneA.map(renderEffect)
+            )}
+          </div>
+
+          {/* Lane B */}
+          <div className="space-y-4">
+            <div
+              className="flex items-center gap-2 px-3 py-1.5 rounded-md border"
+              style={{
+                borderColor: "hsl(200 95% 55% / 0.5)",
+                background: "hsl(200 95% 55% / 0.08)",
+              }}
+            >
+              <div className="w-2 h-2 rounded-full" style={{ background: "hsl(200 95% 55%)" }} />
+              <span className="text-sm font-bold tracking-wider" style={{ color: "hsl(200 95% 55%)" }}>
+                LANE B
+              </span>
+              <span className="ml-auto text-xs text-muted-foreground">
+                {Math.round(bGain * 100)}%
+              </span>
+            </div>
+            {laneB.length === 0 ? (
+              <div className="text-center text-xs text-muted-foreground italic py-8 border border-dashed rounded-md">
+                Empty — assign effects with the lane badge
+              </div>
+            ) : (
+              laneB.map(renderEffect)
+            )}
+          </div>
         </div>
 
-        {/* Signal Flow */}
+        {/* A/B Crossfader */}
+        <div
+          data-module="vulcan-crossfader"
+          className="rounded-xl border p-5 backdrop-blur"
+          style={{
+            borderColor: "hsl(24 95% 53% / 0.4)",
+            background:
+              "linear-gradient(90deg, hsl(24 95% 53% / 0.08), hsl(0 0% 0% / 0.4), hsl(200 95% 55% / 0.08))",
+          }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <ArrowLeftRight className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-bold tracking-wider text-foreground">
+                A / B CROSSFADER
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => props.onAbCrossfaderChange?.(50)}
+              className="h-7 text-xs"
+            >
+              Center
+            </Button>
+          </div>
+          <div className="flex items-center gap-4">
+            <span
+              className="text-xs font-bold w-6 text-right"
+              style={{ color: "hsl(24 95% 53%)", opacity: 0.4 + aGain * 0.6 }}
+            >
+              A
+            </span>
+            <Slider
+              value={[xfade]}
+              onValueChange={(v) => props.onAbCrossfaderChange?.(v[0])}
+              min={0}
+              max={100}
+              step={1}
+              className="flex-1"
+            />
+            <span
+              className="text-xs font-bold w-6"
+              style={{ color: "hsl(200 95% 55%)", opacity: 0.4 + bGain * 0.6 }}
+            >
+              B
+            </span>
+          </div>
+          <div className="mt-2 text-center text-[11px] text-muted-foreground">
+            {xfade === 50 ? "Equal blend" : xfade < 50 ? `Lane A favored (${100 - xfade}%)` : `Lane B favored (${xfade}%)`}
+          </div>
+        </div>
+
         <SignalFlowView />
       </div>
     </div>
