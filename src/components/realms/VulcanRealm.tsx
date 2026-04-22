@@ -13,6 +13,7 @@ import { DraggableEffectModule } from "@/components/DraggableEffectModule";
 import { HarmoniaChords } from "@/components/HarmoniaChords";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { VulcanRoutingPresets } from "@/components/VulcanRoutingPresets";
 import { Flame, ArrowLeftRight } from "lucide-react";
 
 interface VulcanRealmProps {
@@ -90,6 +91,11 @@ interface VulcanRealmProps {
   onToggleLane?: (id: string) => void;
   abCrossfader?: number;
   onAbCrossfaderChange?: (v: number) => void;
+  onLoadRoutingPreset?: (preset: {
+    lanes: Record<string, "A" | "B">;
+    crossfader: number;
+    effectsOrder: string[];
+  }) => void;
 }
 
 export function VulcanRealm(props: VulcanRealmProps) {
@@ -372,14 +378,30 @@ export function VulcanRealm(props: VulcanRealmProps) {
                 A / B CROSSFADER
               </span>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => props.onAbCrossfaderChange?.(50)}
-              className="h-7 text-xs"
-            >
-              Center
-            </Button>
+            <div className="flex items-center gap-1">
+              {props.onLoadRoutingPreset && (
+                <VulcanRoutingPresets
+                  currentLanes={effectLanes}
+                  currentCrossfader={xfade}
+                  currentOrder={effectsOrder}
+                  onLoad={(preset) =>
+                    props.onLoadRoutingPreset?.({
+                      lanes: preset.lanes,
+                      crossfader: preset.crossfader,
+                      effectsOrder: preset.effectsOrder,
+                    })
+                  }
+                />
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => props.onAbCrossfaderChange?.(50)}
+                className="h-7 text-xs"
+              >
+                Center
+              </Button>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <span
