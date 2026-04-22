@@ -11,7 +11,9 @@ import { AtlasCompressor } from "@/components/AtlasCompressor";
 import { ConstellationLines } from "@/components/ConstellationLines";
 import { DraggableEffectModule } from "@/components/DraggableEffectModule";
 import { HarmoniaChords } from "@/components/HarmoniaChords";
-import { Flame } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Flame, ArrowLeftRight } from "lucide-react";
 
 interface VulcanRealmProps {
   distortionDrive: number;
