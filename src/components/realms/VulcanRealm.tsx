@@ -86,6 +86,10 @@ interface VulcanRealmProps {
   onDragLeave?: () => void;
   draggedItem?: string | null;
   dragOverItem?: string | null;
+  effectLanes?: Record<string, "A" | "B">;
+  onToggleLane?: (id: string) => void;
+  abCrossfader?: number;
+  onAbCrossfaderChange?: (v: number) => void;
 }
 
 export function VulcanRealm(props: VulcanRealmProps) {
