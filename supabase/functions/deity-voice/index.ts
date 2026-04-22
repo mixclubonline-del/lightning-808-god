@@ -61,7 +61,18 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('ElevenLabs API error:', errorText);
-      throw new Error(`ElevenLabs API error: ${response.status}`);
+      // Return graceful fallback so client can use browser speech synthesis
+      return new Response(
+        JSON.stringify({
+          error: `ElevenLabs API error: ${response.status}`,
+          fallback: true,
+          details: errorText,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     const audioBuffer = await response.arrayBuffer();

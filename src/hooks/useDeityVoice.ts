@@ -82,9 +82,33 @@ export function useDeityVoice(deity: DeityName): UseDeityVoiceReturn {
         }
       );
 
+      const contentType = response.headers.get('content-type') || '';
+
+      // If JSON came back, it's either an error or a fallback signal
+      if (contentType.includes('application/json')) {
+        const data = await response.json().catch(() => ({}));
+        if (data.fallback && 'speechSynthesis' in window) {
+          console.warn('ElevenLabs unavailable, using browser speech synthesis fallback');
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.rate = 0.95;
+          utterance.pitch = deity === 'zeus' ? 0.7 : deity === 'apollo' ? 1.1 : 1.0;
+          utterance.onstart = () => setIsSpeaking(true);
+          utterance.onend = () => {
+            setIsSpeaking(false);
+            setAudioData(null);
+          };
+          utterance.onerror = () => {
+            setIsSpeaking(false);
+            setAudioData(null);
+          };
+          window.speechSynthesis.speak(utterance);
+          return;
+        }
+        throw new Error(data.error || `Voice request failed: ${response.status}`);
+      }
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Voice request failed: ${response.status}`);
+        throw new Error(`Voice request failed: ${response.status}`);
       }
 
       const audioBlob = await response.blob();
