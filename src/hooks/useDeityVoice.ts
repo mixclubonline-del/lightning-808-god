@@ -70,7 +70,13 @@ export function useDeityVoice(deity: DeityName): UseDeityVoiceReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [audioData, setAudioData] = useState<Uint8Array | null>(null);
-  
+  const [ssmlEnabled, setSsmlEnabled] = useState(true);
+  const ssmlEnabledRef = useRef(ssmlEnabled);
+  useEffect(() => {
+    ssmlEnabledRef.current = ssmlEnabled;
+  }, [ssmlEnabled]);
+  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
