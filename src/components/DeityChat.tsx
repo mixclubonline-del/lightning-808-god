@@ -43,6 +43,8 @@ export function DeityChat({
     isSpeaking,
     isLoading: isVoiceLoading,
     audioData,
+    ssmlEnabled,
+    setSsmlEnabled,
     speak,
     stop,
   } = useDeityVoice(deity);
