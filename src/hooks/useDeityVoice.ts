@@ -157,19 +157,38 @@ export function useDeityVoice(deity: DeityName): UseDeityVoiceReturn {
         const data = await response.json().catch(() => ({}));
         if (data.fallback && 'speechSynthesis' in window) {
           console.warn('ElevenLabs unavailable, using browser speech synthesis fallback');
-          const utterance = new SpeechSynthesisUtterance(text);
-          utterance.rate = 0.95;
-          utterance.pitch = deity === 'zeus' ? 0.7 : deity === 'apollo' ? 1.1 : 1.0;
-          utterance.onstart = () => setIsSpeaking(true);
-          utterance.onend = () => {
-            setIsSpeaking(false);
-            setAudioData(null);
+          const basePitch = deity === 'zeus' ? 0.7 : deity === 'apollo' ? 1.1 : 1.0;
+          const baseRate = 0.95;
+
+          const segments = ssmlEnabledRef.current
+            ? parseSSML(text)
+            : [{ type: 'speak' as const, text: stripSSML(text) }];
+
+          const playQueue = (i: number) => {
+            if (i >= segments.length) {
+              setIsSpeaking(false);
+              setAudioData(null);
+              return;
+            }
+            const seg = segments[i];
+            if (seg.type === 'pause') {
+              pauseTimerRef.current = setTimeout(() => playQueue(i + 1), seg.ms);
+              return;
+            }
+            const u = new SpeechSynthesisUtterance(seg.text);
+            u.rate = baseRate * (seg.rate ?? 1);
+            u.pitch = basePitch * (seg.pitch ?? 1);
+            u.volume = seg.volume ?? 1;
+            if (i === 0) u.onstart = () => setIsSpeaking(true);
+            u.onend = () => playQueue(i + 1);
+            u.onerror = () => {
+              setIsSpeaking(false);
+              setAudioData(null);
+            };
+            window.speechSynthesis.speak(u);
           };
-          utterance.onerror = () => {
-            setIsSpeaking(false);
-            setAudioData(null);
-          };
-          window.speechSynthesis.speak(utterance);
+          setIsSpeaking(true);
+          playQueue(0);
           return;
         }
         throw new Error(data.error || `Voice request failed: ${response.status}`);
