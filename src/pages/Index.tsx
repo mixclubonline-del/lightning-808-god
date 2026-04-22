@@ -804,6 +804,10 @@ const Index = () => {
             onDragLeave={handleDragLeave}
             draggedItem={draggedItem}
             dragOverItem={dragOverItem}
+            effectLanes={effectLanes}
+            onToggleLane={toggleEffectLane}
+            abCrossfader={abCrossfader}
+            onAbCrossfaderChange={setAbCrossfader}
           />
         );
       case "pandora":
