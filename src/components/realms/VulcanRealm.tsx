@@ -378,14 +378,30 @@ export function VulcanRealm(props: VulcanRealmProps) {
                 A / B CROSSFADER
               </span>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => props.onAbCrossfaderChange?.(50)}
-              className="h-7 text-xs"
-            >
-              Center
-            </Button>
+            <div className="flex items-center gap-1">
+              {props.onLoadRoutingPreset && (
+                <VulcanRoutingPresets
+                  currentLanes={effectLanes}
+                  currentCrossfader={xfade}
+                  currentOrder={effectsOrder}
+                  onLoad={(preset) =>
+                    props.onLoadRoutingPreset?.({
+                      lanes: preset.lanes,
+                      crossfader: preset.crossfader,
+                      effectsOrder: preset.effectsOrder,
+                    })
+                  }
+                />
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => props.onAbCrossfaderChange?.(50)}
+                className="h-7 text-xs"
+              >
+                Center
+              </Button>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <span
