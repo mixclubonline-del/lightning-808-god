@@ -844,6 +844,11 @@ const Index = () => {
             onToggleLane={toggleEffectLane}
             abCrossfader={abCrossfader}
             onAbCrossfaderChange={setAbCrossfader}
+            onLoadRoutingPreset={(preset) => {
+              setEffectLanes(preset.lanes);
+              setAbCrossfader(preset.crossfader);
+              setEffectsOrder(preset.effectsOrder);
+            }}
           />
         );
       case "pandora":
