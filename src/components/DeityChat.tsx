@@ -150,6 +150,22 @@ export function DeityChat({
         <Button
           variant="ghost"
           size="icon"
+          onClick={() => setSsmlEnabled(!ssmlEnabled)}
+          className={cn(
+            "hover:bg-background/50 transition-colors",
+            ssmlEnabled && "text-primary"
+          )}
+          title={
+            ssmlEnabled
+              ? "SSML expression on (pauses, emphasis)"
+              : "SSML expression off"
+          }
+        >
+          <Wand2 className="w-5 h-5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={toggleVoice}
           className={cn(
             "hover:bg-background/50 transition-colors",
