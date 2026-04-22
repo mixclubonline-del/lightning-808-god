@@ -13,6 +13,7 @@ import { DraggableEffectModule } from "@/components/DraggableEffectModule";
 import { HarmoniaChords } from "@/components/HarmoniaChords";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { VulcanRoutingPresets } from "@/components/VulcanRoutingPresets";
 import { Flame, ArrowLeftRight } from "lucide-react";
 
 interface VulcanRealmProps {
