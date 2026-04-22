@@ -277,6 +277,8 @@ export function useDeityVoice(deity: DeityName): UseDeityVoiceReturn {
     isLoading,
     error,
     audioData,
+    ssmlEnabled,
+    setSsmlEnabled,
     speak,
     stop,
   };
