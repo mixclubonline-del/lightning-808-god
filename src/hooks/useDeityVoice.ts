@@ -6,8 +6,63 @@ interface UseDeityVoiceReturn {
   isLoading: boolean;
   error: string | null;
   audioData: Uint8Array | null;
+  ssmlEnabled: boolean;
+  setSsmlEnabled: (enabled: boolean) => void;
   speak: (text: string) => Promise<void>;
   stop: () => void;
+}
+
+/**
+ * Parse pseudo-SSML / markdown markers into a queue of speech segments.
+ * Supported:
+ *   <break time="500ms"/> or <break/>      -> silence pause
+ *   ...                                     -> 400ms pause
+ *   <emphasis>word</emphasis> or **word**   -> louder, slower
+ *   <prosody rate="slow|fast" pitch="high|low">x</prosody>
+ */
+type Segment =
+  | { type: 'speak'; text: string; rate?: number; pitch?: number; volume?: number }
+  | { type: 'pause'; ms: number };
+
+function parseSSML(input: string): Segment[] {
+  const segments: Segment[] = [];
+  let text = input.replace(/\.{3,}/g, '<break time="400ms"/>');
+  text = text.replace(/\*\*(.+?)\*\*/g, '<emphasis>$1</emphasis>');
+
+  const tokenRegex = /<break(?:\s+time="(\d+)ms")?\s*\/?>|<emphasis>(.*?)<\/emphasis>|<prosody([^>]*)>(.*?)<\/prosody>/gs;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = tokenRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      const plain = text.slice(lastIndex, match.index).trim();
+      if (plain) segments.push({ type: 'speak', text: plain });
+    }
+    if (match[0].startsWith('<break')) {
+      segments.push({ type: 'pause', ms: match[1] ? parseInt(match[1], 10) : 300 });
+    } else if (match[0].startsWith('<emphasis')) {
+      segments.push({ type: 'speak', text: match[2].trim(), rate: 0.85, pitch: 1.1, volume: 1 });
+    } else if (match[0].startsWith('<prosody')) {
+      const attrs = match[3];
+      const rateAttr = /rate="([^"]+)"/.exec(attrs)?.[1];
+      const pitchAttr = /pitch="([^"]+)"/.exec(attrs)?.[1];
+      const rate = rateAttr === 'slow' ? 0.8 : rateAttr === 'fast' ? 1.2 : parseFloat(rateAttr || '1');
+      const pitch = pitchAttr === 'high' ? 1.3 : pitchAttr === 'low' ? 0.7 : parseFloat(pitchAttr || '1');
+      segments.push({ type: 'speak', text: match[4].trim(), rate, pitch });
+    }
+    lastIndex = tokenRegex.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    const tail = text.slice(lastIndex).trim();
+    if (tail) segments.push({ type: 'speak', text: tail });
+  }
+  return segments.length ? segments : [{ type: 'speak', text: input }];
+}
+
+function stripSSML(input: string): string {
+  return input
+    .replace(/<break[^>]*\/?>/g, ' ')
+    .replace(/<\/?(emphasis|prosody)[^>]*>/g, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1');
 }
 
 export function useDeityVoice(deity: DeityName): UseDeityVoiceReturn {
