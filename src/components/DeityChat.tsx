@@ -8,7 +8,7 @@ import { DeityVoiceVisualizer } from './DeityVoiceVisualizer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, X, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { Send, X, Sparkles, Volume2, VolumeX, Wand2 } from 'lucide-react';
 
 interface DeityChatProps {
   deity: DeityName;
@@ -43,6 +43,8 @@ export function DeityChat({
     isSpeaking,
     isLoading: isVoiceLoading,
     audioData,
+    ssmlEnabled,
+    setSsmlEnabled,
     speak,
     stop,
   } = useDeityVoice(deity);
@@ -145,6 +147,22 @@ export function DeityChat({
             {isSpeaking ? 'Speaking...' : config.title}
           </p>
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setSsmlEnabled(!ssmlEnabled)}
+          className={cn(
+            "hover:bg-background/50 transition-colors",
+            ssmlEnabled && "text-primary"
+          )}
+          title={
+            ssmlEnabled
+              ? "SSML expression on (pauses, emphasis)"
+              : "SSML expression off"
+          }
+        >
+          <Wand2 className="w-5 h-5" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
