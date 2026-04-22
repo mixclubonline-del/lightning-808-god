@@ -90,6 +90,11 @@ interface VulcanRealmProps {
   onToggleLane?: (id: string) => void;
   abCrossfader?: number;
   onAbCrossfaderChange?: (v: number) => void;
+  onLoadRoutingPreset?: (preset: {
+    lanes: Record<string, "A" | "B">;
+    crossfader: number;
+    effectsOrder: string[];
+  }) => void;
 }
 
 export function VulcanRealm(props: VulcanRealmProps) {
