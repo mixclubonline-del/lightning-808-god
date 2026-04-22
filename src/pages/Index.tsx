@@ -172,8 +172,9 @@ const Index = () => {
   ]);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
 
-  // Parallel A/B routing lanes
-  const [effectLanes, setEffectLanes] = useState<Record<string, "A" | "B">>({
+  // Parallel A/B routing lanes (persisted to localStorage)
+  const VULCAN_ROUTING_KEY = "vulcan-routing-v1";
+  const defaultLanes: Record<string, "A" | "B"> = {
     vulcan: "A",
     atlas: "A",
     echo: "A",
@@ -183,9 +184,44 @@ const Index = () => {
     chronos: "B",
     morpheus: "B",
     harmonia: "A",
+  };
+
+  const [effectLanes, setEffectLanes] = useState<Record<string, "A" | "B">>(() => {
+    if (typeof window === "undefined") return defaultLanes;
+    try {
+      const raw = localStorage.getItem(VULCAN_ROUTING_KEY);
+      if (!raw) return defaultLanes;
+      const parsed = JSON.parse(raw);
+      return { ...defaultLanes, ...(parsed.lanes ?? {}) };
+    } catch {
+      return defaultLanes;
+    }
   });
+
   // Crossfader: 0 = full A, 100 = full B
-  const [abCrossfader, setAbCrossfader] = useState(50);
+  const [abCrossfader, setAbCrossfader] = useState<number>(() => {
+    if (typeof window === "undefined") return 50;
+    try {
+      const raw = localStorage.getItem(VULCAN_ROUTING_KEY);
+      if (!raw) return 50;
+      const parsed = JSON.parse(raw);
+      return typeof parsed.crossfader === "number" ? parsed.crossfader : 50;
+    } catch {
+      return 50;
+    }
+  });
+
+  // Persist whenever lanes or crossfader change
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        VULCAN_ROUTING_KEY,
+        JSON.stringify({ lanes: effectLanes, crossfader: abCrossfader })
+      );
+    } catch {
+      /* storage full or unavailable — non-fatal */
+    }
+  }, [effectLanes, abCrossfader]);
 
   const toggleEffectLane = (id: string) => {
     setEffectLanes((prev) => {
